@@ -1,0 +1,745 @@
+/* --- POPなフォントの読み込み --- */
+@import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=M+PLUS+Rounded+1c:wght@400;700&family=Mochiy+Pop+P+One&display=swap');
+
+/* =========================================
+   基本設定 (Base)
+   ========================================= */
+body {
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: #111;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  color: white;
+}
+
+#scaler {
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 1200px; height: 780px;
+  transform-origin: center center;
+  transform: translate(-50%, -50%); 
+  overflow: hidden;
+  border-radius: 20px;
+  background-color: transparent;
+}
+
+#game-wrapper {
+  width: 1200px; height: 780px; position: relative; overflow: hidden;
+  background-color: white; box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.bg-layer {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background-size: cover; background-position: center;
+  transition: opacity 0.5s ease-in-out;
+  opacity: 0; z-index: 0;
+}
+.bg-layer.visible { opacity: 1; z-index: 1; }
+
+#myCanvas {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 50; pointer-events: none;
+}
+
+/* --- クリック/操作禁止用 --- */
+.no-click {
+    pointer-events: none !important;
+    cursor: default !important;
+}
+
+/* --- 句読点の中心ズレ補正 --- */
+.has-punctuation {
+    text-indent: 0.5em; 
+}
+
+/* =========================================
+   ★ローディング画面
+   ========================================= */
+#loading-screen {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, #4b256f 0%, #924c78 40%, #de7c6b 70%, #fabe7c 100%);
+    z-index: 10000;
+    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    transition: opacity 1.5s ease, visibility 1.5s ease; opacity: 1;
+}
+#loading-screen.fade-out { opacity: 0; visibility: hidden; }
+
+.keyboard-loader {
+    display: flex; gap: 14px; padding-top: 25px;
+    transform: perspective(500px) rotateX(15deg);
+}
+
+.key.cat {
+    position: relative; width: 60px; height: 60px;
+    background: linear-gradient(135deg, #ffe3e8 0%, #ffbed2 100%);
+    border-radius: 16px;
+    font-family: 'Fredoka One', cursive; font-size: 30px; color: #ff5a78;
+    text-shadow: 1px 1px 0 rgba(255,255,255,0.5);
+    display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 8px 0 #efa4b8, 0 15px 20px rgba(0,0,0,0.2);
+    animation: catBounce 1.2s infinite ease-in-out;
+    overflow: hidden;
+}
+.key.cat::before {
+    content: ''; position: absolute; top: 5px; left: 5px; width: 85%; height: 40%;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.1));
+    border-radius: 12px 12px 20px 20px; z-index: 1; pointer-events: none;
+}
+/* 猫耳 */
+.key.cat {
+    background: 
+        linear-gradient(135deg, transparent 50%, #ffe3e8 50%) no-repeat -10px -15px / 40px 40px,
+        linear-gradient(225deg, transparent 50%, #ffe3e8 50%) no-repeat 30px -15px / 40px 40px,
+        linear-gradient(135deg, #ffe3e8 0%, #ffbed2 100%);
+}
+
+.key.cat:nth-child(1) { animation-delay: 0.0s; }
+.key.cat:nth-child(2) { animation-delay: 0.1s; }
+.key.cat:nth-child(3) { animation-delay: 0.2s; }
+.key.cat:nth-child(4) { animation-delay: 0.3s; }
+.key.cat:nth-child(5) { animation-delay: 0.4s; }
+.key.cat:nth-child(6) { animation-delay: 0.5s; }
+.key.cat:nth-child(7) { animation-delay: 0.6s; }
+
+@keyframes catBounce {
+    0%, 100% { transform: translateY(0) scale(1, 1); box-shadow: 0 8px 0 #efa4b8, 0 15px 20px rgba(0,0,0,0.2); }
+    30% { transform: translateY(-25px) scale(1.1, 0.9) rotateX(-10deg); box-shadow: 0 30px 0 #efa4b8, 0 40px 25px rgba(0,0,0,0.15); }
+    50% { transform: translateY(8px) scale(0.85, 1.15); box-shadow: 0 0 0 #efa4b8, 0 0 0 rgba(0,0,0,0); }
+    70% { transform: translateY(-5px) scale(1.05, 0.95); box-shadow: 0 10px 0 #efa4b8, 0 15px 15px rgba(0,0,0,0.2); }
+}
+
+.loading-text {
+    margin-top: 60px; font-family: 'Fredoka One', cursive; color: #fff; font-size: 32px; letter-spacing: 0.1em;
+    text-shadow: 0 4px 5px rgba(0,0,0,0.3); transform: perspective(500px) rotateX(15deg);
+}
+.paw {
+    display: inline-block; font-size: 1.2em; filter: drop-shadow(0 3px 3px rgba(0,0,0,0.2));
+    animation: pawFloatBig 2s infinite ease-in-out;
+}
+@keyframes pawFloatBig {
+    0%, 100% { transform: rotate(0deg) translateY(0) scale(1); }
+    50% { transform: rotate(20deg) translateY(-15px) scale(1.1); }
+}
+
+/* =========================================
+   ★タイトル画面 UI
+   ========================================= */
+#title-screen {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  z-index: 100;
+}
+
+.title-anim-wrapper {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 1.0s ease-out, transform 1.0s ease-out;
+    display: inline-block;
+}
+.title-anim-wrapper.visible { opacity: 1; transform: translateY(0); }
+.title-anim-wrapper.exit-up {
+    transform: translateY(-80px) !important; opacity: 0;
+    transition: transform 0.6s ease-in, opacity 0.6s ease-in;
+}
+
+.game-title {
+    font-family: "M PLUS Rounded 1c", sans-serif; font-size: 115px; color: #ffe3a3; font-weight: bold;
+    margin-top: 20px; margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0px rgba(100, 100, 255, 0.8), 0 5px 15px rgba(0, 0, 0, 0.7);
+}
+.game-title.bouncing { animation: titleBounce 2.5s infinite ease-in-out; }
+@keyframes titleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-15px); } }
+
+.main-menu-buttons {
+    display: flex; flex-direction: column; gap: 40px; opacity: 0; transform: translateY(20px);
+    transition: opacity 0.8s ease-out, transform 0.8s ease-out; margin-top: 45px; transition-delay: 0.5s; 
+}
+.main-menu-buttons.visible { opacity: 1; transform: translateY(0); }
+.main-menu-buttons.exit-down { transform: translateY(80px); opacity: 0; transition: transform 0.6s ease-in, opacity 0.6s ease-in; }
+
+.menu-btn {
+  width: 260px; padding: 10px 0;
+  font-family: 'Mochiy Pop P One', sans-serif; font-size: 1.4rem; color: #fff; cursor: pointer;
+  border-radius: 50px; background: linear-gradient(135deg, hsl(42, 100%, 65%) 0%, #ffa442 40%, #c77dff 100%);
+  border: 4px solid #ffffff; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 200, 255, 0.6);
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); transition: all 0.2s ease-out; position: relative; overflow: hidden;
+}
+.menu-btn:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 0 15px rgba(253, 160, 133), 0 0 30px rgba(138, 43, 226); }
+.menu-btn:active { transform: translateY(-1px) scale(0.98); }
+
+/* =========================================
+   ★難易度選択画面 UI
+   ========================================= */
+#difficulty-view {
+    display: flex; flex-direction: column; align-items: center;    
+    justify-content: center; padding-top: 0;
+    width: 100%; height: 100%; box-sizing: border-box;
+}
+
+.diff-view-title {
+    font-family: 'Fredoka One', cursive; font-size: 5rem; color: #ffe3a3; letter-spacing: 0.1em;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0px rgba(100, 100, 255, 0.8), 0 5px 15px rgba(0, 0, 0, 0.7);
+    margin-bottom: 50px; margin-top: -20px; line-height: 1.0;
+}
+
+.diff-main-container {
+    display: flex; flex-direction: row; justify-content: center; align-items: center;
+    gap: 80px; width: 100%; margin-top: 0;
+}
+
+.diff-button-menu {
+    display: flex; flex-direction: column; gap: 40px; 
+    /* ★修正: 余白を確保して判定エリアを正常化 */
+    padding: 20px;
+}
+
+.diff-btn {
+    width: 280px; padding: 12px 0; font-family: 'Mochiy Pop P One', sans-serif; font-size: 1.8rem; color: #fff;
+    cursor: pointer; border-radius: 50px; border: 5px solid #fff; position: relative; overflow: hidden;
+    transition: all 0.1s ease; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); background: none;
+    display: flex; justify-content: center; align-items: center; padding-top: 18px; padding-bottom: 12px; line-height: 1.0;
+}
+.diff-btn:hover { transform: translateY(-4px); filter: brightness(1.05); }
+.diff-btn:active { transform: translateY(4px); box-shadow: none !important; filter: brightness(0.95); }
+
+.diff-btn.easy { background: linear-gradient(135deg, #74ebd5 0%, #aee8ff 100%); box-shadow: 0 8px 0 #3ecfcf, 0 15px 20px rgba(255, 255, 255, 0.2); }
+.diff-btn.normal { background: linear-gradient(135deg, #90ff64 0%, #c1ffb2 100%); box-shadow: 0 8px 0 #54d618, 0 15px 20px rgba(255, 255, 255, 0.2); }
+.diff-btn.hard { background: linear-gradient(135deg, #ffff00 0%, #fff891 100%); box-shadow: 0 8px 0 #d4d600, 0 15px 20px rgba(255, 255, 255, 0.2); color: #5c5c00; }
+.diff-btn#btn-back { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); box-shadow: 0 8px 0 #ff758c, 0 15px 20px rgba(255, 255, 255, 0.2); }
+
+.diff-info-panel {
+    position: relative; padding: 30px 40px 40px 40px; width: 600px; height: 400px;
+    display: flex; flex-direction: column; margin-top: 10px;
+    background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px);
+    border-radius: 40px; border: 4px solid rgba(255, 255, 255, 0.3); box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    transition: opacity 0.2s ease;
+}
+.diff-info-panel:not(.visible) { opacity: 0; }
+
+.diff-header-group { position: absolute; top: 20px; right: 26px; display: flex; align-items: flex-end; gap: 15px; z-index: 10; }
+
+/* 難易度選択画面の王冠アイコン */
+.crown-icon-only {
+    width: 41px; height: 36px;
+    background: rgba(255, 255, 255, 0.2); border: 2px solid rgba(255, 255, 255, 0.6); border-radius: 20%;
+    display: flex; justify-content: center; align-items: center; cursor: pointer;
+    transition: transform 0.1s ease, background 0.1s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.crown-icon-only:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.4); filter: brightness(1.2); }
+.crown-icon-only:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.1); }
+
+.diff-hiscore-box {
+    background: rgba(0, 0, 0, 0.5); padding: 4px 20px; border-radius: 20px; border: 2px solid rgba(232, 255, 253, 0.8);
+    display: flex; align-items: center; gap: 10px; font-family: 'Fredoka One', cursive; color: #ffd700;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5); font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.diff-hiscore-box .label { font-size: 0.9rem; color: #ddd; }
+#menu-hiscore-val {
+    font-family: 'M PLUS Rounded 1c', monospace; font-variant-numeric: tabular-nums;
+    font-size: 1.6rem; color: #fff; text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); line-height: 1;
+    min-width: 140px; text-align: right; display: inline-block;
+}
+
+#display-diff-name {
+    padding-bottom: 40px; font-family: 'Fredoka One', cursive; font-size: 3.5rem; color: #fff; line-height: 1;
+    padding-top: 40px !important; margin-bottom: 5px !important;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2), 0px 0px 10px rgba(0, 0, 0, 0.5);
+}
+#display-diff-text {
+    padding-bottom: 40px; flex-grow: 1; font-size: 1.3rem; line-height: 1.2; color: rgba(255, 255, 255, 0.95);
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5); white-space: nowrap; overflow-y: auto; scrollbar-width: none;
+}
+.diff-info-footer {
+    margin-top: auto; display: flex; flex-direction: column; gap: 15px; padding-top: 20px; border-top: 2px dashed rgba(255, 255, 255, 0.4);
+}
+.status-item {
+    font-family: 'Fredoka One', cursive; font-size: 2.2rem; font-weight: bold; display: flex; align-items: center; gap: 15px; line-height: 1.1; text-shadow: 2px 2px 4px rgba(0,0,0,0.4);
+}
+#display-diff-time { color: #aeffff; letter-spacing: 1px; }
+#display-diff-time::before { content: "TIME:⏳"; font-size: 2.5rem; filter: drop-shadow(0 0 5px rgba(0,255,255,0.6)); }
+#display-diff-chars { color: #ffaeae; letter-spacing: 1px; }
+#display-diff-chars::before { content: "CHAR:⌨️"; font-size: 2.5rem; filter: drop-shadow(0 0 5px rgba(255,100,100,0.6)); }
+
+/* =========================================
+   ★プレイ画面 UI (HUD)
+   ========================================= */
+#game-hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
+
+#score-container {
+    position: absolute; bottom: 25px; left: 30px; font-family: 'Fredoka One', monospace; font-size: 40px; color: #faffe5;
+    text-shadow: 2px 2px 0 #000; z-index: 100;
+}
+#score { font-family: 'Fredoka One', monospace; font-variant-numeric: tabular-nums; letter-spacing: 5px; display: inline-block; min-width: 200px; text-align: right; font-size: 40px; }
+
+#tmr-box { position: absolute; top: -70px; left: 15.5px; width: 305px; height: 320px; display: flex; justify-content: center; align-items: center; z-index: 999; }
+#tmr-img { position: absolute; width: 100%; height: auto; }
+#tmr-text {
+    position: relative; right: -2.5px; bottom: -8px; font-family: 'Fredoka One', cursive; font-size: 75px; font-weight: bold; letter-spacing: 5px;
+    color: rgba(95, 234, 255, 1); z-index: 2; text-shadow: -2px -2px 0 #fff, 2px 2px 0 #fff, 4px 4px 0 #95e3ff, 8px 8px 20px rgba(0,0,0,0.4);
+}
+
+#center-area { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 90%; text-align: center; z-index: 2; }
+#text-word-wrapper { display: inline-block; position: relative; }
+#text-word {
+    display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 15px 65px;
+    border: 10px solid rgb(216, 249, 255); border-radius: 40px; background: rgb(21, 97, 191); white-space: nowrap;
+}
+#romaji-line { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 35px; color: #fff; letter-spacing: 0.08rem; font-weight: 650; text-shadow: 2px 2px 4px black; margin-bottom: 5px; line-height: 1.2; }
+#jp-line { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 45px; font-weight: 750; color: #ffffffdd; line-height: 1.2; text-shadow: 2px 2px 0 #000; letter-spacing: 0.05rem; margin-bottom: 5px; }
+#full-roma { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 35px; font-weight: 650; color: #c4fff8; letter-spacing: 0.08rem; line-height: 1; }
+
+#rank-monitor {
+    position: absolute; top: 105%; left: 50%; transform: translateX(-50%); font-family: 'Fredoka One', cursive; font-size: 35px; color: #ffffff;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8); white-space: nowrap; z-index: 9999;
+}
+#rank-monitor .rank-s { color: #ffdd00 !important; text-shadow: 0 0 15px #ffdd00; } 
+#rank-monitor .rank-a { color: #ff4444 !important; text-shadow: 0 0 10px #ff0000; } 
+#rank-monitor .rank-b { color: rgb(46, 138, 249) !important; text-shadow: 0 0 10px #b5f4ff; } 
+#rank-monitor .rank-c { color: #44ff44 !important; text-shadow: 0 0 10px #00ff00; } 
+#rank-monitor .rank-d { color: #aaaaaa !important; text-shadow: 2px 2px 0 #000 !important; }
+#rank-value { font-size: 55px; font-weight: 900; margin-left: 10px; display: inline-block; transition: transform 0.2s ease, color 0.2s; }
+
+/* コンボ表示 */
+#combo-box { position: absolute; top: 180px; right: 95px; width: 200px; text-align: center; z-index: 10; }
+#combo-count, #combo-label { transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1), color 0.4s ease-out, text-shadow 0.4s ease-out; font-family: "M PLUS Rounded 1c", sans-serif !important; }
+#combo-count { font-size: 60px; color: #fff; line-height: 1; text-shadow: 0 0 2px #fff, 0 0 10px #d16eff, 2px 2px 0 #b030ff; }
+#combo-label { font-size: 21px; color: #fff; margin-top: -5px; text-shadow: 1px 1px 0 #b030ff, 0 0 5px #d16eff; }
+
+/* 100コンボ（金） */
+#combo-count.is-gold, #combo-label.is-gold { color: gold !important; text-shadow: 2px 2px 0 #b8860b, 0 0 10px #ffd700 !important; transform: scale(1.1) !important; display: block !important; margin: 0 auto !important; }
+
+/* 200コンボ（虹色+白文字） */
+#combo-count.is-rainbow, #combo-label.is-rainbow {
+    position: relative; display: block !important; width: fit-content !important; margin: 0 auto !important; padding: 0 !important;
+    text-align: center !important; line-height: 1 !important; color: transparent !important; text-shadow: none !important;
+    background: linear-gradient(90deg, rgba(255,0,0,0.6), rgba(255,165,0,0.6), rgba(255,255,0,0.6), rgba(0,255,0,0.6), rgba(0,255,255,0.6), rgba(0,0,255,0.6), rgba(238,130,238,0.6)) !important;
+    background-clip: text !important; -webkit-background-clip: text !important;
+    -webkit-text-stroke: 0.12em rgba(255, 255, 255, 0.5) !important; stroke-linejoin: round !important; filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.4)) !important;
+    transform: scale(1.02) !important; z-index: 1; white-space: nowrap;
+}
+#combo-count.is-rainbow::after, #combo-label.is-rainbow::after {
+    content: attr(data-text); position: absolute; left: 0; top: 0; z-index: 2; width: 100% !important; text-align: center !important;
+    color: #fff !important; font-family: "M PLUS Rounded 1c", sans-serif !important; line-height: 1 !important;
+    white-space: nowrap; -webkit-text-stroke: 0 !important; background: none !important; filter: none !important;
+}
+#combo-count.is-rainbow { font-weight: 800 !important; letter-spacing: 0.05em !important; margin-bottom: 3px !important; }
+#combo-label.is-rainbow { font-weight: 800 !important; letter-spacing: 1px; transform: scale(1.15) !important; }
+
+/* 連打メーター */
+#combo-meter { position: absolute; top: 50px; right: 70px; width: 600px; padding: 14px 16px 16px; border: 8px solid #ffffff; border-radius: 14px; user-select: none; z-index: 1000; }
+.theme-easy { background: rgba(100, 200, 255, 0.85); border-color: #e0ffff; box-shadow: 0 10px 30px rgba(100, 230, 255, 0.5); }
+.theme-normal { background: rgba(244, 156, 105, 0.85); border-color: #ffe7c7; box-shadow: 0 10px 30px rgba(255, 150, 50, 0.4); }
+.theme-hard { background: rgba(65, 36, 149, 0.85); border-color: #f0e0ff; box-shadow: 0 10px 30px rgba(200, 50, 255, 0.5); }
+.meter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 21px; font-weight: bold; }
+.theme-easy .meter-header { color: #fff; text-shadow: 0 2px 4px rgba(0, 100, 200, 0.8); }
+.theme-normal .meter-header { color: rgb(255, 255, 0); text-shadow: 0 2px 4px rgba(255, 98, 127, 0.8); }
+.theme-hard .meter-header { color: #00ffff; text-shadow: 0 0 8px rgba(0, 255, 255, 0.8); }
+#meter-bar { width: 100%; height: 20px; background: #424040; border-radius: 10px; overflow: hidden; border: 1px solid #ffffff; }
+#meter-fill { height: 100%; background: linear-gradient(90deg, #ff0055 0%, #ffcc00 50%, #00ff00 100%); box-shadow: 0 0 15px rgba(0, 255, 0, 0.6); transition: width 0.15s ease-out; }
+
+/* 統計 & ワード数 */
+#word-counter { position: absolute; bottom: 120px; right: 110px; border: 4px solid rgba(255,255,255,0.8); border-radius: 15px; padding: 40px 30px; background: rgba(0,0,0,0.3); text-align: center; z-index: 100; pointer-events: none; min-width: 100px; height: 100px; display: flex; justify-content: center; align-items: center;}
+#word-counter legend { color: #42f5bf; font-family: "M PLUS Rounded 1c", sans-serif; font-weight: bold; font-size: 15px; padding: 5px; margin: 0 auto; width: auto; line-height: 1; }
+#stat-words { display: block; font-family: "M PLUS Rounded 1c", sans-serif; font-weight: 800; font-size: 54px; color: #fff; line-height: 1; margin-top: 0px; text-shadow: 0 0 20px rgba(66, 245, 191, 0.8); }
+
+#hud-stats { position: absolute; bottom: 30px; right: 60px; font-family: 'Fredoka One', sans-serif; font-size: 35px; letter-spacing: 1px; color: rgba(255, 255, 255, 0.8); text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5); pointer-events: none; z-index: 100; }
+.speed-label { color: #42f5bf; }
+#stat-speed { color: rgb(222, 245, 198); font-weight: bold; }
+
+/* 演出アニメーション */
+.time-plus { color: #4aff50 !important; transform: scale(1.3); transition: transform 0.2s; text-shadow: 0 0 10px #00ff00; }
+.timer-pinch { color: rgba(255, 36, 113, 1) !important; text-shadow: 4px 4px 0px #ff9eb5 !important; animation: blink 0.5s infinite; }
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
+@keyframes shakeAndFlash {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-10px); border-color: red; background-color: rgba(255,0,0,0.2); }
+  50% { transform: translateX(10px); border-color: red; }
+  75% { transform: translateX(-10px); }
+  100% { transform: translateX(0); }
+}
+.error-shake { animation: shakeAndFlash 0.4s ease; }
+
+@keyframes lightShake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px); border-color: #ff6666; }
+  50% { transform: translateX(4px); border-color: #ff6666; }
+  75% { transform: translateX(-4px); }
+  100% { transform: translateX(0); }
+}
+.light-shake { animation: lightShake 0.2s ease; }
+
+/* 虹色グロー */
+@keyframes rainbow-inner {
+    0%   { box-shadow: inset 0 0 80px 10px rgba(255, 188, 188); }
+    15%  { box-shadow: inset 0 0 80px 10px rgba(255, 255, 174); }
+    30%  { box-shadow: inset 0 0 80px 10px rgba(196, 255, 196); }
+    45%  { box-shadow: inset 0 0 80px 10px rgba(193, 255, 255); }
+    60%  { box-shadow: inset 0 0 80px 10px rgba(192, 192, 255); }
+    75%  { box-shadow: inset 0 0 80px 10px rgba(255, 185, 255); }
+    100% { box-shadow: inset 0 0 80px 10px rgba(255, 176, 176); }
+}
+@keyframes glowFadeIn { 0% { opacity: 0; } 100% { opacity: 1; } }
+.rainbow-glow { position: relative; }
+.rainbow-glow::after {
+    content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 14px; 
+    z-index: 100; pointer-events: none; 
+    animation-name: rainbow-inner, glowFadeIn; animation-duration: 3s, 0.5s;
+    animation-iteration-count: infinite, 1; animation-timing-function: linear, ease-out; animation-fill-mode: none, forwards;
+}
+
+/* タイム加算ポップアップ */
+@keyframes popUpFade {
+  0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.5); }
+  20% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.2); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-60px) scale(1); }
+}
+.bonus-pop {
+  position: absolute; top: -50px; left: 50%; font-family: "M PLUS Rounded 1c", sans-serif; font-weight: bold; pointer-events: none; z-index: 9999; white-space: nowrap; animation: popUpFade 1s ease-out forwards;
+}
+.bonus-pop.normal { font-size: 25px; color: rgb(47, 255, 0); text-shadow: 1px 1px 0 gold, 0 0 5px orange, 2px 2px 5px rgba(237, 146, 255, 0.5); }
+.bonus-pop.large {
+  font-size: 45px; color: #ffd700; top: -70px; font-family: "M PLUS Rounded 1c", sans-serif;
+  background: linear-gradient(180deg, #FFEA00 0%, #FF0099 50%, #00E5FF 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent; -webkit-text-fill-color: transparent;
+  -webkit-text-stroke: 2px #ffffff; filter: drop-shadow(4px 4px 0px #000000); transform: rotate(-5deg); z-index: 1002;
+}
+
+.text-yellow { color: #ffff00 !important; text-shadow: 0 0 5px #ffaa00; text-decoration: underline; text-underline-offset: 6px; text-decoration-thickness: 3px; text-decoration-skip-ink: none; }
+.text-red { color: #ff4444 !important; text-shadow: 0 0 5px #ff0000; text-decoration: underline; }
+
+/* --- FINISH Banner --- */
+#finish-banner {
+  position: absolute; top: -250px; left: 50%; transform: translateX(-50%);
+  font-size: 180px; font-weight: bold; font-family: "M PLUS Rounded 1c", sans-serif; color: #ffdd00;
+  text-shadow: 0 0 20px rgba(255, 221, 0, 0.8), 4px 4px 0 #000; z-index: 3000;
+  transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s; opacity: 0;
+}
+#finish-banner.show { top: 35%; opacity: 1; }
+#finish-banner.exit { top: -250px !important; opacity: 0; transition: top 0.5s ease-in, opacity 0.5s ease-in; }
+
+.bg-blur { filter: blur(8px); transition: filter 0.4s ease-in-out; }
+
+/* ★重要: フェード用オーバーレイはクリックを邪魔しない */
+#fade-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background-color: white; opacity: 0; pointer-events: none !important; z-index: 1500;
+  transition: opacity 0.4s ease-in-out;
+}
+
+/* =========================================
+   リザルト画面 (Result Screen)
+   ========================================= */
+#result-screen {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 100%; max-width: 1100px; height: 92%; max-height: 780px;
+  /* 余白調整 */
+  padding: 20px 30px 20px 30px; 
+  backdrop-filter: blur(15px); border-radius: 30px;
+  display: flex; flex-direction: column; align-items: center; overflow: hidden;
+  z-index: 2000; transition: background 0.5s, border-color 0.5s, box-shadow 0.5s;
+  justify-content: flex-start;
+}
+
+/* テーマ別背景 */
+.res-theme-easy { background: linear-gradient(to bottom, rgba(134, 182, 224, 0.7), rgba(185, 237, 255, 0.6)); border: 2px solid rgba(150, 230, 255, 0.6); box-shadow: 0 0 20px rgba(0, 200, 255, 0.4), 0 20px 50px rgba(0,0,0,0.4); }
+.res-theme-normal { background: linear-gradient(to bottom, rgba(40, 20, 60, 0.7), rgba(180, 60, 100, 0.6)); border: 2px solid rgba(255, 180, 200, 0.5); box-shadow: 0 0 20px rgba(255, 100, 150, 0.5), 0 20px 50px rgba(0,0,0,0.5); }
+.res-theme-hard { background: linear-gradient(to bottom, rgba(10, 10, 40, 0.8), rgba(60, 40, 100, 0.7)); border: 2px solid rgba(255, 215, 0, 0.4); box-shadow: 0 0 20px rgba(100, 80, 255, 0.4), 0 20px 50px rgba(0,0,0,0.6); }
+
+.result-title { font-family: 'Fredoka One', cursive; font-size: 3.5rem; margin: 0 0 10px 0; color: #fff; text-shadow: 4px 4px 0px #ffc9b4, 6px 6px 15px rgba(0,0,0,0.5); letter-spacing: 5px; }
+
+.result-grid { display: flex; gap: 20px; width: 100%; margin-bottom: 10px; flex-grow: 1; min-height: 0; }
+.result-left-col { display: flex; flex-direction: column; gap: 15px; flex: 1; }
+.col-right { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+
+.score-big-container { background: rgba(218, 212, 228, 0.4); border-radius: 20px; padding: 5px 25px; position: relative; border: 2px solid rgba(255, 255, 255, 0.3); box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2); min-height: 160px; display: flex; flex-direction: column; justify-content: center; }
+.score-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; }
+.score-main-row { width: 100%; display: flex; justify-content: flex-end; margin-top: 5px; }
+.score-val-huge { font-family: 'Fredoka One', cursive !important; font-size: 4.3rem !important; color: #ff9bc5; text-shadow: 4px 4px 0 #fdf1ff, 6px 6px 10px rgba(0,0,0,0.2); line-height: 1.0; letter-spacing: 4px; margin-left: -5px; margin-top: -14px; }
+.score-label-main { font-family: 'Fredoka One', cursive !important; font-size: 2.9rem !important; color: #ffffff; text-shadow: 3px 3px 0px #ffc9b4, 4px 4px 10px rgba(0,0,0,0.2); letter-spacing: 2px; margin-bottom: 6px; }
+.hiscore-block { text-align: right; background: rgba(0,0,0,0.15); padding: 1px 14px; border-radius: 12px; display: flex; flex-direction: column; align-items: flex-end; min-width: 240px; }
+.hiscore-row { display: flex; align-items: center; justify-content: space-between; width: 100%; }
+.hiscore-label { font-size: 0.9rem; color: #ccc; font-family: 'Fredoka One', cursive; }
+.hiscore-value { font-size: 1.4rem; color: #fffee2; font-family: 'Fredoka One', cursive; letter-spacing: 1px; }
+
+.score-diff { font-family: 'Fredoka One', sans-serif; font-size: 1.0rem; letter-spacing: 1px; }
+.diff-plus { color: #ffd700; text-shadow: 1px 1px 0 #b8860b; }
+.diff-minus { color: #ff6b6b; text-shadow: 1px 1px 0 #8b0000; }
+.diff-zero { color: #888; font-size: 0.9rem; }
+
+.stats-compact-container { background: rgba(218, 212, 228, 0.4); border-radius: 20px; padding: 15px 25px; display: flex; flex-direction: column; justify-content: space-around; flex-grow: 1; border: 2px solid rgba(255, 255, 255, 0.3); box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2); }
+.stat-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; padding-bottom: 4px; border-bottom: 1px dotted rgba(255,255,255,0.3); }
+.stat-label { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #ddd; text-shadow: 1px 1px 0 rgba(255,255,255,0.4); }
+.stat-val { font-family: 'Fredoka One', cursive; font-size: 1.6rem; font-weight: bold; color: #333; margin-right: 5px; }
+
+.c-green { color: #26ff00 !important; text-shadow: 1px 1px 0px rgba(255,255,255,0.8); }
+.c-red { color: #ff4757 !important; text-shadow: 1px 1px 0px rgba(255,255,255,0.8); }
+.c-blue { color: #3742fa !important; text-shadow: 1px 1px 0px rgba(255,255,255,0.8); }
+.c-cyan { color: #12f3bf !important; text-shadow: 1px 1px 0px rgba(255,255,255,0.8); }
+
+/* 右側の数値を縦積みにするコンテナ */
+.stat-right-stacked {
+    display: flex;
+    flex-direction: column; /* 縦並びにする */
+    align-items: flex-end;  /* 右寄せ */
+    justify-content: center;
+    line-height: 1;
+}
+
+/* words数（数値の上に表示する小さい文字） */
+.sub-val-upper {
+    font-family: 'M PLUS Rounded 1c', sans-serif; /* 日本語フォントで読みやすく */
+    font-weight: bold;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 2px; /* 下の数値との間隔 */
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.3);
+}
+
+/* 数値本体の位置微調整 */
+.stat-right-stacked .stat-val {
+    margin-right: 1 !important; /* 右余白をリセット */
+    line-height: 1.4;
+}
+
+/* Correctの行だけ少し高さを確保してバランスを取る */
+.stat-row:first-child {
+    padding-bottom: 6px;
+    align-items: center; /* ラベルと数値を上下中央揃え */
+}
+
+/* Correctの数値だけを少し上にずらす */
+.stat-right-stacked .stat-val {
+    /* マイナスの値で上に移動します。数値を調整してください */
+    transform: translateY(-6px); 
+    display: inline-block; /* transformを効かせるために必要 */
+}
+
+.combo-row .c-orange { background: linear-gradient(45deg, #f1c40f, #e67e22); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(2px 2px 0px rgba(255,255,255,0.8)); font-family: 'Fredoka One', cursive; }
+.combo-row .stat-label.c-orange { font-size: 2.0rem; }
+.combo-row .stat-val.c-orange { font-size: 3.8rem; line-height: 1.0; margin-left: 10px; }
+
+.rank-area { flex-grow: 1; display: flex; justify-content: center; align-items: center; margin-top: -5px; position: relative; }
+.rank-circle { width: 180px; height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+.rank-label { font-family: 'Fredoka One', cursive; font-size: 1.6rem; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); margin-bottom: -15px; z-index: 20; }
+#res-rank { font-family: 'Fredoka One', cursive; font-size: 10rem; line-height: 1; z-index: 15; display: inline-block; position: relative; transform-origin: center center; }
+
+.res-rank-s { color: #fffce0; text-shadow: 3px 3px 0 #b8860b, -2px -2px 0 #ffffff, 0 0 30px gold, 0 0 60px orange; animation: rank-impact-ultra 1.3s cubic-bezier(0.19, 1, 0.22, 1) forwards, aura-pulse-mega 2s infinite 1.3s; }
+.res-rank-a { color: rgb(236, 59, 59); text-shadow: 2px 2px 0 #8b0000, 0 0 30px #ff4500, 0 0 60px #ff0000; animation: rank-impact-mega 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards, aura-burning 1.5s infinite 0.8s; }
+.res-rank-b { color: #16b5ea; text-shadow: 2px 2px 0 #074587, 0 0 20px #90eff1, 0 0 40px #3680e0; }
+.res-rank-c { color: rgb(42, 185, 54); text-shadow: 2px 2px 0 #c7edb8, 0 0 10px #dcf5c1, 0 0 20px #26d557; }
+.res-rank-d { color: rgb(0, 0, 0); text-shadow: 2px 2px 0 #000000, 0 0 5px #707070, 0 0 10px #000000; }
+
+@keyframes rank-impact-ultra { 0% { transform: scale(5) rotate(-5deg); opacity: 0; filter: blur(10px); } 40% { transform: scale(0.8) rotate(2deg); opacity: 1; filter: blur(0px); } 60% { transform: scale(1.1) rotate(-1deg); } 80% { transform: scale(0.95) rotate(0.5deg); } 100% { transform: scale(1) rotate(0deg); } }
+@keyframes aura-pulse-mega { 0%, 100% { text-shadow: 3px 3px 0 #b8860b, 0 0 30px gold, 0 0 60px orange; filter: brightness(1.0); } 50% { text-shadow: 3px 3px 0 #b8860b, 0 0 50px gold, 0 0 80px #ffcc00, 0 0 120px #fff; filter: brightness(1.2); } }
+@keyframes rank-impact-mega { 0% { transform: scale(3); opacity: 0; } 50% { transform: scale(0.9); opacity: 1; } 75% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+/* =========================================
+   苦手エリア (POP & すりガラス & ゴールドスクロール)
+   ========================================= */
+.result-box.weak-box {
+    /* 左側(.score-big-container)と全く同じ設定 */
+    background: rgba(218, 212, 228, 0.4) !important; /* 明るい半透明 */
+    border: 2px solid rgba(255, 255, 255, 0.3) !important; /* 枠線 */
+    border-radius: 20px !important; /* 角丸 */
+    box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2) !important; /* 内側の光沢 */
+    
+    backdrop-filter: blur(10px);
+    padding: 10px 15px;
+    
+    /* レイアウト維持 */
+    display: flex;
+    flex-direction: column;
+    max-height: 140px;
+    overflow: hidden;
+}
+
+/* リスト部分（文字色などの調整） */
+.weak-list {
+    font-family: 'M PLUS Rounded 1c', sans-serif !important;
+    font-weight: 700;
+    color: #eee;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2); /* 視認性確保の影 */
+    
+    overflow-y: auto;
+    flex-grow: 1;
+    padding-right: 5px;
+    margin: 0;
+    padding-left: 0;
+    list-style: none;
+}
+
+/* 区切り線 */
+.weak-list li {
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.4);
+    padding: 4px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* ラベル (苦手な単語/キー) */
+.label-small {
+    font-family: 'M PLUS Rounded 1c', sans-serif !important;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    
+    /* 左端のオレンジ線 */
+    border-left: 4px solid #ff8800;
+    padding-left: 8px;
+    margin-bottom: 8px;
+    flex-shrink: 0;
+}
+
+/* スクロールバーのデザイン */
+.weak-list::-webkit-scrollbar {
+    width: 6px;
+}
+.weak-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 3px;
+}
+.weak-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/* 単語省略設定 */
+.weak-text {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+    text-align: left;
+}
+
+/* ミス回数 */
+.miss-count {
+    font-family: 'Fredoka One', sans-serif;
+    color: #ff9eb5 !important; /* パステルピンク */
+    text-shadow: 1px 1px 0 #fff; /* 白フチ */
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+/* --- カスタムスクロールバー (POPなゴールド) --- */
+.weak-list::-webkit-scrollbar {
+    width: 12px; /* 少し太め */
+}
+
+/* 軌道 */
+.weak-list::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.15); /* 暗めの背景でコントラスト */
+    border-radius: 10px;
+    margin: 5px 0;
+}
+
+/* つまみ (ここをゴールドに) */
+.weak-list::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%); /* ゴールドグラデ */
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.5); /* 白枠でぷっくり感 */
+    background-clip: padding-box;
+}
+
+/* つまみホバー時 */
+.weak-list::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #fff700 0%, #ffcc00 100%);
+}
+
+/* ラベル (苦手な単語/キー) */
+.label-small {
+    font-family: 'M PLUS Rounded 1c', sans-serif !important;
+    font-weight: 500;
+    font-size: 0.7rem;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+    
+    background: rgba(251, 191, 122, 0.8); /* オレンジ背景 */
+    padding: 4px 12px;
+    border-radius: 10px;
+    border: 2px solid #fff;
+    
+    margin-bottom: 5px;
+    display: inline-block;
+    width: fit-content;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1);
+}
+
+/* --- 2. リザルトフッター (ボタン & アイコン) --- */
+.result-footer-area {
+    width: 100%; height: 80px; position: relative;
+    display: flex; justify-content: center; align-items: center; 
+    margin-top: 15px; z-index: 2000;
+}
+
+/* 中央のボタン群 */
+.result-buttons { 
+    display: flex; gap: 15px; justify-content: center; align-items: center; position: relative; z-index: 2010;
+}
+
+.res-btn { appearance: none; -webkit-appearance: none; border: none; outline: none; background: none; font-family: 'Fredoka One', cursive, sans-serif; font-size: 1.3rem; letter-spacing: 1px; padding: 12px 30px; border-radius: 50px; cursor: pointer; position: relative; transition: transform 0.1s ease, box-shadow 0.1s ease; text-shadow: none; }
+.res-btn.primary { background: #ff4757; color: white; border: 3px solid #fff; box-shadow: 0 6px 0 #c41e3a, 0 10px 10px rgba(0,0,0,0.3); }
+.res-btn.primary:hover { background: #ff6b81; transform: translateY(-2px); box-shadow: 0 8px 0 #c41e3a, 0 15px 20px rgba(255, 71, 87, 0.4); }
+.res-btn.primary:active { transform: translateY(4px); box-shadow: 0 2px 0 #c41e3a; }
+.res-btn.secondary { background: #ffffff; color: #555; border: 3px solid #eee; box-shadow: 0 6px 0 #ccc, 0 10px 10px rgba(0,0,0,0.2); }
+.res-btn.secondary:hover { background: #f1f2f6; color: #ff8800; transform: translateY(-2px); box-shadow: 0 8px 0 #ccc, 0 15px 20px rgba(0,0,0,0.2); }
+.res-btn.secondary:active { transform: translateY(4px); box-shadow: 0 2px 0 #ccc; }
+
+/* 右端のシェアアイコン群 */
+.result-share-group {
+    position: absolute; right: 0px; top: 50%; transform: translateY(-50%);
+    display: flex; gap: 10px; z-index: 3000; pointer-events: auto !important;
+}
+
+/* アイコンボックス (ID指定で強制適用) */
+#result-screen .share-icon-box {
+    width: 50px; height: 50px; display: flex; justify-content: center; align-items: center;
+    background: rgba(255, 255, 255, 0.25); border: 2px solid rgba(255, 255, 255, 0.6); border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2); backdrop-filter: blur(4px);
+    transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    cursor: pointer !important; pointer-events: auto !important; position: relative; text-decoration: none;
+}
+#result-screen .share-icon-box:hover {
+    transform: translateY(-5px) scale(1.1) !important; background: rgba(255, 255, 255, 0.6) !important; border-color: #ffffff !important;
+    box-shadow: 0 8px 15px rgba(0,0,0,0.3) !important;
+}
+#result-screen .share-icon-box:active {
+    transform: translateY(2px) scale(0.95) !important; background: rgba(255, 255, 255, 0.4) !important;
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1) !important; transition: transform 0.05s ease !important;
+}
+#result-screen .share-icon-box img {
+    width: 32px !important; height: 32px !important; object-fit: contain; pointer-events: none !important;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); transition: transform 0.2s ease;
+}
+#result-screen .share-icon-box:hover img { transform: scale(1.1); }
+
+/* NEW RECORD バッジ */
+#new-record-badge { position: absolute; top: -10px; right: 23px; white-space: nowrap; background: linear-gradient(40deg, #ff8080, #ffc489, #ffff9b, #a3ffa3, #8282ff, #dfb3ff, #d87eff); background-size: 300% 300%; color: #fff; font-family: 'Fredoka One', cursive; font-size: 0.6rem; padding: 2px 16px; border-radius: 40px; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 20; animation: rainbowAnim 3s ease infinite, floatUp 0.7s ease-out forwards; opacity: 0; }
+#new-record-badge.hidden { display: none; }
+@keyframes rainbowAnim { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes floatUp { 0% { transform: translateY(10px) scale(0.8); opacity: 0; } 100% { transform: translateY(0) scale(1); opacity: 1; } }
+
+/* アニメーション用クラス */
+.fade-target { opacity: 0; transform: translateY(20px); transition: opacity 0.5s ease-out, transform 0.5s ease-out; visibility: hidden; }
+.fade-target.visible { opacity: 1; transform: translateY(0); visibility: visible; }
+
+/* Perfect演出 */
+#perfect-container { position: absolute; top: 170px; left: 35.5%; width: 0; height: 0; overflow: visible; z-index: 9999; pointer-events: none; }
+.perfect-item { position: absolute; left: -250px; transform: translateX(-50%); white-space: nowrap; font-family: "Mochiy Pop P One", sans-serif; font-size: 35px; font-weight: 900; background: linear-gradient(180deg, #fff700 0%, #ff8800 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 10px rgba(0,0,0,0.5)); animation: floatUpPerfect 0.4s ease-out forwards; }
+@keyframes floatUpPerfect { 0% { opacity: 0; transform: translate(-50%, 30px); } 20% { opacity: 1; } 50% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, 20px); } }
+
+/* スコアポップアップ */
+#score-popups { position: absolute; top: -10px; left: 100%; width: 200px; pointer-events: none; z-index: 20; }
+.score-popup { position: absolute; font-family: 'Fredoka One', sans-serif; font-weight: bold; font-size: 30px; opacity: 0; white-space: nowrap; top: 0; left: 0; }
+@keyframes popup-normal { 0% { opacity: 0; transform: translateY(10px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.2); } 80% { opacity: 1; transform: translateY(-20px) scale(1.0); } 100% { opacity: 0; transform: translateY(-40px) scale(1.0); } }
+@keyframes popup-rainbow { 0% { opacity: 0; transform: translateY(20px) scale(0.5) rotate(-10deg); } 15% { opacity: 1; transform: translateY(0) scale(1.5) rotate(0deg); } 80% { opacity: 1; transform: translateY(-20px) scale(1.2); } 100% { opacity: 0; transform: translateY(-50px) scale(1.5); } }
+@keyframes popup-miss { 0% { opacity: 0; transform: translateY(-10px); } 20% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(30px) rotate(10deg); } }
+.popup-normal { color: #ffffff; -webkit-text-stroke: 1px #000; text-shadow: 2px 2px 0px rgba(0,0,0,0.3); animation: popup-normal 0.4s ease-out forwards; }
+.popup-gold { color: #FFD700; -webkit-text-stroke: 1px #8B4500; text-shadow: 2px 2px 0px #fff; font-size: 32px; animation: popup-normal 1.0s ease-out forwards; }
+.popup-rainbow { background: linear-gradient(to right, #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff); background-clip: text; color: transparent; -webkit-text-stroke: 1px rgba(255,255,255,0.8); filter: drop-shadow(2px 2px 0px rgba(0,0,0,0.5)); font-size: 40px; animation: popup-rainbow 1.5s ease-out forwards; }
+.popup-miss { color: #ff3333; -webkit-text-stroke: 1px #fff; font-size: 24px; animation: popup-miss 0.8s ease-in forwards; }
