@@ -15,9 +15,9 @@ export type ScorePopup = { id: number; text: string; type: 'popup-normal' | 'pop
 export type PerfectPopup = { id: number }; 
 
 const RANK_THRESHOLDS = {
-    EASY:   { S: 400000,  A: 250000, B: 125000, C: 50000 },
-    NORMAL: { S: 800000,  A: 500000, B: 300000, C: 150000 },
-    HARD:   { S: 1200000, A: 800000, B: 500000, C: 250000 }
+    EASY:   { S: 500000,  A: 250000, B: 125000, C: 50000 },
+    NORMAL: { S: 900000,  A: 500000, B: 300000, C: 150000 },
+    HARD:   { S: 1300000, A: 800000, B: 500000, C: 250000 }
 };
 
 export const useTypingGame = (difficulty: DifficultyLevel) => {
@@ -307,7 +307,7 @@ export const useTypingGame = (difficulty: DifficultyLevel) => {
       if (nextCombo <= 100) {
           if (nextCombo > 0 && nextCombo % 20 === 0) timeBonus = 1;
       } else if (nextCombo <= 200) {
-          if ((nextCombo - 100) % 20 === 0) { timeBonus = 3; isLarge = false; }
+          if ((nextCombo - 100) % 25 === 0) { timeBonus = 3; isLarge = false; }
       } else {
           if ((nextCombo - 200) % 30 === 0) { timeBonus = 5; isLarge = true; }
       }

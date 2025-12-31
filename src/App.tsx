@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { supabase } from './supabase';
 import './App.css';
 import { type DifficultyLevel, DIFFICULTY_SETTINGS } from './utils/setting';
 import { 
@@ -8,6 +9,21 @@ import {
 } from './utils/audio';
 import { drawReadyAnimation, drawGoAnimation } from './utils/transitions';
 import { useTypingGame } from './hooks/useTypingGame';
+
+const NG_WORDS = [
+  // 【暴言・攻撃的】
+  '死ね', '殺す', '殺し', '自殺', 'うざ', '消えろ', 'ゴミ', 'クズ', 'カス', 'キチガイ', '障害',
+  
+  // 【性的・卑猥】
+  'sex', 'porn', 'エロ', 'セックス', 'オナニー', 'やりたい', '風俗', 'アダルト', '変態', '乳', '精子', 
+  'ペニス', 'マンコ', 'クリトリス', 'バイブ', 'ホモ', 'レズ', '犯す',
+  
+  // 【汚物・その他】
+  'うんこ', 'うんち', '糞',
+  
+  // 【英語のNG】
+  'fuck', 'shit', 'bitch', 'asshole', 'whore', 'dick', 'pussy', 'cock'
+];
 
 const preloadImages = () => {
   const images = [
@@ -43,6 +59,32 @@ function App() {
   const [hoverDifficulty, setHoverDifficulty] = useState<DifficultyLevel | null>(null);
   const [isWhiteFade, setIsWhiteFade] = useState(false);
 
+  // ① プレイヤー名（前回の続きがあればそれを復元、なければGuest）
+  const [playerName, setPlayerName] = useState(() => {
+    // ローカルストレージ（ブラウザの記憶）をチェック
+    const savedName = localStorage.getItem('typing_player_name');
+    // 保存データがあればそれを使う。なければ 'Guest'
+    return savedName || 'Guest';
+  });
+
+  // ② 「今日、名前確認が終わったか？」のフラグ (初回プレイ判定用)
+  const [isNameConfirmed, setIsNameConfirmed] = useState(false);
+
+  // ③ タイトル画面の状態 ('normal'=ロゴ表示中, 'input'=名前入力中)
+  const [titlePhase, setTitlePhase] = useState<'normal' | 'input' | 'confirm'>('normal');
+
+  // ★追加：ユーザーID（ブラウザごとの固有ID）
+  const [userId] = useState(() => {
+    // 保存されたIDがあるか探す
+    let id = localStorage.getItem('typing_user_id');
+    // なければ新しく作って保存（これが会員証発行！）
+    if (!id) {
+      id = crypto.randomUUID(); 
+      localStorage.setItem('typing_user_id', id);
+    }
+    return id;
+  });
+
   // 遷移中フラグ
   const [isTransitioning, setIsTransitioning] = useState(false);
   // 操作ロックフラグ (アニメーション中の連打防止)
@@ -53,6 +95,12 @@ function App() {
   const [enableBounce, setEnableBounce] = useState(false);
   const [isTitleExiting, setIsTitleExiting] = useState(false);
 
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle'); //データ保存用
+
+  // --- ランキング機能 ---
+  const [rankingData, setRankingData] = useState<any[]>([]); // データを入れる箱
+  const [showRanking, setShowRanking] = useState(false);     // 画面を表示するフラグ
+
   // リザルト・スコア関連
   const [highScore, setHighScore] = useState(0); 
   const [isNewRecord, setIsNewRecord] = useState(false);
@@ -61,6 +109,7 @@ function App() {
   // リザルトアニメーション管理
   const [resultAnimStep, setResultAnimStep] = useState(0);
   const resultTimersRef = useRef<number[]>([]);
+  const hasSaved = useRef(false); // 保存したかどうかを覚えておく変数
 
   const [isFinishExit, setIsFinishExit] = useState(false);
 
@@ -122,6 +171,87 @@ function App() {
     }, 1500);
   }, []);
 
+  // ① スタート時の処理（クリック・スペースキー共通）
+  const handleStartSequence = () => {
+    // アニメーション中などは操作を受け付けない
+    if (isTitleExiting || isInputLocked) return;
+
+    // A. 名前確認済みなら → そのまま難易度選択へ (既存の通り)
+    if (isNameConfirmed) {
+      goToDifficulty();
+      return;
+    }
+
+    // B. 初回なら → 名前入力画面へ
+    // ★ここを変更！いきなり表示せず、まずはタイトルを退場させる
+    playDecisionSound();
+    setIsInputLocked(true);  // 連打防止
+    setIsTitleExiting(true); // タイトルとボタンを画面外へ飛ばすアニメ開始
+
+    // アニメーションが終わるのを待ってから (0.8秒後)、入力欄を表示
+    setTimeout(() => {
+      setIsTitleExiting(false); // アニメ状態解除
+      setIsInputLocked(false);  // ロック解除
+      setTitlePhase('input');   // ★ここで初めて入力欄を表示！
+    }, 700);
+  };
+
+const handleNameSubmit = () => {
+  const trimmedName = playerName.trim();
+  const MAX_LENGTH = 10; //10文字制限
+  
+  // ① 空文字チェック（スペースのみも禁止）
+  if (!trimmedName) {
+    // プレイネームを空にして、プレースホルダーを表示させるか、Guestにする
+    setPlayerName('Guest'); 
+    // ※あるいは alert("名前を入力してください"); return; でもOK
+  }
+
+  // ② ★追加：文字数オーバーのチェック
+  if (trimmedName.length > MAX_LENGTH) {
+    alert(`名前は${MAX_LENGTH}文字以内で入力してください！(現在${trimmedName.length}文字)`);
+    return; // ここで止める
+  }
+
+  // ③ NGワードチェック（実装済み）
+  const isNg = NG_WORDS.some(word => 
+    trimmedName.toLowerCase().includes(word.toLowerCase())
+  );
+  if (isNg) {
+    alert("その名前は使用できません（不適切な言葉が含まれています）🙅‍♂️");
+    setPlayerName(""); 
+    return; 
+  }
+
+  // --- 全てクリアしたら次へ ---
+  
+  // 入力欄の見た目をトリム済みのきれいな名前に更新しておく
+  setPlayerName(trimmedName || 'Guest');
+  
+  playDecisionSound();
+  setTitlePhase('confirm');
+};
+
+// ② 確認画面で「これでOK」を押した時の処理（★新規追加）
+const handleFinalConfirm = () => {
+  // ここで初めて保存！
+  localStorage.setItem('typing_player_name', playerName);
+  playDecisionSound();
+  startSelectBgm();
+  
+  // 即座に難易度選択へ移動
+  setIsNameConfirmed(true);
+  setGameState('difficulty');
+  setTitlePhase('normal');
+};
+
+// ③ 確認画面で「戻る」を押した時の処理（★新規追加）
+const handleBackToInput = () => {
+  playDecisionSound();
+  // 入力画面に戻す
+  setTitlePhase('input');
+};
+
   // リサイズ
   useEffect(() => {
     const handleResize = () => {
@@ -177,12 +307,119 @@ function App() {
     }
   }, [timeLeft, gameState, playPhase, score, highScore, difficulty]);
 
+const saveScore = useCallback(async () => {
+    if (saveStatus === 'saving' || saveStatus === 'success') return;
+    if (score <= 0) {
+        setSaveStatus('success'); 
+        return;
+    }
+
+    setSaveStatus('saving');
+
+    try {
+      // ① ★変更：名前ではなく「ユーザーID」で過去の自分を探す
+      const { data: existingData, error: fetchError } = await supabase
+        .from('scores')
+        .select('*')
+        .eq('user_id', userId) // ★IDが一致するデータを探す
+        .eq('difficulty', difficulty)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+         throw fetchError;
+      }
+
+      // ② 自分のデータが見つかった場合
+      if (existingData) {
+        // 自己ベスト更新なら上書き
+        if (score > existingData.score) {
+          console.log("ハイスコア更新！");
+          const { error: updateError } = await supabase
+            .from('scores')
+            .update({
+               name: playerName, // 名前を変えていたらここも更新される
+               score: score,
+               correct: correctCount,
+               miss: missCount,
+               backspace: backspaceCount,
+               combo: maxCombo,
+               speed: currentSpeed,
+            })
+            .eq('id', existingData.id); // レコードIDで指定して更新
+
+          if (updateError) throw updateError;
+        }
+      } 
+      // ③ 新規データの場合
+      else {
+        console.log("新規データ作成");
+        const { error: insertError } = await supabase
+          .from('scores')
+          .insert([{
+            user_id: userId, // ★ここで会員証IDを書き込む
+            name: playerName,
+            difficulty: difficulty,
+            score: score,
+            correct: correctCount,
+            miss: missCount,
+            backspace: backspaceCount,
+            combo: maxCombo,
+            speed: currentSpeed,
+          }]);
+          
+        if (insertError) throw insertError;
+      }
+
+      setSaveStatus('success');
+
+    } catch (error: any) {
+      console.error('❌ 保存エラー:', error.message);
+      setSaveStatus('error');
+    }
+  }, [difficulty, score, correctCount, missCount, backspaceCount, maxCombo, currentSpeed, saveStatus, playerName, userId]);
+
+const fetchRanking = async (targetDiff?: DifficultyLevel) => {
+  // 引数があればそれを、なければ今の difficulty state を使う
+  const searchDiff = targetDiff || difficulty; 
+  
+  // ★重要：モーダルのタイトルがズレないように、stateも更新しておく
+  if (targetDiff) {
+    setDifficulty(targetDiff);
+  }
+
+  console.log("ランキング取得開始:", searchDiff);
+  
+  const { data, error } = await supabase
+    .from('scores')
+    .select('*')
+    .eq('difficulty', searchDiff) // ★ここを searchDiff に変更
+    .order('score', { ascending: false })
+    .limit(10);
+
+  if (error) {
+    console.error('ランキング取得エラー:', error);
+  } else {
+    setRankingData(data || []);
+    setShowRanking(true);
+  }
+};
+
+const closeRanking = () => {
+  setShowRanking(false);
+};
+
   // リザルト画面のアニメーション制御 & データ保存
   useEffect(() => {
     if (gameState === 'result') {
+        // まだ保存していなければ実行
+        if (!hasSaved.current) {
+          saveScore();
+          hasSaved.current = true; // 1回送ったら「保存済み」にする
+        }
+        
         const storageKey = `typing_hiscore_${difficulty}`;
         const savedScore = parseInt(localStorage.getItem(storageKey) || "0", 10);
-        
+
         let diff = 0;
         if (score > savedScore) {
             setIsNewRecord(true);
@@ -277,6 +514,11 @@ function App() {
         drawReadyAnimation(ctx, canvas.width, canvas.height, state.readyY, readyImageRef.current, state.showEnterText);
       }
       else if (playPhase === 'go') {
+        // すでにfalseなら何もしない、trueの時だけ1回リセットする
+        if (hasSaved.current !== false) {
+           hasSaved.current = false;
+        }
+
         if (state.goScale < 1.0) state.goScale += 0.1;
         drawGoAnimation(ctx, canvas.width, canvas.height, state.goScale);
       }
@@ -297,6 +539,8 @@ function App() {
     playDecisionSound();
     stopGameBGM(); 
     resetGame(); 
+    hasSaved.current = false;
+    setSaveStatus('idle'); // ★ここに追加！
     setPlayPhase('ready'); 
     animState.current = {
       readyY: -800,
@@ -319,6 +563,7 @@ function App() {
   const retryGame = () => {
       // 難易度再選択と同じ処理
       if (isTransitioning) return;
+      setSaveStatus('idle'); //表示状態を元に戻す
       setIsTransitioning(true);
       playDecisionSound();
       resetGame();
@@ -332,6 +577,7 @@ function App() {
           setGameState('playing');
           setIsTransitioning(false);
           setIsInputLocked(false);
+          hasSaved.current = false; // ★次のプレイのためにリセット！
       }, 50);
   };
 
@@ -343,62 +589,6 @@ function App() {
       }
   };
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      e.stopImmediatePropagation();
-
-      if (e.key !== "Escape") {
-          if (
-            ["Shift", "Alt", "Meta", "Control", "Tab", "CapsLock", "Insert", "Delete", "Home", "End", "PageUp", "PageDown", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) ||
-            e.key.startsWith("F")
-          ) return;
-      }
-
-      if (e.isComposing || ["Process", "KanaMode", "Conversion", "NonConvert"].includes(e.code)) return;
-
-      const state = animState.current;
-
-      if (gameState === 'playing' && playPhase === 'ready' && !state.isReadyAnimating) {
-        if (e.key === 'Enter') {
-          playStartSound();
-          setPlayPhase('go');
-          state.goScale = 0;
-          setTimeout(() => {
-            setPlayPhase('game');
-            startGame();
-            playGameBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
-          }, 1000);
-        } else if (e.key === 'Escape') {
-           backToDifficulty();
-        }
-      }
-
-      else if (gameState === 'playing' && playPhase === 'game') {
-        if (e.key === 'Escape') {
-            e.preventDefault();
-            resetToReady();
-            return;
-        }
-        if (e.key === 'Backspace') {
-            e.preventDefault();
-            handleBackspaceRef.current(); 
-            return;
-        }
-        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-            handleKeyInputRef.current(e.key.toLowerCase());
-        }
-      }
-
-      else if (gameState === 'result') {
-          handleResultKeyAction(e.key);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown, true);
-    return () => window.removeEventListener('keydown', handleKeyDown, true);
-  }, [gameState, playPhase, startGame, difficulty, resultAnimStep]);
-
-  
   const goToDifficulty = () => {
     // ロック中は無視
     if (isTitleExiting || isInputLocked) return;
@@ -417,6 +607,65 @@ function App() {
     }, 600);
   };
 
+  // キーボード操作の監視
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // e.stopImmediatePropagation(); // 必要ならコメントイン
+
+      // 特殊キーやIME入力中の除外処理
+      if (e.key !== "Escape") {
+         if (["Shift", "Alt", "Meta", "Control", "Tab", "CapsLock", "Insert", "Delete", "Home", "End", "PageUp", "PageDown", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key) || e.key.startsWith("F")) return;
+      }
+      if (e.isComposing || ["Process", "KanaMode", "Conversion", "NonConvert"].includes(e.code)) return;
+
+      // ★★★ ここから下、消えていたゲーム操作を復活！ ★★★
+      const state = animState.current;
+
+      // READYフェーズ（Enterで開始）
+      if (gameState === 'playing' && playPhase === 'ready' && !state.isReadyAnimating) {
+        if (e.key === 'Enter') {
+          playStartSound();
+          setPlayPhase('go');
+          state.goScale = 0;
+          setTimeout(() => {
+            setPlayPhase('game');
+            startGame();
+            playGameBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
+          }, 1000);
+        } else if (e.key === 'Escape') {
+           backToDifficulty();
+        }
+      }
+
+      // GAMEフェーズ（タイピング入力）
+      else if (gameState === 'playing' && playPhase === 'game') {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            resetToReady();
+            return;
+        }
+        if (e.key === 'Backspace') {
+            e.preventDefault();
+            handleBackspaceRef.current(); 
+            return;
+        }
+        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+            handleKeyInputRef.current(e.key.toLowerCase());
+        }
+      }
+
+      // RESULTフェーズ
+      else if (gameState === 'result') {
+          handleResultKeyAction(e.key);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
+    
+    // 依存配列
+  }, [gameState, playPhase, startGame, difficulty, resultAnimStep, handleStartSequence]);
+
   const handleSelectDifficulty = (diff: DifficultyLevel) => {
     // ロック中は無視
     if (isTransitioning || isInputLocked) return;
@@ -427,6 +676,7 @@ function App() {
     playDecisionSound();
     setDifficulty(diff);
     resetGame();
+    setSaveStatus('idle'); // ★ここに追加！
     setIsFinishExit(false);
     setIsWhiteFade(false);
     
@@ -447,6 +697,7 @@ function App() {
         setIsTransitioning(false);
         // ゲーム画面に行ったらロック解除
         setIsInputLocked(false);
+        hasSaved.current = false; // ここでリセット
     }, 50);
   };
 
@@ -454,6 +705,8 @@ function App() {
     playDecisionSound();
     stopSelectBgm();
     stopGameBGM();
+    hasSaved.current = false;
+    setSaveStatus('idle'); // ★ここに追加！
     
     setGameState('title');
     setShowTitle(false); 
@@ -545,18 +798,63 @@ function App() {
 
           <canvas ref={canvasRef} id="myCanvas" className={gameState === 'playing' ? '' : 'hidden'} style={{zIndex: 15, position:'relative', pointerEvents:'none'}} />
 
-          {/* TITLE */}
+          {/* TITLE SCREEN */}
           {gameState === 'title' && (
-            <div id="title-screen" style={{position:'relative', zIndex: 5}}>
-              {/* isInputLocked時は no-click クラスを付与 */}
-              <div className={`title-anim-wrapper ${showTitle ? 'visible' : ''} ${isTitleExiting ? 'exit-up' : ''} ${isInputLocked ? 'no-click' : ''}`}>
-                  <h1 className={`game-title ${enableBounce ? 'bouncing' : ''}`}>CRITICAL TYPING</h1>
+            <div className="title-screen">
+              
+              {/* --- 通常のタイトル画面 (入力・確認モード中は退場アニメ) --- */}
+              <div 
+                 className={`title-content-wrapper ${titlePhase !== 'normal' ? 'exit' : 'enter'}`}
+                 style={{display: 'flex', flexDirection:'column', alignItems:'center', width:'100%'}}
+              >
+                  {/* ★修正1: isTitleExiting を追加 */}
+                  <div className={`title-anim-wrapper ${showTitle ? 'visible' : ''} ${(titlePhase !== 'normal' || isTitleExiting) ? 'exit-up' : ''}`}>
+                      <h1 className={`game-title ${enableBounce ? 'bouncing' : ''}`}>CRITICAL TYPING</h1>
+                  </div>
+
+                  {/* ★修正2: isTitleExiting を追加 */}
+                  <div className={`main-menu-buttons fade-element ${showTitle ? 'visible' : ''} ${(titlePhase !== 'normal' || isTitleExiting) ? 'exit-down' : ''}`}>
+                    <button className="menu-btn" onClick={(e) => { e.stopPropagation(); handleStartSequence(); }}>ゲームスタート</button>
+                    <button className="menu-btn">遊び方</button>
+                    <button className="menu-btn">設定</button>
+                  </div>
               </div>
-              <div className={`main-menu-buttons fade-element ${showTitle ? 'visible' : ''} ${isTitleExiting ? 'exit-down' : ''} ${isInputLocked ? 'no-click' : ''}`}>
-                <button className="menu-btn" onClick={goToDifficulty}>ゲームスタート</button>
-                <button id="btn-how-to-play" className="menu-btn">遊び方</button>
-                <button id="btn-settings" className="menu-btn">設定</button>
-              </div>
+
+              {/* --- 名前入力モード (ポップなUI) --- */}
+              {titlePhase === 'input' && (
+                <div className="pop-modal-frame fade-in-pop" onClick={e => e.stopPropagation()}>
+                  <label className="pop-label">名前を入力して下さい</label>
+                  <input
+                    type="text"
+                    className="pop-input"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    maxLength={10}
+                    placeholder="Guest"
+                    autoFocus
+                  />
+                  <div style={{marginTop:'25px'}}>
+                    <button className="pop-btn primary" onClick={handleNameSubmit}>OK</button>
+                  </div>
+                  <p className="pop-note">※名前はあとからでも変更出来ます</p>
+                </div>
+              )}
+
+              {/* --- 確認モード (ポップなUI) --- */}
+              {titlePhase === 'confirm' && (
+                <div className="pop-modal-frame fade-in-pop" onClick={e => e.stopPropagation()}>
+                  <label className="pop-label">以下の名前で始めます。<br/>よろしいですか？</label>
+                  
+                  <div className="confirm-name-disp">{playerName}</div>
+                  
+                  <div style={{marginTop:'25px', display:'flex', justifyContent:'center'}}>
+                    <button className="pop-btn" onClick={handleBackToInput}>戻る</button>
+                    <button className="pop-btn primary" onClick={handleFinalConfirm}>はい</button>
+                  </div>
+                  <p className="pop-note">※名前は後からでも変更できます。</p>
+                </div>
+              )}
+
             </div>
           )}
 
@@ -577,7 +875,7 @@ function App() {
                 <div className={`diff-info-panel visible`}>
                     <>
                       <div className="diff-header-group">
-                          <img src="/images/ranking.png" alt="Ranking" className="crown-icon-only" />
+                          <img src="/images/ranking.png" alt="Ranking" className="crown-icon-only" onClick={() => fetchRanking(displayDiff)}/>
                           <div className="diff-hiscore-box">
                               <span className="label">HI-SCORE</span>
                               <span id="menu-hiscore-val">{displayHighScore.toLocaleString()}</span>
@@ -614,7 +912,17 @@ function App() {
                           </div>
                           {/* 句読点判定クラスを付与 */}
                           <div id="jp-line" className={hasPunctuation ? "has-punctuation" : ""}>{jpText}</div>
-                          <div id="full-roma">{allSegments.map((seg, i) => (<span key={i} className="segment-group">{seg.display.split('').map((char, charIdx) => (<span key={charIdx} style={{opacity: charIdx < seg.inputBuffer.length ? 0.3 : 1}}>{char}</span>))}</span>))}</div>
+                          <div id="full-roma" className={hasPunctuation ? "has-punctuation" : ""}>
+                          {allSegments.map((seg, i) => (
+                            <span key={i} className="segment-group">
+                              {seg.display.split('').map((char, charIdx) => (
+                                <span key={charIdx} style={{ opacity: charIdx < seg.inputBuffer.length ? 0.3 : 1 }}>
+                                  {char}
+                                </span>
+                              ))}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                       {bonusPopups.map(p => (<div key={p.id} className={`bonus-pop ${p.type}`}>{p.text}</div>))}
                       <div id="rank-monitor" style={{whiteSpace:'nowrap'}}>RANK <span id="rank-value" className={`rank-${rank.toLowerCase()}`}>{rank}</span></div>
@@ -690,14 +998,91 @@ function App() {
                       <button id="btn-Esc-to-difficulty" className="res-btn secondary" onClick={(e) => { e.stopPropagation(); backToDifficulty(); }}>難易度選択へ (Esc)</button>
                       <button id="btn-back-to-title" className="res-btn secondary" onClick={(e) => { e.stopPropagation(); backToTitle(); }}>タイトルへ</button>
                   </div>
+
                   <div className="result-share-group" style={{position:'absolute', right:'10px', display:'flex', gap:'10px'}}>
-                      <div className="share-icon-box crown-box"><img src="/images/ranking.png" alt="Ranking" style={{width:'30px', height:'30px', objectFit:'contain'}} /></div>
-                      <a href={getShareUrl()} target="_blank" rel="noopener noreferrer" id="btn-share-x" className="share-icon-box x-box" onClick={(e) => e.stopPropagation()}><img src="/images/X.jpg" alt="Share on X" style={{width:'30px', height:'30px', objectFit:'contain'}} /></a>
+                      <div className="share-icon-box crown-box" onClick={(e) => { e.stopPropagation(); fetchRanking(); }} style={{ cursor: 'pointer' }} ><img src="/images/ranking.png" alt="Ranking" style={{width:'30px', height:'30px', objectFit:'contain'}} /></div>
+                      <a href={getShareUrl()} target="_blank" rel="noopener noreferrer" id="btn-share-x" className="share-icon-box x-box" onClick={(e) => e.stopPropagation()}>
+                        <img src="/images/X.jpg" alt="Share on X" style={{width:'30px', height:'30px', objectFit:'contain'}} />
+                      </a>
                   </div>
               </div>
             </div>
           )}
         </div>
+        {/* ランキングモーダル */}
+        {showRanking && (
+        <div className="ranking-overlay" onClick={closeRanking}>
+          {/* ↓ className に動的なテーマクラスを追加しました */}
+          <div 
+            className={`ranking-modal rank-theme-${difficulty.toLowerCase()}`} 
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ヘッダー */}
+            <div className="ranking-header">
+              {/* タイトル文字色は白の方が見やすいので style を削除してCSSで制御します */}
+              <h2 className="ranking-title">
+                {difficulty}
+              </h2>
+              <button className="close-btn" onClick={closeRanking}>↩</button>
+            </div>
+
+            {/* リスト部分 */}
+            <div className="ranking-list">
+              {rankingData.map((item, index) => {
+                const rank = index + 1;
+                
+                // ★判定ロジック追加：自分かどうか？
+                const isMe = item.name === playerName;
+
+                const dateObj = new Date(item.created_at);
+                const year = dateObj.getFullYear();
+                const month = dateObj.getMonth() + 1;
+                const day = dateObj.getDate();
+                const hours = dateObj.getHours().toString().padStart(2, '0');
+                const minutes = dateObj.getMinutes().toString().padStart(2, '0');
+                const dateStr = `${year}/${month}/${day} ${hours}:${minutes}`;
+
+                return (
+                  // ★クラス名に条件追加：自分なら 'my-rank' クラスをつける
+                  <div key={item.id} className={`ranking-card rank-${rank} ${isMe ? 'my-rank' : ''}`}style={{ position: 'relative' }}>
+                    
+                    {/* ★自分なら「YOU」バッジを表示 */}
+                    {isMe && <div className="you-badge">YOU</div>}
+
+                    {/* 左側：順位 */}
+                    <div className="rank-badge">
+                      <span className="rank-num">{rank}</span>
+                    </div>
+
+                    {/* 中央：メイン情報 */}
+                    <div className="rank-info">
+                      <div className="rank-name-row">
+                        <span className="rank-name">{item.name}</span>
+                        <span className="rank-date">{dateStr}</span>
+                      </div>
+                      
+                      {/* スコア */}
+                      <div className="rank-score">{item.score.toLocaleString()}</div>
+                      
+                      {/* 詳細ステータス */}
+                      <div className="rank-stats-grid">
+                        <div className="stat-box c-green">Correct: {item.correct}</div>
+                        <div className="stat-box c-red">Miss: {item.miss}</div>                      
+                        <div className="stat-box c-blue">BS: {item.backspace}</div>
+                        <div className="stat-box c-cyan">Speed: {item.speed}</div>
+                        <div className="stat-box c-orange">MaxCombo: {item.combo}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+              {rankingData.length === 0 && (
+                <div style={{textAlign:'center', padding:'20px', fontFamily:'"Arial Rounded MT Bold", sans-serif'}}>No Data Yet</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );
