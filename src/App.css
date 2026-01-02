@@ -173,6 +173,19 @@ body {
   border: 4px solid #ffffff; box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 200, 255, 0.6);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2); transition: all 0.2s ease-out; position: relative; overflow: hidden;
 }
+
+/* --- ボタン内の光沢演出（ツヤっと感を出す） --- */
+.menu-btn::before {
+    content: '';
+    position: absolute;
+    top: 5%;
+    left: 10%;
+    width: 80%;
+    height: 40%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+}
+
 .menu-btn:hover { transform: translateY(-4px) scale(1.05); box-shadow: 0 0 15px rgba(253, 160, 133), 0 0 30px rgba(138, 43, 226); }
 .menu-btn:active { transform: translateY(-1px) scale(0.98); }
 
@@ -351,17 +364,40 @@ body {
 }
 
 .diff-btn {
-    width: 280px; padding: 12px 0; font-family: 'Mochiy Pop P One', sans-serif; font-size: 1.8rem; color: #fff;
+    width: 270px; padding: 12px 0; font-family: 'Mochiy Pop P One', sans-serif; font-size: 1.8rem; color: #fff;
     cursor: pointer; border-radius: 50px; border: 5px solid #fff; position: relative; overflow: hidden;
     transition: all 0.1s ease; text-shadow: 1px 1px 2px rgba(0,0,0,0.2); background: none;
     display: flex; justify-content: center; align-items: center; padding-top: 18px; padding-bottom: 12px; line-height: 1.0;
 }
+/* ツヤ感（変更なし） */
+.diff-btn::before {
+    content: '';
+    position: absolute;
+    top: 5px; left: 15%; width: 70%; height: 35%;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+}
 .diff-btn:hover { transform: translateY(-4px); filter: brightness(1.05); }
 .diff-btn:active { transform: translateY(4px); box-shadow: none !important; filter: brightness(0.95); }
 
-.diff-btn.easy { background: linear-gradient(135deg, #74ebd5 0%, #aee8ff 100%); box-shadow: 0 8px 0 #3ecfcf, 0 15px 20px rgba(255, 255, 255, 0.2); }
-.diff-btn.normal { background: linear-gradient(135deg, #90ff64 0%, #c1ffb2 100%); box-shadow: 0 8px 0 #54d618, 0 15px 20px rgba(255, 255, 255, 0.2); }
-.diff-btn.hard { background: linear-gradient(135deg, #ffff00 0%, #fff891 100%); box-shadow: 0 8px 0 #d4d600, 0 15px 20px rgba(255, 255, 255, 0.2); color: #5c5c00; }
+/* --- 難易度別の色設定（変更なし） --- */
+.diff-btn.easy {
+    background: linear-gradient(135deg, #74ebd5 0%, #aee8ff 100%);
+    box-shadow: 0 8px 0 #3ecfcf, 0 15px 20px rgba(255, 255, 255, 0.2); /* 影色を調整 */
+}
+.diff-btn.normal {
+    background: linear-gradient(135deg, #90ff64 0%, #c1ffb2 100%);
+    box-shadow: 0 8px 0 #54d618, 0 15px 20px rgba(255, 255, 255, 0.2);
+}
+.diff-btn.hard {
+    background: linear-gradient(135deg, #ffff00 0%, #fff891 100%);
+    box-shadow: 0 8px 0 #d4d600, 0 15px 20px rgba(255, 255, 255, 0.2);
+    color: #5c5c00; /* 黄色背景なので文字を少し濃くしても良いかも */
+}
+.diff-btn#btn-back {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+    box-shadow: 0 8px 0 #ff758c, 0 15px 20px rgba(255, 255, 255, 0.2);
+}
 .diff-btn#btn-back { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%); box-shadow: 0 8px 0 #ff758c, 0 15px 20px rgba(255, 255, 255, 0.2); }
 
 .diff-info-panel {
@@ -385,16 +421,82 @@ body {
 .crown-icon-only:hover { transform: scale(1.1); background: rgba(255, 255, 255, 0.4); filter: brightness(1.2); }
 .crown-icon-only:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.1); }
 
+/* --- ハイスコア表示ボックス（修正版） --- */
 .diff-hiscore-box {
-    background: rgba(0, 0, 0, 0.5); padding: 4px 20px; border-radius: 20px; border: 2px solid rgba(232, 255, 253, 0.8);
-    display: flex; align-items: center; gap: 10px; font-family: 'Fredoka One', cursive; color: #ffd700;
-    text-shadow: 1px 1px 0 rgba(0,0,0,0.5); font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    /* ▼ 変更・追加部分 ▼ */
+    min-width: 310px;           /* 横長にする */
+    justify-content: space-between; /* 中身を左右（ラベル群 vs スコア）に離す */
+    padding: 2.5px 12px;          /* 少しゆとりを持たせる */
+    
+    /* ▼ 既存のデザイン維持 ▼ */
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 20px; /* お好みで30pxくらいに丸めても可愛いです */
+    border: 2px solid rgba(232, 255, 253, 0.8);
+    display: flex;
+    align-items: center;
+    /* gap: 10px;  <-- space-betweenを使うので親のgapは削除か0でOK */
+    
+    font-family: 'Fredoka One', cursive;
+    color: #ffd700;
+    text-shadow: 1px 1px 0 rgba(0,0,0,0.5);
+    font-size: 1.2rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
-.diff-hiscore-box .label { font-size: 0.9rem; color: #ddd; }
+
+/* ★NEW: 左側の「ラベル＋ボタン」をまとめるグループ */
+.hiscore-label-group {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* 文字とボタンの間隔 */
+}
+
+/* 既存のラベル調整 */
+.diff-hiscore-box .label {
+    font-size: 1rem;
+    color: #ddd;
+    margin: 0; /* 余白リセット */
+}
+
+/* ★NEW: 詳細へ飛ぶ丸いボタン */
+.hiscore-detail-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    color: #fff;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    /* アイコンがない場合は文字サイズ調整 */
+    font-size: 1rem; 
+    padding: 0;
+}
+
+.hiscore-detail-btn:hover {
+    background: #fff;
+    color: #333;
+    transform: scale(1.1);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+/* スコア数値（既存維持＋微調整） */
 #menu-hiscore-val {
-    font-family: 'M PLUS Rounded 1c', monospace; font-variant-numeric: tabular-nums;
-    font-size: 1.6rem; color: #fff; text-shadow: 0 0 10px rgba(255, 215, 0, 0.6); line-height: 1;
-    min-width: 140px; text-align: right; display: inline-block;
+    font-family: 'M PLUS Rounded 1c', monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: bold;
+    font-size: 1.6rem; /* 箱が大きくなったので少し大きく */
+    color: #fff;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+    line-height: 1;
+    min-width: 140px;
+    text-align: right;
+    display: inline-block;
 }
 
 #display-diff-name {
@@ -422,6 +524,22 @@ body {
    ========================================= */
 #game-hud { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 20; pointer-events: none; }
 
+/* App.css の一番下などに追加 */
+.blink-guide {
+  animation: blink-anim 1.5s infinite ease-in-out;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: bold;
+  font-size: 1.4rem;
+  text-shadow: 0 0 10px rgba(249, 182, 255, 0.5);
+  pointer-events: none; /* クリックを邪魔しない */
+}
+
+@keyframes blink-anim {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
 #score-container {
     position: absolute; bottom: 25px; left: 30px; font-family: 'Fredoka One', monospace; font-size: 40px; color: #faffe5;
     text-shadow: 2px 2px 0 #000; z-index: 100;
@@ -442,7 +560,7 @@ body {
     border: 10px solid rgb(216, 249, 255); border-radius: 40px; background: rgb(21, 97, 191); white-space: nowrap;
 }
 #romaji-line { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 35px; color: #fff; letter-spacing: 0.08rem; font-weight: 650; text-shadow: 2px 2px 4px black; margin-bottom: 5px; line-height: 1.2; }
-#jp-line { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 45px; font-weight: 750; color: #ffffffdd; line-height: 1.2; text-shadow: 2px 2px 0 #000; letter-spacing: 0.05rem; margin-bottom: 5px; }
+#jp-line { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 43px; font-weight: 750; color: #ffffffdd; line-height: 1.2; text-shadow: 2px 2px 0 #000; letter-spacing: 0.05rem; margin-bottom: 5px; }
 #full-roma { font-family: "M PLUS Rounded 1c", sans-serif; font-size: 35px; font-weight: 650; color: #c4fff8; letter-spacing: 0.08rem; line-height: 1; }
 
 #rank-monitor {
@@ -974,44 +1092,6 @@ body {
   letter-spacing: 7px;
   text-transform: uppercase;
 }
-/* 閉じるボタン (丸くてポップな戻るボタン) */
-.close-btn {
-  width: 60px;
-  height: 60px;
-  background: #fff;       /* 白い背景 */
-  border-radius: 50%;     /* まんまるにする */
-  
-  font-size: 2.5rem;     /* 絵文字の大きさ */
-  font-weight: bold;
-  color: #d6d6d6;            /* 絵文字の色（環境によっては絵文字自体の色が優先されます） */
-  
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  
-  /* 立体感を出す影 */
-  box-shadow: 0 4px 0 #ddd;
-  transition: transform 0.1s, box-shadow 0.1s;
-  
-  /* 絵文字の微妙なズレを直す（必要なら調整） */
-  padding-right: 2px; 
-  padding-bottom: 3px;
-}
-
-/* ホバー時（少し沈む） */
-.close-btn:hover {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #ddd;
-  background: #f9f9f9;
-  border-color: #e0e0e0;
-}
-
-/* クリック時（さらに沈む） */
-.close-btn:active {
-  transform: translateY(4px);
-  box-shadow: none;
-}
 
 /* リストエリア */
 .ranking-list {
@@ -1215,4 +1295,541 @@ body {
 @keyframes popBadge {
   0% { transform: scale(0); }
   100% { transform: scale(1); }
+}
+
+/* --- ランキング画面のヘッダーボタン修正 --- */
+
+/* ヘッダー内のタイトルとボタン群を横並びにするコンテナ */
+.ranking-header {
+  display: flex;
+  justify-content: space-between; /* タイトル左、ボタン右 */
+  align-items: center;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+/* ボタンを横並びにするラッパー */
+.ranking-header-buttons {
+  display: flex;
+  gap: 15px; /* ボタン同士の間隔 */
+  align-items: center;
+}
+
+/* 閉じるボタン (頂いたコードを適用) */
+.close-btn {
+  width: 50px; /* 少しサイズ調整（画面からはみ出ないように） */
+  height: 50px;
+  background: #fff;
+  border-radius: 50%;
+  
+  font-size: 2rem; /* 絵文字サイズ */
+  font-weight: bold;
+  color: #d6d6d6;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  
+  box-shadow: 0 4px 0 #ddd;
+  transition: transform 0.1s, box-shadow 0.1s;
+  border: 2px solid #eee; /* 薄い枠線を追加 */
+  padding-bottom: 4px; /* 絵文字の微調整 */
+}
+
+.close-btn:hover {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #ddd;
+  background: #f9f9f9;
+  border-color: #e0e0e0;
+}
+
+.close-btn:active {
+  transform: translateY(4px);
+  box-shadow: none;
+}
+
+/* =========================================
+   設定画面 (CONFIG MODAL) - トワイライトPOP
+   ========================================= */
+
+/* 1. 画面全体を覆う背景 */
+.config-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* 紫がかった夕暮れの暗がりをイメージ */
+  background: rgba(20, 10, 40, 0.75);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px); /* ぼかしを強めて没入感を出す */
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 2. 設定ウィンドウ本体 */
+.config-modal {
+  /* トワイライトグラデーション：深い紫から夕焼けピンクへ */
+  background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
+  
+  /* 枠線は白で太く丸く（POP感） */
+  border: 4px solid #ffe0cb;
+  border-radius: 40px;
+  
+  /* 影をふんわりピンクに光らせる */
+  box-shadow: 
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    0 0 0 6px rgba(255, 247, 217, 0.9), /* 外側の半透明枠 */
+    0 0 40px rgba(255, 196, 125, 0.9); /* ピンクの光 */
+    
+  padding: 40px;
+  width: 800px;
+  max-width: 90%;
+  text-align: center;
+  color: #ffffff;
+  font-family: "M PLUS Rounded 1c", sans-serif; /* 丸文字フォント推奨 */
+}
+
+/* 3. タイトル (SETTING) */
+.config-title {
+  font-size: 3rem;
+  margin-bottom: 30px;
+  font-weight: 800;
+  color: #fff;
+  
+  /* 文字にオレンジの縁取り（夕日感） */
+  text-shadow: 
+    2px 2px 0px #ff9a9e, 
+    4px 4px 0px rgba(0,0,0,0.2);
+    
+  /* 下線は点線で可愛く */
+  border-bottom: 3px dashed rgba(255, 255, 255, 0.5);
+  padding-bottom: 15px;
+  letter-spacing: 0.1em;
+}
+
+/* 4. 各設定項目 */
+.config-item {
+  margin-bottom: 40px;
+  text-align: left;
+  background: rgba(0, 0, 0, 0.2); /* 項目ごとに薄い座布団を敷く */
+  padding: 15px 20px;
+  border-radius: 20px;
+}
+
+/* 5. チェックボックス周り */
+.config-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  font-size: 1.3rem;
+  color: #fff;
+  font-weight: 700;
+}
+
+.config-label input[type="checkbox"] {
+  /* ブラウザ標準の見た目を消す */
+  appearance: none;
+  -webkit-appearance: none;
+  
+  width: 28px;
+  height: 28px;
+  background: #fff;
+  border-radius: 8px;
+  margin-right: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s;
+  border: 2px solid #ffecd2;
+}
+
+/* チェックされた時の見た目（オレンジのチェックマーク） */
+.config-label input[type="checkbox"]:checked {
+  background: #ff9a9e; /* ピンクオレンジ */
+  border-color: #fff;
+}
+
+.config-label input[type="checkbox"]:checked::after {
+  content: '✔';
+  position: absolute;
+  color: #fff;
+  font-size: 20px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* 6. スライダー周り */
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+  color: #ffecd2; /* 薄いオレンジ */
+  font-weight: bold;
+}
+
+/* スライダー本体 */
+.volume-slider {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.3); /* 半透明の白 */
+  border-radius: 10px;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+}
+
+/* スライダーの「つまみ」 (Chrome/Safari) - 夕日っぽいオレンジ玉 */
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 26px;
+  height: 26px;
+  background: #fbc2eb; /* パステルピンク */
+  border: 3px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.volume-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2); /* ホバーで少し大きくなる */
+}
+
+/* スライダーの「つまみ」 (Firefox) */
+.volume-slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  background: #fbc2eb;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 無効化（グレーアウト） */
+.config-item.disabled {
+  opacity: 0.5;
+  filter: grayscale(80%);
+  pointer-events: none;
+}
+
+/* 7. 閉じるボタン */
+.config-buttons button.pop-btn.primary {
+  background: linear-gradient(135deg, hsl(42, 100%, 65%) 0%, #ffa442 40%, #d8a4ff 100%);
+  color: #fffce0; /* 背景色と同じ濃いピンク */
+  font-weight: 800;
+  border: none;
+  padding: 12px 50px;
+  border-radius: 50px;
+  font-size: 1.2rem;
+  box-shadow: 0 5px 2px #ffc9b4;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.config-buttons button.pop-btn.primary:active {
+  transform: scale(0.95);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* 開発者スコアボタン（王冠）の特別色 */
+.close-btn.dev-btn {
+  color: #ffd700; /* 王冠の色 */
+  border-color: #ffd700;
+  background: #fff;
+}
+
+.close-btn.dev-btn:hover {
+  background: #fffbe6;
+}
+
+/* 地球儀ボタン（通常ランクへ戻る） */
+.close-btn.global-btn {
+  color: #00bfff;
+  border-color: #00bfff;
+}
+
+/* --- 製作者スコアPOP（特別カード） --- */
+.dev-score-pop-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.dev-score-card {
+    background: linear-gradient(130deg, hsl(234, 99%, 72%) 5%, #eaa7ff 70%, #ff8efd 100%);
+    border: 3px solid #ffd112; /* 親のcolor(テーマ色)を引き継ぐ */
+    border-radius: 20px;
+    padding: 25px;
+    width: 90%;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+}
+
+.dev-label {
+    font-size: 1.4rem;
+    color: yellow;
+    font-weight: bold;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    display: inline-block;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 5px;
+}
+
+.dev-main-score {
+    font-size: 3.0rem;
+    font-weight: 900;
+    color: #f5a6ea;
+    letter-spacing: 1px;
+    line-height: 1;
+    margin: 0px 0 10px 0;
+    text-shadow: 2px 2px 0px #ddd;
+}
+
+/* グリッド自体の調整：1列にして縦に並べる */
+.dev-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr; /* ★ここを1frにして縦1列表示に変更 */
+    gap: 10px; /* 縦並びなので間隔を少し調整 */
+    background: rgba(0, 0, 0, 0.3); 
+    padding: 15px;
+    border-radius: 15px;
+    /* 縦長になりすぎないようスクロール等の調整が必要ならここに追加 */
+}
+
+/* 各アイテムを中央揃えにしてポップなシールのように */
+.dev-stat-item {
+    display: flex;
+    flex-direction: row; /* ★縦並びリストっぽく、ラベルと数値を横並びに変更 */
+    justify-content: space-between; /* 左右に配置 */
+    align-items: center; 
+    border-bottom: 1px dashed rgba(255,255,255,0.2); /* 区切り線を追加 */
+    padding-bottom: 5px;
+}
+.dev-stat-item:last-child {
+    border-bottom: none;
+}
+
+/* ラベル (Correct, Miss...) の共通設定 */
+.dev-stat-item span:first-child {
+    font-size: 1.4rem; /* 少し大きく */
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 0; /* 横並びにするので下の余白は削除 */
+}
+
+/* 数値の共通設定 */
+.dev-stat-item .dev-stat-val {
+    font-size: 2.0rem;
+    font-weight: 900;
+    line-height: 1;
+}
+
+/* --- 色とエフェクトの適用 --- */
+
+/* 1. Correct (Green) */
+.dev-stat-item:nth-child(1) span:first-child,
+.dev-stat-item:nth-child(1) .dev-stat-val {
+    color: #2ecc71;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+/* 2. Miss (Red) */
+.dev-stat-item:nth-child(2) span:first-child,
+.dev-stat-item:nth-child(2) .dev-stat-val {
+    color: #e74c3c;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+/* 3. BackSpace (Blue) ★ここに追加 */
+.dev-stat-item:nth-child(3) span:first-child,
+.dev-stat-item:nth-child(3) .dev-stat-val {
+    color: #3498db;
+    text-shadow: 1px 1px 0 #fff;
+}
+
+/* 4. Speed (Cyan) ★順番が4番目に */
+.dev-stat-item:nth-child(4) span:first-child,
+.dev-stat-item:nth-child(4) .dev-stat-val {
+    color: #00bcd4;
+    text-shadow: 2px 2px 0 #fff;
+}
+/* Speedの単位(key/s) */
+.dev-stat-item:nth-child(4) .dev-stat-val span {
+    font-size: 1rem;
+    color: #00bcd4;
+    text-shadow: 1px 1px 0 #fff;
+    font-weight: 700;
+    margin-left: 5px;
+}
+
+/* 5. MaxCombo (Orange) ★順番が5番目に */
+.dev-stat-item:nth-child(5) span:first-child,
+.dev-stat-item:nth-child(5) .dev-stat-val {
+    background: linear-gradient(45deg, #f1c40f, #e67e22);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent; 
+    filter: drop-shadow(2px 2px 0px rgba(255,255,255,0.8));
+}
+
+.dev-pop-back-btn:hover { transform: translateY(-1px); filter: brightness(1.05); }
+.dev-pop-back-btn:active { transform: translateY(1px); box-shadow: none !important; filter: brightness(0.95); }
+
+/* =========================================
+   遊び方画面 (HOW TO PLAY)
+   ========================================= */
+
+/* 設定画面より少し横長にする */
+.config-modal.howto-modal {
+  width: 1400px;
+  padding: 30px 40px;
+  text-align: left; /* 基本は左揃え */
+}
+
+/* 遊び方画面のタイトルだけ中央揃えにする */
+.config-title {
+  text-align: center;
+  width: 100%; /* 幅を確保して中央に配置 */
+}
+
+/* 2カラムレイアウト */
+.howto-grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* 左右均等 */
+  gap: 40px;
+  max-height: 60vh; /* 画面が小さい時はスクロール */
+  overflow-y: auto;
+  padding-right: 10px; /* スクロールバー分の余白 */
+}
+
+/* 各カラム */
+.howto-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 見出し */
+.howto-heading {
+  font-size: 1.5rem;
+  color: #ffecd2; /* 薄いオレンジ */
+  border-bottom: 2px dashed rgba(255, 255, 255, 0.4);
+  padding-bottom: 5px;
+  margin-bottom: 10px;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-weight: bold;
+  text-align: center;
+}
+
+.howto-list li {
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  line-height: 1.5;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.howto-list .icon {
+  font-size: 1.4rem;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+
+/* テキスト（右側） */
+.howto-text {
+  font-size: 1.3rem;
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+
+/* ハイライト文字 */
+.highlight { color: #00ffff; font-weight: bold; }
+.highlight-orange { color: #ffa500; font-weight: bold; text-shadow: 0 0 5px rgba(255, 165, 0, 0.5); }
+.highlight-green { color: #7fff00; font-weight: bold; text-shadow: 0 0 5px rgba(127, 255, 0, 0.5); }
+.highlight-blue { color: #00bfff; font-weight: bold; }
+.highlight-gold { color: #ffd700; font-weight: bold; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+
+/* 注釈 */
+.note {
+  font-size: 0.85rem;
+  color: #ccc;
+  display: block;
+  margin-top: 2px;
+}
+.red-note { color: #ff6b6b; font-weight: bold; }
+
+/* キー入力例ボックス */
+.key-example-box {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 15px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.key-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 5px 0;
+}
+.key-row:last-child { border-bottom: none; }
+
+.key-char {
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.key-val {
+  font-family: monospace;
+  font-size: 1.1rem;
+  color: #ff9a9e; /* ピンク */
+  font-weight: bold;
+}
+
+/* モバイル対応：縦並びにする */
+@media (max-width: 768px) {
+  .howto-grid-container {
+    grid-template-columns: 1fr; /* 1カラム */
+    gap: 20px;
+  }
+  .config-modal.howto-modal {
+    width: 95%;
+    padding: 20px;
+  }
+}
+
+/* 遊び方画面のボタンエリアを右寄せにする */
+.config-modal.howto-modal .config-buttons {
+  display: flex;             /* フレックスボックスであることを保証 */
+  width: 100%;               /* 横幅を親要素いっぱいまで広げる */
+  justify-content: flex-end; /* 右寄せ */
 }

@@ -1,3 +1,5 @@
+// utils/audio.ts
+
 // ★修正: 足りないキーを追加
 export type SoundKey = 
   'type' | 'miss' | 'correct' | 'gauge' | 'combo' | 'result' | 
@@ -5,11 +7,10 @@ export type SoundKey =
   'rankS' | 'rankA' | 'rankB' | 'rankC' | 'rankD';
 
 // 音声ファイルのパス定義
-// ※実際のファイル名とパスが一致しているか再確認してください
 const AUDIO_PATHS: Record<SoundKey, string> = {
     decision: "/bgm/決定.mp3",
     start:    "/bgm/start.mp3",
-    diff:     "/bgm/303PM.wav", // 難易度選択BGM用? SEならここ
+    diff:     "/bgm/303PM.wav",
     type:     "/bgm/key.mp3",
     bs:       "/bgm/BackSpace.mp3",
     combo:    "/bgm/決定ボタンを押す26.mp3",
@@ -18,18 +19,42 @@ const AUDIO_PATHS: Record<SoundKey, string> = {
     miss:     "/bgm/小キック.mp3",
     finish:   "/bgm/finish.mp3",
     result:   "/bgm/result.mp3",
-    // ランクSE
     rankS:    "/bgm/rankS.mp3",
     rankA:    "/bgm/rankA.mp3",
     rankB:    "/bgm/rankB.mp3",
     rankC:    "/bgm/rankC.mp3",
     rankD:    "/bgm/rankD.mp3",
-    // cancelキーの定義が漏れていた場合のダミー（必要ならファイルを用意）
     cancel:   "/bgm/決定.mp3" 
 };
 
 const audioCache: Partial<Record<SoundKey, HTMLAudioElement>> = {};
 let bgmAudio: HTMLAudioElement | null = null;
+
+// ★追加: 音量管理用変数 (初期値)
+let isSystemMuted = false;
+let bgmVolume = 0.5;
+let seVolume = 0.8;
+
+// ★追加: 外部から音量を変更する関数
+export const setVolumes = (bgm: number, se: number) => {
+    bgmVolume = bgm;
+    seVolume = se;
+
+    // 再生中のBGMがあればリアルタイムで音量を反映
+    if (bgmAudio) {
+        bgmAudio.volume = isSystemMuted ? 0 : bgmVolume;
+    }
+};
+
+// ★追加: ミュート切り替え関数
+export const setSystemMute = (mute: boolean) => {
+    isSystemMuted = mute;
+
+    // BGM再生中なら、ミュート時は音量0、解除時は設定音量に戻す
+    if (bgmAudio) {
+        bgmAudio.volume = mute ? 0 : bgmVolume;
+    }
+};
 
 // 音声を事前読み込み
 export const initAudio = () => {
@@ -42,23 +67,30 @@ export const initAudio = () => {
 
 // 効果音を再生
 export const playSE = (key: SoundKey) => {
-    const audio = audioCache[key];
-    if (audio) {
-        audio.currentTime = 0;
-        audio.play().catch((e) => console.warn(`Sound error: ${key}`, e));
-    } else {
-        // キャッシュになければ都度生成（パスがあれば）
+    // ★追加: ミュート時は再生しない
+    if (isSystemMuted) return;
+
+    let audio = audioCache[key];
+    if (!audio) {
+        // キャッシュになければ都度生成
         const path = AUDIO_PATHS[key];
         if (path) {
-            new Audio(path).play().catch((e) => console.warn(`Sound error: ${key}`, e));
+            audio = new Audio(path);
+        } else {
+            return;
         }
     }
+
+    // 再生設定
+    audio.currentTime = 0;
+    audio.volume = seVolume; // ★追加: SE音量を適用
+    audio.play().catch((e) => console.warn(`Sound error: ${key}`, e));
 };
 
 // 個別の便利関数
 export const playDecisionSound = () => playSE('decision');
 export const playStartSound    = () => playSE('start');
-export const playDiffSound     = () => playSE('diff'); // ★エラー解消
+export const playDiffSound     = () => playSE('diff');
 export const playTypeSound     = () => playSE('type');
 export const playBsSound       = () => playSE('bs');
 export const playCorrectSound  = () => playSE('correct');
@@ -68,7 +100,6 @@ export const playMissSound     = () => playSE('miss');
 export const playFinishSound   = () => playSE('finish');
 export const playResultSound   = () => playSE('result');
 
-// ★ランク系SE関数 (エラー解消)
 export const playRankSSound    = () => playSE('rankS');
 export const playRankASound    = () => playSE('rankA');
 export const playRankBSound    = () => playSE('rankB');
@@ -77,17 +108,19 @@ export const playRankDSound    = () => playSE('rankD');
 
 // BGM再生
 export const playGameBGM = (path: string) => {
-    if (bgmAudio) {
-        bgmAudio.pause();
-    }
+    // 既に鳴っているBGMがあれば止める
+    stopGameBGM();
+
     bgmAudio = new Audio(path);
     bgmAudio.loop = true;
-    bgmAudio.volume = 0.5;
+    bgmAudio.volume = isSystemMuted ? 0 : bgmVolume; // ★追加: 設定音量か0かを判定
     bgmAudio.play().catch(() => {});
 };
 
 export const startSelectBgm = () => {
-    // 難易度選択画面のBGMパスが合っているか確認
+    // 既に同じ曲が流れているなら何もしない（重複防止）
+    if (bgmAudio && !bgmAudio.paused && bgmAudio.src.includes('303PM.wav')) return;
+    
     playGameBGM('/bgm/303PM.wav'); 
 };
 
