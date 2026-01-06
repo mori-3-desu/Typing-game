@@ -7,17 +7,10 @@ import {
   playGameBGM, stopGameBGM, playStartSound, playFinishSound,
   playResultSound, playRankSSound, playRankASound, playRankBSound, playRankCSound, playRankDSound
 } from './utils/audio';
-import { setSystemMute, setVolumes } from './utils/audio';
+import { setVolumes } from './utils/audio';
+import { useConfig } from './hooks/useConfig';
 import { drawReadyAnimation, drawGoAnimation } from './utils/transitions';
-import { useTypingGame } from './hooks/useTypingGame';
-
-const NG_WORDS = [
-  '死ね', '殺す', '殺し', '自殺', 'うざ', '消えろ', 'ゴミ', 'クズ', 'カス', 'キチガイ', '障害',
-  'sex', 'porn', 'エロ', 'セックス', 'オナニー', 'やりたい', '風俗', 'アダルト', '変態', '乳', '精子', 
-  'ペニス', 'マンコ', 'クリトリス', 'バイブ', 'ホモ', 'レズ', '犯す',
-  'うんこ', 'うんち', '糞',
-  'fuck', 'shit', 'bitch', 'asshole', 'whore', 'dick', 'pussy', 'cock'
-];
+import { useTypingGame, type WordDataMap } from './hooks/useTypingGame';
 
 const preloadImages = () => {
   const images = [
@@ -59,6 +52,17 @@ type GameState = 'loading' | 'title' | 'difficulty' | 'playing' | 'finishing' | 
 type PlayPhase = 'ready' | 'go' | 'game';
 
 function App() {
+  const { 
+    isMuted, setIsMuted, 
+    bgmVol, setBgmVol, 
+    seVol, setSeVol, 
+    showRomaji, setShowRomaji 
+  } = useConfig();
+
+  // 設定画面用のState
+  const [tempPlayerName, setTempPlayerName] = useState('');
+  const [nameError, setNameError] = useState('');
+
   const [gameState, setGameState] = useState<GameState>('loading');
   const [difficulty, setDifficulty] = useState<DifficultyLevel>('NORMAL');
   const [playPhase, setPlayPhase] = useState<PlayPhase>('ready');
@@ -67,15 +71,19 @@ function App() {
   const [hoverDifficulty, setHoverDifficulty] = useState<DifficultyLevel | null>(null);
   const [isWhiteFade, setIsWhiteFade] = useState(false);
 
+  // プレイヤー名（保存されたものを読み込む）
   const [playerName, setPlayerName] = useState(() => {
     const savedName = localStorage.getItem('typing_player_name');
     return savedName || 'Guest';
   });
 
+  // 名前決定済みフラグ（保存されていれば true）
   const [isNameConfirmed, setIsNameConfirmed] = useState(() => {
     const savedName = localStorage.getItem('typing_player_name');
     return !!savedName; 
   })
+
+  const [ngWordsList, setNgWordsList] = useState<string[]>([]);
 
   const [titlePhase, setTitlePhase] = useState<'normal' | 'input' | 'confirm'>('normal');
 
@@ -102,15 +110,18 @@ function App() {
   const [showRanking, setShowRanking] = useState(false);
   const [isDevRankingMode, setIsDevRankingMode] = useState(false);
 
+  // 単語データ
+  const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
+
   // リザルト・スコア関連
   const [highScore, setHighScore] = useState(0); 
   const [isNewRecord, setIsNewRecord] = useState(false);
   const [scoreDiff, setScoreDiff] = useState(0);
-  
+   
   // 閲覧モード用の詳細データ保持
   const [reviewData, setReviewData] = useState<any>(null);
 
-  // ★追加: 直前のゲーム結果を固定保持するためのステート
+  // 直前のゲーム結果を固定保持するためのステート
   const [lastGameStats, setLastGameStats] = useState<any>(null);
 
   const [resultAnimStep, setResultAnimStep] = useState(0);
@@ -119,6 +130,7 @@ function App() {
 
   const [isFinishExit, setIsFinishExit] = useState(false);
 
+  // useTypingGame
   const { 
     score, displayScore, combo, comboClass, timeLeft, jpText, romaState, 
     handleKeyInput, handleBackspace, startGame, resetGame,
@@ -128,58 +140,149 @@ function App() {
     missedWordsRecord, missedCharsRecord, isTimeAdded, isRainbowMode, bonusPopups, perfectPopups, scorePopups,
     setElapsedTime, currentSpeed,
     setTimeLeft 
-  } = useTypingGame(difficulty);
+  } = useTypingGame(difficulty, dbWordData);
+
+  // 現在入力中の単語のミス数を追跡
+  const currentWordMissRef = useRef(0);
+  const prevMissCountRef = useRef(0);
+  const prevWordRef = useRef("");
+
+  useEffect(() => {
+    if (jpText !== prevWordRef.current) {
+      currentWordMissRef.current = 0;
+      prevWordRef.current = jpText;
+    }
+    
+    if (missCount > prevMissCountRef.current) {
+      currentWordMissRef.current += (missCount - prevMissCountRef.current);
+    }
+    
+    prevMissCountRef.current = missCount;
+  }, [missCount, jpText]);
+
+  // アプリ起動時に Supabase から単語リストとNGワードを取得
+  useEffect(() => {
+    const fetchAllData = async () => {
+      try {
+        // ------------------------------------------
+        // 1. ゲーム用単語データの取得 (wordsテーブル)
+        // ------------------------------------------
+        const { data: wordsData, error: wordsError } = await supabase
+          .from('words')
+          .select('jp, roma, difficulty');
+
+        if (wordsError) throw wordsError;
+
+        if (wordsData) {
+          const formattedData: WordDataMap = {
+            EASY: [],
+            NORMAL: [],
+            HARD: []
+          };
+
+          wordsData.forEach((row: any) => {
+            if (formattedData[row.difficulty]) {
+              formattedData[row.difficulty].push({
+                jp: row.jp,
+                roma: row.roma
+              });
+            }
+          });
+
+          setDbWordData(formattedData);
+          console.log("単語データロード完了");
+        }
+
+        // ------------------------------------------
+        // 2. NGワードの取得 (ng_wordsテーブル)
+        // ------------------------------------------
+        const { data: ngData, error: ngError } = await supabase
+          .from('ng_words')
+          .select('word'); // 'word'カラムだけ取得
+
+        if (ngError) throw ngError;
+
+        if (ngData) {
+          // DBの形 [{word: "xx"}, {word: "yy"}] を ["xx", "yy"] に変換
+          const list = ngData.map((item: any) => item.word);
+          
+          setNgWordsList(list); // Stateに保存
+          console.log("NGワードロード完了:", list);
+        }
+
+      } catch (err) {
+        console.error("データ取得に失敗:", err);
+      }
+    };
+
+    fetchAllData();
+  }, []);
 
   // ----------------------------------------------------
-  // ★追加: 設定画面用の変数と関数 (ここから)
+  // ★設定画面用の変数と関数
   // ----------------------------------------------------
-  
-  // 設定画面の表示フラグ
+   
   const [showConfig, setShowConfig] = useState(false);
 
-  // ミュート設定 (初期値は保存されたものがあればそれを使う)
-  const [isMuted, setIsMuted] = useState(() => {
-    return localStorage.getItem('typing_is_muted') === 'true';
-  });
-
-  // BGM音量 (0.0 ~ 1.0)
-  const [bgmVol, setBgmVol] = useState(() => parseFloat(localStorage.getItem('typing_bgm_vol') || "0.5"));
-  
-  // SE音量 (0.0 ~ 1.0)
-  const [seVol, setSeVol] = useState(() => parseFloat(localStorage.getItem('typing_se_vol') || "0.8"));
-
-  // ★追加: ローマ字ガイドを表示するかどうか (初期値: true)
-  const [showRomaji, setShowRomaji] = useState(() => {
-    const saved = localStorage.getItem('typing_show_romaji');
-    return saved === null ? true : saved === 'true';
-  });
-
-  // 設定が変わったら audio.ts に反映 & 保存
-  useEffect(() => {
-    setSystemMute(isMuted);
-    setVolumes(bgmVol, seVol);
-    
-    localStorage.setItem('typing_is_muted', isMuted.toString());
-    localStorage.setItem('typing_bgm_vol', bgmVol.toString());
-    localStorage.setItem('typing_se_vol', seVol.toString());
-    localStorage.setItem('typing_show_romaji', showRomaji.toString());
-  }, [isMuted, bgmVol, seVol, showRomaji]);
-
-  // 設定画面を開く
   const handleOpenConfig = () => {
     playDecisionSound();
+    setTempPlayerName(playerName);
+    setNameError(''); // エラーリセット
     setShowConfig(true);
   };
 
-  // 設定画面を閉じる
   const handleCloseConfig = () => {
     playDecisionSound();
     setShowConfig(false);
   };
 
+  const handleConfigNameSubmit = async () => {
+    const trimmedName = tempPlayerName.trim();
+    const MAX_LENGTH = 10;
+    
+    setNameError(''); // エラーリセット
+
+    if (!trimmedName) {
+      setNameError("名前を入力してください");
+      return;
+    }
+    if (trimmedName.length > MAX_LENGTH) {
+      setNameError(`名前は${MAX_LENGTH}文字以内で入力してください`);
+      return;
+    }
+
+    const isNg = ngWordsList.some(word => 
+      trimmedName.toLowerCase().includes(word.toLowerCase())
+    );
+
+    if (isNg) {
+      setNameError("不適切な文字が含まれています");
+      return; 
+    }
+
+    // ローカル保存
+    setPlayerName(trimmedName);
+    localStorage.setItem('typing_player_name', trimmedName);
+
+    // DB更新
+    try {
+      const { error } = await supabase
+        .from('scores')
+        .update({ name: trimmedName })
+        .eq('user_id', userId);
+
+      if (error) throw error;
+      console.log("過去のスコア名義も更新しました");
+    } catch (err) {
+      console.error("名前更新エラー:", err);
+    }
+
+    playDecisionSound();
+  };
+
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
-  
+   
   useEffect(() => {
     handleKeyInputRef.current = handleKeyInput;
     handleBackspaceRef.current = handleBackspace;
@@ -205,21 +308,25 @@ function App() {
     img.src = "/images/Ready.jpg";
     img.onload = () => { readyImageRef.current = img; };
 
-    setTimeout(() => {
-      setIsLoaded(true);
-      setGameState('title');
-      
-      setTimeout(() => { 
-          setShowTitle(true); 
-          setTimeout(() => {
-              setEnableBounce(true);
-              setIsInputLocked(false);
-          }, 1200);
-      }, 500); 
-    }, 1500);
-  }, []);
+    const checkLoad = setInterval(() => {
+        if (dbWordData) {
+            clearInterval(checkLoad);
+            setIsLoaded(true);
+            setGameState('title');
+            
+            setTimeout(() => { 
+                setShowTitle(true); 
+                setTimeout(() => {
+                    setEnableBounce(true);
+                    setIsInputLocked(false);
+                }, 1200);
+            }, 500); 
+        }
+    }, 100);
 
-  // --- 遊び方画面の表示フラグ ---
+    return () => clearInterval(checkLoad);
+  }, [dbWordData]);
+
   const [showHowToPlay, setShowHowToPlay] = useState(false);
 
   const handleOpenHowToPlay = () => {
@@ -232,13 +339,13 @@ function App() {
     setShowHowToPlay(false);
   };
 
-  // ★追加: 音量が変更されたら反映
   useEffect(() => {
     setVolumes(bgmVol, seVol);
     localStorage.setItem('typing_bgm_vol', bgmVol.toString());
     localStorage.setItem('typing_se_vol', seVol.toString());
   }, [bgmVol, seVol]);
 
+  // ★ タイトル画面で入力フォームを開く処理
   const handleStartSequence = () => {
     if (isTitleExiting || isInputLocked) return;
 
@@ -254,29 +361,39 @@ function App() {
     setTimeout(() => {
       setIsTitleExiting(false);
       setIsInputLocked(false);
+      setNameError(''); // ★エラーリセット
       setTitlePhase('input'); 
     }, 700);
   };
 
+  // ★ タイトル画面：入力キャンセル（タイトルロゴへ戻る）
+  const handleCancelInput = () => {
+    playDecisionSound();
+    setTitlePhase('normal');
+  };
+
+  // ★ タイトル画面：名前決定処理
   const handleNameSubmit = () => {
     const trimmedName = playerName.trim();
     const MAX_LENGTH = 10;
     
+    setNameError(''); // エラーリセット
+
     if (!trimmedName) {
       setPlayerName('Guest'); 
     }
 
-    if (trimmedName.length > MAX_LENGTH) {
-      alert(`名前は${MAX_LENGTH}文字以内で入力してください！(現在${trimmedName.length}文字)`);
+    if (trimmedName && trimmedName.length > MAX_LENGTH) {
+      setNameError(`名前は${MAX_LENGTH}文字以内で入力してください`);
       return;
     }
 
-    const isNg = NG_WORDS.some(word => 
+    const isNg = ngWordsList.some(word => 
       trimmedName.toLowerCase().includes(word.toLowerCase())
     );
+    
     if (isNg) {
-      alert("その名前は使用できません（不適切な言葉が含まれています）🙅‍♂️");
-      setPlayerName(""); 
+      setNameError("不適切な文字が含まれています");
       return; 
     }
 
@@ -328,17 +445,33 @@ function App() {
         stopGameBGM();
         playFinishSound();
 
-        // ★修正: ゲーム終了瞬間のスタッツを固定（スナップショット）
-        // フックの値はリセットされる可能性があるため、ここでコピーして保持する
+        let finalWeakWords = [...missedWordsRecord];
+        if (currentWordMissRef.current > 0) {
+            const existing = finalWeakWords.find(w => w.word === jpText);
+            if (existing) {
+                existing.misses += currentWordMissRef.current;
+            } else {
+                finalWeakWords.push({ 
+                    word: jpText, 
+                    misses: currentWordMissRef.current 
+                });
+            }
+        }
+
+        const sortedWeakWordsRecord = finalWeakWords
+            .sort((a, b) => b.misses - a.misses)
+            .slice(0, 5);
+
         setLastGameStats({
           score,
+          words: completedWords,
           correct: correctCount,
           miss: missCount,
           backspace: backspaceCount,
           combo: maxCombo,
           speed: currentSpeed,
           rank: rank,
-          weakWords: missedWordsRecord,
+          weakWords: sortedWeakWordsRecord,
           weakKeys: missedCharsRecord
         });
 
@@ -362,14 +495,17 @@ function App() {
             setIsFinishExit(false);
         }, 2500);
     }
-  }, [timeLeft, gameState, playPhase, score, highScore, difficulty, correctCount, missCount, backspaceCount, maxCombo, currentSpeed, rank, missedWordsRecord, missedCharsRecord]);
+  }, [
+      timeLeft, gameState, playPhase, score, highScore, difficulty, 
+      correctCount, missCount, backspaceCount, maxCombo, currentSpeed, rank, 
+      missedWordsRecord, missedCharsRecord, jpText
+  ]);
 
   const saveScore = useCallback(async () => {
     if (saveStatus === 'saving' || saveStatus === 'success') return;
     
-    // ★修正: lastGameStatsがある場合はそちらを優先（フックの値が0になっている対策）
     const targetStats = lastGameStats || {
-      score, correct: correctCount, miss: missCount, backspace: backspaceCount, combo: maxCombo, speed: currentSpeed
+      score, words: completedWords, correct: correctCount, miss: missCount, backspace: backspaceCount, combo: maxCombo, speed: currentSpeed
     };
 
     if (targetStats.score <= 0) {
@@ -404,6 +540,7 @@ function App() {
                backspace: targetStats.backspace,
                combo: targetStats.combo,
                speed: targetStats.speed,
+               created_at: new Date().toISOString()
             })
             .eq('id', existingData.id);
 
@@ -446,7 +583,7 @@ function App() {
     }
 
     setIsDevRankingMode(false);
-    setRankingData([]); // ★【追加】ここで一旦データを空にする！(チラつき防止)
+    setRankingData([]); 
 
     console.log("ランキング取得開始:", searchDiff);
     
@@ -494,7 +631,6 @@ function App() {
     playDecisionSound();
   };
 
-  // --- ゲーム結果表示 & ハイスコアローカル保存 ---
   useEffect(() => {
     if (gameState === 'result') {
         if (!hasSaved.current) {
@@ -505,9 +641,8 @@ function App() {
         const storageKey = `typing_hiscore_${difficulty.toLowerCase()}`;
         const dataKey = `typing_hiscore_data_${difficulty.toLowerCase()}`;
         
-        // ★修正: lastGameStatsを使用
         const currentStats = lastGameStats || {
-            score, correct: correctCount, miss: missCount, backspace: backspaceCount, 
+            score, words: completedWords, correct: correctCount, miss: missCount, backspace: backspaceCount, 
             combo: maxCombo, speed: currentSpeed, rank, weakWords: missedWordsRecord, weakKeys: missedCharsRecord
         };
 
@@ -515,16 +650,14 @@ function App() {
 
         let diff = 0;
         if (currentStats.score > savedScore) {
-            // 新記録の場合
             setIsNewRecord(true);
             setHighScore(currentStats.score); 
             
-            // スコア保存
             localStorage.setItem(storageKey, currentStats.score.toString());
             
-            // 詳細データ保存
             const highScoreData = {
                 score: currentStats.score,
+                words: currentStats.words,
                 correct: currentStats.correct,
                 miss: currentStats.miss,
                 backspace: currentStats.backspace,
@@ -538,7 +671,6 @@ function App() {
 
             diff = currentStats.score - savedScore;
         } else {
-            // 新記録でない場合
             setIsNewRecord(false);
             setHighScore(savedScore); 
             diff = currentStats.score - savedScore;
@@ -576,7 +708,6 @@ function App() {
     }
   }, [gameState, score, difficulty, rank, correctCount, missCount, backspaceCount, maxCombo, currentSpeed, missedWordsRecord, missedCharsRecord, lastGameStats]);
 
-  // 難易度が変わったらハイスコアを読み込む
   useEffect(() => {
     const savedScore = getSavedHighScore(difficulty);
     setHighScore(savedScore);
@@ -622,7 +753,7 @@ function App() {
 
       if (playPhase === 'ready') {
         if (state.isReadyAnimating) {
-          state.readyY += 15;
+          state.readyY += 30;
           if (state.readyY >= 0) {
             state.readyY = 0;
             state.isReadyAnimating = false;
@@ -671,8 +802,6 @@ function App() {
   const backToDifficulty = () => {
     playDecisionSound();
     
-    // ★修正: ハイスコア閲覧(hiscore_review)から戻る場合は、
-    // 既にセレクトBGMが流れているはずなので、BGMをリセットしない
     if (gameState !== 'hiscore_review') {
         stopGameBGM();
         startSelectBgm();
@@ -857,7 +986,7 @@ function App() {
         const savedScore = getSavedHighScore(displayDiff);
         setReviewData({
             score: savedScore,
-            correct: 0, miss: 0, backspace: 0, speed: 0, maxCombo: 0,
+            correct: 0, words: 0, miss: 0, backspace: 0, speed: 0, maxCombo: 0,
             rank: '-', weakWords: [], weakKeys: {}
         });
     }
@@ -884,14 +1013,13 @@ function App() {
 
   const hasPunctuation = jpText.endsWith('。') || jpText.endsWith('、');
 
-  // ★修正: リザルトデータの参照元
-  // 閲覧モードならreviewData、リザルトならlastGameStats(固定値)、それ以外はフックの値
   let targetResultData: any;
   if (gameState === 'hiscore_review' && reviewData) {
       targetResultData = {
           score: reviewData.score,
+          words: reviewData.words || 0,
           correct: reviewData.correct,
-          miss: reviewData.miss,
+          miss: reviewData.miss, 
           backspace: reviewData.backspace,
           speed: reviewData.speed,
           maxCombo: reviewData.maxCombo,
@@ -900,9 +1028,9 @@ function App() {
           weakKeys: reviewData.weakKeys || {}
       };
   } else if (gameState === 'result' && lastGameStats) {
-      // ★ここが重要: 終了時のスナップショットを使用
       targetResultData = {
           score: lastGameStats.score,
+          words: lastGameStats.words,
           correct: lastGameStats.correct,
           miss: lastGameStats.miss,
           backspace: lastGameStats.backspace,
@@ -913,9 +1041,9 @@ function App() {
           weakKeys: lastGameStats.weakKeys
       };
   } else {
-      // プレイ中など（念のため）
       targetResultData = {
           score: score,
+          words: completedWords,
           correct: correctCount,
           miss: missCount,
           backspace: backspaceCount,
@@ -967,6 +1095,7 @@ function App() {
           {/* TITLE SCREEN */}
           {gameState === 'title' && (
             <div className="title-screen">
+
               <div 
                  className={`title-content-wrapper ${titlePhase !== 'normal' ? 'exit' : 'enter'}`}
                  style={{display: 'flex', flexDirection:'column', alignItems:'center', width:'100%'}}
@@ -982,22 +1111,47 @@ function App() {
                   </div>
               </div>
 
+              {/* ▼▼▼ タイトル画面：名前入力（UI修正済） ▼▼▼ */}
               {titlePhase === 'input' && (
                 <div className="pop-modal-frame fade-in-pop" onClick={e => e.stopPropagation()}>
-                  <label className="pop-label">名前を入力して下さい</label>
+                  
+                  {/* 中央揃えのラベル */}
+                  <label className="pop-label" style={{textAlign:'center', width:'100%', margin:0}}>名前を入力して下さい</label>
+                  
+                  {/* 入力フォーム */}
                   <input
                     type="text"
-                    className="pop-input"
+                    className={`pop-input ${nameError ? 'input-error-shake' : ''}`}
                     value={playerName}
-                    onChange={(e) => setPlayerName(e.target.value)}
+                    onChange={(e) => {
+                        setPlayerName(e.target.value);
+                        if (nameError) setNameError(''); 
+                    }}
                     maxLength={10}
                     placeholder="Guest"
                     autoFocus
+                    style={{
+                        marginTop: '15px',
+                        transition: 'all 0.3s'
+                    }}
                   />
-                  <div style={{marginTop:'25px'}}>
+
+                  {/* 下段：エラーメッセージのみ表示（エラーがない時は注釈） */}
+                  <div style={{height:'20px', marginTop:'5px', width:'100%', textAlign:'center'}}>
+                    {nameError ? (
+                        <p className="error-fade-in" style={{fontSize:'0.85rem', color:'#ff4444', margin:0, fontWeight:'bold'}}>
+                          {nameError}
+                        </p>
+                    ) : (
+                        <p className="pop-note" style={{margin:0}}>※名前はあとからでも変更出来ます</p>
+                    )}
+                  </div>
+
+                  {/* ボタン（キャンセル追加！） */}
+                  <div style={{marginTop:'15px', display:'flex', gap:'15px', justifyContent:'center'}}>
+                    <button className="pop-btn" onClick={handleCancelInput}>キャンセル</button>
                     <button className="pop-btn primary" onClick={handleNameSubmit}>OK</button>
                   </div>
-                  <p className="pop-note">※名前はあとからでも変更出来ます</p>
                 </div>
               )}
 
@@ -1084,17 +1238,14 @@ function App() {
               <div id="perfect-container">{perfectPopups.map(p => (<div key={p.id} className="perfect-item">PERFECT!!</div>))}</div>
               <div id="center-area" style={{ opacity: (playPhase === 'game' && gameState !== 'finishing') ? 1 : 0, transition: 'opacity 0.2s' }}>
                   <div id="text-word-wrapper">
-                      {/* ▼▼▼ 修正箇所 ▼▼▼ */}
                   <div 
                       id="text-word" 
                       className={shakeStatus === 'light' ? "light-shake" : shakeStatus === 'error' ? "error-shake" : ""}
-                      /* 下のガイドが消えるときは、横の余白を少し詰めてスッキリさせます */
                       style={{ 
                           padding: showRomaji ? '20px 65px' : '20px 30px',
                           transition: 'padding 0.3s ease'
                       }}
                   >
-                      {/* 【修正1】ここは判定用なので、showRomajiに関係なく常に表示する！ */}
                       <div id="romaji-line">
                         {romaState.typedLog.map((log, i) => (<span key={i} style={{color: log.color}}>{log.char}</span>))}
                           <span className="text-yellow" style={{textDecoration:'underline'}}>{romaState.current}</span>
@@ -1103,7 +1254,6 @@ function App() {
 
                       <div id="jp-line" className={hasPunctuation ? "has-punctuation" : ""}>{jpText}</div>
                       
-                      {/* 【修正2】ここが「参考ローマ字（ガイド）」なので、設定でオフならここを消す（display: none） */}
                       <div id="full-roma" className={hasPunctuation ? "has-punctuation" : ""} style={{ display: showRomaji ? 'block' : 'none' }}>
                         {allSegments.map((seg, i) => (
                           <span key={i} className="segment-group">
@@ -1116,7 +1266,6 @@ function App() {
                         ))}
                       </div>
                   </div>
-                  {/* ▲▲▲ 修正箇所終わり ▲▲▲ */}
                       {bonusPopups.map(p => (<div key={p.id} className={`bonus-pop ${p.type}`}>{p.text}</div>))}
                       <div id="rank-monitor" style={{whiteSpace:'nowrap'}}>RANK <span id="rank-value" className={`rank-${rank.toLowerCase()}`}>{rank}</span></div>
                   </div>
@@ -1132,9 +1281,7 @@ function App() {
             </div>
           )}
 
-          {/* --------------------------------------------- */}
-          {/* RESULT SCREEN (通常リザルト & ハイスコア閲覧) */}
-          {/* --------------------------------------------- */}
+          {/* RESULT SCREEN */}
           {(gameState === 'result' || gameState === 'hiscore_review') && (
             <div id="result-screen" className={`res-theme-${difficulty.toLowerCase()}`} onClick={handleResultClick} style={{opacity: 1, zIndex: 20}}>
                 
@@ -1165,7 +1312,7 @@ function App() {
                             </div>
                         </div>
                         <div className={`stats-compact-container fade-target ${resultAnimStep >= 2 ? 'visible' : ''}`} id="res-anim-2">
-                            <div className="stat-row"><span className="stat-label c-green">Correct</span><div className="stat-right-stacked"><span className="sub-val-upper">({completedWords} words)</span><span className="stat-val c-green" id="res-correct">{targetResultData.correct}</span></div></div>
+                            <div className="stat-row"><span className="stat-label c-green">Correct</span><div className="stat-right-stacked"><span className="sub-val-upper">({targetResultData.words} words)</span><span className="stat-val c-green" id="res-correct">{targetResultData.correct}</span></div></div>
                             <div className="stat-row"><span className="stat-label c-red">Miss</span><div className="stat-right"><span className="stat-val c-red" id="res-miss">{targetResultData.miss}</span></div></div>
                             <div className="stat-row"><span className="stat-label c-blue">BackSpace</span><div className="stat-right"><span className="stat-val c-blue" id="res-bs">{targetResultData.backspace}</span></div></div>
                             <div className="stat-row"><span className="stat-label c-cyan">Speed</span><div className="stat-val-group" style={{textAlign:'right'}}><span className="stat-val c-cyan" id="res-speed">{targetResultData.speed}</span><span className="stat-unit">key/s</span></div></div>
@@ -1178,7 +1325,7 @@ function App() {
                           <div className="label-small">苦手な単語</div>
                           <ul id="weak-words-list" className="weak-list">
                             {displayWeakWords.map((item:any, idx:number) => (<li key={idx}><span>{item.word}</span> <span className="miss-count">{item.misses}ミス</span></li>))}
-                            {displayWeakWords.length === 0 && <li style={{listStyle:'none', color:'#ccc', textAlign:'center', marginTop:'10px', fontSize:'0.8rem'}}>Perfect! 苦手なし</li>}
+                            {displayWeakWords.length === 0 && <li style={{listStyle:'none', color:'#ccc', textAlign:'center', marginTop:'10px', fontSize:'0.8rem'}}>None</li>}
                           </ul>
                         </div>
                         <div className={`result-box weak-box fade-target ${resultAnimStep >= 3 ? 'visible' : ''}`} id="res-anim-4">
@@ -1231,9 +1378,7 @@ function App() {
             </div>
           )}
 
-          {/* --------------------------------------------- */}
-          {/* RANKING MODAL (ランキング & DEV SCORE)       */}
-          {/* --------------------------------------------- */}
+          {/* RANKING MODAL */}
           {showRanking && (
             <div className="ranking-overlay" onClick={closeRanking}>
               <div className={`ranking-modal rank-theme-${difficulty.toLowerCase()}`} onClick={(e) => e.stopPropagation()}>
@@ -1288,8 +1433,8 @@ function App() {
                                     <span style={{fontSize:'0.8rem', opacity:0.7}}>
                                     {(() => {
                                       const d = new Date(item.created_at);
-                                      // 日本のロケールで、日時を表示 (例: 2026/1/1 21:45)
                                       return d.toLocaleString('ja-JP', {
+                                        timeZone: 'Asia/Tokyo',
                                         year: 'numeric',
                                         month: 'numeric',
                                         day: 'numeric',
@@ -1297,35 +1442,30 @@ function App() {
                                         minute: '2-digit'
                                       });
                                     })()}
-                                  </span>
+                                    </span>
                                 </div>
                                 <div className="dev-main-score">
                                     {item.score.toLocaleString()}
                                 </div>
                                 <div className="dev-stats-grid">
-                                  {/* 1. Correct */}
                                   <div className="dev-stat-item">
                                       <span style={{color:'#4ade80'}}>Correct</span>
                                       <span className="dev-stat-val">{item.correct}</span>
                                   </div>
-                                  {/* 2. Miss */}
                                   <div className="dev-stat-item">
                                       <span style={{color:'#f87171'}}>Miss</span>
                                       <span className="dev-stat-val">{item.miss}</span>
                                   </div>
-                                  {/* 3. BackSpace (★追加) */}
                                   <div className="dev-stat-item">
                                       <span style={{color:'#3498db'}}>BackSpace</span>
                                       <span className="dev-stat-val">{item.backspace}</span>
                                   </div>
-                                  {/* 4. Speed */}
                                   <div className="dev-stat-item">
                                       <span style={{color:'#22d3ee'}}>Speed</span>
                                       <span className="dev-stat-val">
                                           {item.speed} <span>key/s</span>
                                       </span>
                                   </div>
-                                  {/* 5. MaxCombo */}
                                   <div className="dev-stat-item">
                                       <span style={{color:'#fbbf24'}}>MaxCombo</span>
                                       <span className="dev-stat-val">{item.combo}</span>
@@ -1344,11 +1484,10 @@ function App() {
                     <>
                       {rankingData.map((item, index) => {
                         const rank = index + 1;
-                        // ★修正: 自分の判定を名前ではなく user_id で行うように変更
                         const isMe = item.user_id === userId;
-                        // ★修正: ここで日本時間の文字列を作成
                         const d = new Date(item.created_at);
                         const dateStr = d.toLocaleString('ja-JP', {
+                            timeZone: 'Asia/Tokyo',
                             year: 'numeric',
                             month: 'numeric',
                             day: 'numeric',
@@ -1357,7 +1496,6 @@ function App() {
                         });
                         
                         return (
-                            // ★修正: position: relative を追加して YOU バッジの位置ズレを防ぐ
                             <div key={item.id} className={`ranking-card rank-${rank} ${isMe ? 'my-rank' : ''}`} style={{position: 'relative'}}>
                                 {isMe && <div className="you-badge">YOU</div>}
                                 <div className="rank-badge"><span className="rank-num">{rank}</span></div>
@@ -1366,7 +1504,7 @@ function App() {
                                     <div className="rank-score">{item.score.toLocaleString()}</div>
                                     <div className="rank-stats-grid">
                                         <div className="stat-box c-green">Correct: {item.correct}</div>
-                                        <div className="stat-box c-red">Miss: {item.miss}</div>                      
+                                        <div className="stat-box c-red">Miss: {item.miss}</div>                        
                                         <div className="stat-box c-blue">BS: {item.backspace}</div>
                                         <div className="stat-box c-cyan">Speed: {item.speed}</div>
                                         <div className="stat-box c-orange">Combo: {item.combo}</div>
@@ -1387,164 +1525,247 @@ function App() {
         </div> 
       </div>
 
-      {/* --------------------------------------------- */}
-      {/* ★追加: 遊び方画面 (HOW TO PLAY MODAL)        */}
-      {/* --------------------------------------------- */}
       {showHowToPlay && (
         <div className="config-overlay" onClick={handleCloseHowToPlay}>
-           {/* 設定画面と同じクラスをベースにしつつ、独自のクラス(howto-modal)も追加 */}
-           <div className="config-modal howto-modal" onClick={(e) => e.stopPropagation()}>
-              <h2 className="config-title">遊び方</h2>
-              
-              <div className="howto-grid-container">
-                {/* --- 左側：ゲームシステム詳細 --- */}
-                <div className="howto-col left-col">
-                  <h3 className="howto-heading">詳細</h3>
-                  <ul className="howto-list">
-                    <li>
-                      <span className="icon">⌛</span> 難易度ごとに<span className="highlight">制限時間</span>があります。
-                    </li>
-                    <li>
-                      <span className="icon">💫</span> ミスタイプなく単語入力すると<span className="highlight-orange">ボーナス得点</span>GET！<br/>
-                      <span className="note">※1回でもミスタイプすると加算されません</span>
-                    </li>
-                    <li>
-                      <span className="icon">🔙</span> ミスタイプは<span className="highlight-blue">BackSpace</span>で消す必要があります。<br/>
-                      正しく打てた場合は<span className="highlight-green">緑</span>に、<br/>
-                      ミスタイプした場合は<span style={{color:'#ff6b6b', fontWeight:'bold'}}>赤</span>で表示されます。<br/>
-                      <span className="note red-note">※赤くなってもキー入力は進みますが次の単語には進めません！修正はめんどくさいですよ！</span>
-                    </li>
-                    <li>
-                      <span className="icon">🔋</span> <span className="highlight-green">連打ゲージ</span>：正解で増加！ミスで減少...！<br/>満タンになるとタイム加算！
-                    </li>
-                    <li>
-                      <span className="icon">🌈</span> 正確に打ち続けると<span className="highlight-orange">COMBO</span>増加！<br/>
-                      コンボ数に応じてタイムも増加！
-                    </li>
-                    <li>
-                      <span className="icon">🔥</span> ミスタイプでコンボ終了。<br/>
-                      スコアを伸ばして<span className="highlight-gold">全国ランキング</span>を目指そう！
-                    </li>
-                  </ul>
+          <div className="config-modal howto-modal" onClick={(e) => e.stopPropagation()}>
+            <h2 className="config-title">遊び方</h2>
+            
+            <div className="howto-grid-container">
+              <div className="howto-col left-col">
+                <h3 className="howto-heading">ルール</h3>
+                <ul className="howto-list">
+                  <li>
+                    <span className="icon">⏰</span>
+                    <span>難易度ごとに<span className="highlight-gold">制限時間</span>があります。</span>
+                  </li>
+                  <li>
+                    <span className="icon">🌟</span>
+                    <span>ミスタイプなく単語入力すると<span className="highlight-gold">ボーナス得点</span>GET！<br/>
+                    <span className="note">※1回でもミスタイプすると加算されません</span></span>
+                  </li>
+                  <li>
+                    <span className="icon">↩️</span>
+                    <span>ミスタイプは<span className="highlight-blue">BackSpace</span>で消す必要があります。<br/>
+                    正しく打てた場合は<span className="highlight-green">緑</span>に、ミスタイプした場合は<span className="highlight-red">赤</span>で表示されます。<br/>
+                    <span className="note red-note">※赤くなってもキー入力は進みますが次の単語には進めません！修正はめんどくさいですよ！</span></span>
+                  </li>
+                  <li>
+                    <span className="icon">🔋</span>
+                    <span><span className="highlight-green">連打ゲージ</span>：正解で増加！ミスで減少...！満タンになるとタイム加算！</span>
+                  </li>
+                  <li>
+                    <span className="icon">🌈</span>
+                    <span>正確に打ち続けると<span className="highlight-gold">COMBO</span>増加！コンボ数に応じてタイムも増加！</span>
+                  </li>
+                  <li>
+                    <span className="icon">🔥</span>
+                    <span>ミスタイプでコンボ終了。スコアを伸ばして<span className="highlight-gold">全国ランキング</span>を目指そう！</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="howto-col right-col">
+                <h3 className="howto-heading">操作方法</h3>
+                
+                <div className="howto-section">
+                  <p className="howto-text">
+                    中央に表示されている単語をタイピング！<br/>
+                    <span className="highlight-green">EASY</span>・
+                    <span className="highlight-blue">NORMAL</span>・
+                    <span className="highlight-red">HARD</span><br/>
+                    3つの難易度があり、出題傾向が変わります。<br/>
+                    お好きな難易度で挑戦してください！
+                  </p>
                 </div>
 
-                {/* --- 右側：基本ルール & 入力詳細 --- */}
-                <div className="howto-col right-col">
-                  <div className="howto-section">
-                    <h3 className="howto-heading">ルール</h3>
-                    <p className="howto-text">
-                      中央に表示されている単語をタイピング！<br/>
-                      <span className="highlight-blue">EASY</span>・
-                      <span className="highlight-green">NORMAL</span>・
-                      <span className="highlight-gold">HARD</span>
-                      の3つの難易度で出題傾向が変わります。<br/>
-                      お好きな難易度で挑戦してください！
-                    </p>
-                  </div>
-
-                  <div className="howto-section">
-                    <h3 className="howto-heading">ローマ字対応</h3>
-                    <p className="howto-text">様々な入力分岐に対応しています。</p>
-                    
-                    <div className="key-example-box">
-                      <div className="key-row">
-                        <span className="key-char">し</span>
-                        <span className="key-val">si / shi</span>
-                      </div>
-                      <div className="key-row">
-                        <span className="key-char">つ</span>
-                        <span className="key-val">tu / tsu</span>
-                      </div>
-                      <div className="key-row">
-                        <span className="key-char">ち</span>
-                        <span className="key-val">ti / chi</span>
-                      </div>
-                      <div className="key-row">
-                        <span className="key-char">ん</span>
-                        <span className="key-val">n / nn</span>
-                      </div>
-                      <p className="note" style={{textAlign:'right', marginTop:'5px'}}>※母音の前や末尾は <span className="highlight">nn</span> 必須</p>
+                <div className="howto-section" style={{ display: 'flex', flexDirection: 'column' }}>
+                  <h3 className="howto-heading_sub">ローマ字対応</h3>
+                  <p className="howto-text note">様々な入力分岐に対応しています。</p>
+                  
+                  <div className="key-example-box">
+                    <div className="key-row">
+                      <span className="key-char">し</span><span className="key-val">si / shi</span>
                     </div>
+                    <div className="key-row">
+                      <span className="key-char">つ</span><span className="key-val">tu / tsu</span>
+                    </div>
+                    <div className="key-row">
+                      <span className="key-char">ち</span><span className="key-val">ti / chi</span>
+                    </div>
+                    <div className="key-row">
+                      <span className="key-char">ん</span><span className="key-val">n / nn</span>
+                    </div>
+                    <p className="note" style={{textAlign:'right', marginTop:'0.5cqh'}}>※母音の前や末尾は <span className="highlight-gold">nn</span> 必須</p>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <div className="config-buttons" style={{marginTop:'20px'}}>
-                <button className="pop-btn primary" onClick={handleCloseHowToPlay}>閉じる</button>
-              </div>
-           </div>
+            <div className="config-buttons">
+              <button className="pop-btn primary" onClick={handleCloseHowToPlay}>閉じる</button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* --------------------------------------------- */}
-      {/* ★追加: 設定画面 (CONFIG MODAL)                */}
-      {/* --------------------------------------------- */}
+      {/* SETTING MODAL (Inline Edit Version) */}
       {showConfig && (
         <div className="config-overlay" onClick={handleCloseConfig}>
            <div className="config-modal" onClick={(e) => e.stopPropagation()}>
-              <h2 className="config-title">SETTING</h2>
               
-              {/* ミュート設定 */}
-              <div className="config-item">
-                <label className="config-label">
-                  <input 
-                    type="checkbox" 
-                    checked={isMuted} 
-                    onChange={(e) => setIsMuted(e.target.checked)} 
-                  />
-                  <span className="checkbox-text">音量をミュートにする</span>
-                </label>
-              </div>
+                {/* タイトルは外に出して固定する（スクロールしても消えない！） */}
+                <h2 className="config-title" style={{marginBottom:'10px', flexShrink: 0}}>
+                  SETTING
+                </h2>
+                
+                {/* ▼▼▼ ここから下をスクロールエリアで包む ▼▼▼ */}
+                <div className="config-scroll-area">
+                  
+                  {/* ▼▼▼ 名前設定エリア（エラー表示機能付き） ▼▼▼ */}
+                  <div className="config-item" style={{
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: '5px',
+                    marginBottom: '20px',
+                    width: '100%',
+                    padding: '0 20px'
+                  }}>
+                    
+                    {/* ■■■ 上段：ラベルと ERROR 表示 ■■■ */}
+                    <div style={{display:'flex', width:'100%', alignItems:'flex-end'}}>
+                      <label style={{fontSize:'0.9rem', color:'#ccc', marginLeft:'5px'}}>
+                        Player Name
+                      </label>
+                      
+                      {/* エラーがある時だけふわっと出現 */}
+                      {nameError && (
+                        <span className="error-fade-in" style={{
+                          fontSize: '0.9rem',
+                          marginLeft: 'auto', /* 自動で右寄せ */
+                          marginRight: '5px'  /* ボタンと右端を揃える */
+                        }}>
+                          ⚠ ERROR
+                        </span>
+                      )}
+                    </div>
+                    
+                    {/* ■■■ 中段：入力フォームとボタン ■■■ */}
+                    <div style={{
+                      display: 'flex',
+                      width: '100%',
+                      gap: '10px',
+                      alignItems: 'center'
+                    }}>
+                      <input
+                        type="text"
+                        // エラーがあれば赤枠＆揺れるクラスを追加
+                        className={`pop-input-field ${nameError ? 'input-error-shake' : ''}`}
+                        value={tempPlayerName}
+                        onChange={(e) => {
+                          setTempPlayerName(e.target.value);
+                          if (nameError) setNameError(''); // 文字を打ったらエラーを消す
+                        }}
+                        maxLength={10}
+                        placeholder="Guest"
+                        style={{
+                          flex: 1,
+                          margin: 0,
+                          fontSize: '1.1rem',
+                          padding: '8px 20px',
+                          textAlign: 'left',
+                          transition: 'all 0.3s' // 色の変化を滑らかに
+                        }}
+                      />
 
-              {/* ★追加: ローマ字ガイド表示設定 */}
-              <div className="config-item">
-                <label className="config-label">
-                  <input 
-                    type="checkbox" 
-                    checked={showRomaji} 
-                    onChange={(e) => setShowRomaji(e.target.checked)} 
-                  />
-                  <span className="checkbox-text">ローマ字ガイドを表示する</span>
-                </label>
-              </div>
+                      <button 
+                        className="btn-change-name" 
+                        onClick={handleConfigNameSubmit}
+                        style={{
+                          whiteSpace: 'nowrap',
+                          padding: '10px 20px',
+                          fontSize: '0.9rem',
+                          height: '46px'
+                        }}
+                      >
+                        変更
+                      </button>
+                    </div>
 
-              <hr style={{borderColor:'rgba(255,255,255,0.2)', margin:'20px 0'}}/>
+                    {/* ■■■ 下段：メッセージ表示エリア ■■■ */}
+                    <div style={{height: '20px', marginTop:'5px', marginLeft:'5px'}}>
+                      {nameError ? (
+                        // エラーメッセージ（不適切な〜）をふわっと表示
+                        <p className="error-fade-in" style={{fontSize:'0.85rem', margin:0}}>
+                          {nameError}
+                        </p>
+                      ) : (
+                        // 通常時は注釈を表示
+                        <p style={{fontSize:'0.8rem', color:'rgba(255,255,255,0.5)', margin:0}}>
+                           ※変更可能、名前はランキングに反映されます
+                        </p>
+                      )}
+                    </div>
 
-              {/* BGM音量スライダー */}
-              <div className={`config-item ${isMuted ? 'disabled' : ''}`}>
-                <div className="slider-label-row">
-                   <span>BGM音量</span>
-                   <span>{Math.round(bgmVol * 100)}%</span>
+                  </div>
+
+                  <div className="config-item">
+                    <label className="config-label">
+                      <input 
+                        type="checkbox" 
+                        checked={isMuted} 
+                        onChange={(e) => setIsMuted(e.target.checked)} 
+                      />
+                      <span className="checkbox-text">音量をミュートにする</span>
+                    </label>
+                  </div>
+
+                  <div className="config-item">
+                    <label className="config-label">
+                      <input 
+                        type="checkbox" 
+                        checked={showRomaji} 
+                        onChange={(e) => setShowRomaji(e.target.checked)} 
+                      />
+                      <span className="checkbox-text">ローマ字ガイドを表示する</span>
+                    </label>
+                  </div>
+
+                  <hr style={{borderColor:'rgba(255,255,255,0.2)', margin:'20px 0'}}/>
+
+                  <div className={`config-item ${isMuted ? 'disabled' : ''}`}>
+                    <div className="slider-label-row">
+                        <span>BGM音量</span>
+                        <span>{Math.round(bgmVol * 100)}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" max="1" step="0.05"
+                      value={bgmVol}
+                      onChange={(e) => setBgmVol(parseFloat(e.target.value))}
+                      disabled={isMuted}
+                      className="volume-slider"
+                    />
+                  </div>
+
+                  <div className={`config-item ${isMuted ? 'disabled' : ''}`}>
+                    <div className="slider-label-row">
+                        <span>効果音(SE)音量</span>
+                        <span>{Math.round(seVol * 100)}%</span>
+                    </div>
+                    <input 
+                      type="range" 
+                      min="0" max="1" step="0.05"
+                      value={seVol}
+                      onChange={(e) => setSeVol(parseFloat(e.target.value))}
+                      disabled={isMuted}
+                      className="volume-slider"
+                    />
+                  </div>
+
+                  <div className="config-buttons" style={{marginTop:'30px'}}>
+                    <button className="pop-btn primary" onClick={handleCloseConfig}>閉じる</button>
+                  </div>
                 </div>
-                <input 
-                  type="range" 
-                  min="0" max="1" step="0.05"
-                  value={bgmVol}
-                  onChange={(e) => setBgmVol(parseFloat(e.target.value))}
-                  disabled={isMuted}
-                  className="volume-slider"
-                />
-              </div>
-
-              {/* SE音量スライダー */}
-              <div className={`config-item ${isMuted ? 'disabled' : ''}`}>
-                <div className="slider-label-row">
-                   <span>効果音(SE)音量</span>
-                   <span>{Math.round(seVol * 100)}%</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="0" max="1" step="0.05"
-                  value={seVol}
-                  onChange={(e) => setSeVol(parseFloat(e.target.value))}
-                  disabled={isMuted}
-                  className="volume-slider"
-                />
-              </div>
-
-              <div className="config-buttons" style={{marginTop:'30px'}}>
-                <button className="pop-btn primary" onClick={handleCloseConfig}>閉じる</button>
-              </div>
            </div>
         </div>
       )}

@@ -1,7 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { TypingEngine, Segment } from './useTypingEngine'; 
 import { type DifficultyLevel, DIFFICULTY_SETTINGS } from '../utils/setting';
-import { WORD_DATA } from '../data/words';
 import { 
   playTypeSound, playMissSound, playCorrectSound, playGaugeSound, playComboSound, 
   playBsSound
@@ -14,13 +13,27 @@ export type BonusPopup = { id: number; text: string; type: 'normal' | 'large' | 
 export type ScorePopup = { id: number; text: string; type: 'popup-normal' | 'popup-gold' | 'popup-rainbow' | 'popup-miss' };
 export type PerfectPopup = { id: number }; 
 
-const RANK_THRESHOLDS = {
+// ★追加: データ型の定義
+export type WordItem = { jp: string; roma: string };
+export type WordDataMap = Record<string, WordItem[]>;
+
+export const RANK_THRESHOLDS = {
     EASY:   { S: 500000,  A: 250000, B: 125000, C: 50000 },
     NORMAL: { S: 900000,  A: 500000, B: 300000, C: 150000 },
     HARD:   { S: 1300000, A: 800000, B: 500000, C: 250000 }
 };
 
-export const useTypingGame = (difficulty: DifficultyLevel) => {
+// ▼ 新しく計算だけの関数を作って 'export' します（getRankの中身をここに移動）
+export const calculateRank = (difficulty: DifficultyLevel, currentScore: number) => {
+  const th = RANK_THRESHOLDS[difficulty] || RANK_THRESHOLDS.NORMAL;
+  if (currentScore >= th.S) return "S";
+  if (currentScore >= th.A) return "A";
+  if (currentScore >= th.B) return "B";
+  if (currentScore >= th.C) return "C";
+  return "D";
+};
+
+export const useTypingGame = (difficulty: DifficultyLevel, wordData: WordDataMap | null) => {
   // ... (useState定義は変更なし) ...
   const [score, setScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0);
@@ -62,17 +75,8 @@ export const useTypingGame = (difficulty: DifficultyLevel) => {
   const [missedWordsRecord, setMissedWordsRecord] = useState<MissedWord[]>([]);
   const [missedCharsRecord, setMissedCharsRecord] = useState<Record<string, number>>({});
   const [backspaceCount, setBackspaceCount] = useState(0);
-
-  // ... (ヘルパー関数群は変更なし) ...
-  const getRank = (currentScore: number) => {
-    const th = RANK_THRESHOLDS[difficulty] || RANK_THRESHOLDS.NORMAL;
-    if (currentScore >= th.S) return "S";
-    if (currentScore >= th.A) return "A";
-    if (currentScore >= th.B) return "B";
-    if (currentScore >= th.C) return "C";
-    return "D";
-  };
-  const rank = getRank(score);
+  
+  const rank = calculateRank(difficulty, score);
 
   const getComboClass = (val: number) => {
     if (val >= 200) return "is-rainbow";
@@ -158,7 +162,10 @@ export const useTypingGame = (difficulty: DifficultyLevel) => {
   }, []);
 
   const loadRandomWord = useCallback(() => {
-    const list = WORD_DATA[difficulty];
+    // ★変更: 引数で受け取った wordData を使う
+    if (!wordData) return; // データがまだ無ければ何もしない
+
+    const list = wordData[difficulty];
     if (!list || list.length === 0) return;
 
     let nextWord;
@@ -187,7 +194,7 @@ export const useTypingGame = (difficulty: DifficultyLevel) => {
         });
         setAllSegments([...engineRef.current.segments]);
     }
-  }, [difficulty]);
+  }, [difficulty, wordData]); // ★依存配列に wordData を追加
 
   const resetGame = useCallback(() => {
     setScore(0);

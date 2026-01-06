@@ -1350,7 +1350,7 @@ body {
 }
 
 /* =========================================
-   設定画面 (CONFIG MODAL) - トワイライトPOP
+   設定画面 (CONFIG MODAL) - タイトル拡大・微調整版
    ========================================= */
 
 /* 1. 画面全体を覆う背景 */
@@ -1360,64 +1360,124 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  /* 紫がかった夕暮れの暗がりをイメージ */
   background: rgba(20, 10, 40, 0.75);
   z-index: 9999;
   display: flex;
   justify-content: center;
   align-items: center;
-  backdrop-filter: blur(8px); /* ぼかしを強めて没入感を出す */
+  backdrop-filter: blur(8px);
   animation: fadeIn 0.3s ease-out;
 }
 
 /* 2. 設定ウィンドウ本体 */
 .config-modal {
-  /* トワイライトグラデーション：深い紫から夕焼けピンクへ */
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  
+  /* ウィンドウサイズ */
+  width: min(70vw, 90vh);
+  aspect-ratio: 1 / 1;
+  max-height: 80vh;      /* ★追加: 画面からはみ出さないように制限 */
+  padding:  4cqh 5cqw;
+  
+  container-type: size;
+
   background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
-  
-  /* 枠線は白で太く丸く（POP感） */
-  border: 4px solid #ffe0cb;
-  border-radius: 40px;
-  
-  /* 影をふんわりピンクに光らせる */
+  border: 0.5cqh solid #ffe0cb;
+  border-radius: 3cqh;
   box-shadow: 
-    0 10px 30px rgba(0, 0, 0, 0.5),
-    0 0 0 6px rgba(255, 247, 217, 0.9), /* 外側の半透明枠 */
-    0 0 40px rgba(255, 196, 125, 0.9); /* ピンクの光 */
+    0 1cqh 3cqh rgba(0, 0, 0, 0.5),
+    0 0 0 0.8cqh rgba(255, 247, 217, 0.9),
+    0 0 4cqh rgba(255, 196, 125, 0.9);
     
-  padding: 40px;
-  width: 800px;
-  max-width: 90%;
+  box-sizing: border-box;
   text-align: center;
   color: #ffffff;
-  font-family: "M PLUS Rounded 1c", sans-serif; /* 丸文字フォント推奨 */
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  
+  /* ★変更: hidden を auto に変える */
+  /* overflow: hidden; */
+  overflow-y: auto; 
+  
+  display: flex;
+  flex-direction: column;
+
+  /* ★追加: おしゃれスクロールバーの設定 (Firefox用) */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
+}
+
+/* --- スクロールエリアのレイアウト設定 --- */
+.config-scroll-area {
+  width: 100%;
+  flex: 1;
+  overflow-y: auto;   /* 縦スクロール有効 */
+  padding-right: 15px; /* スクロールバーとコンテンツの間の余白 */
+  
+  /* Firefox用の設定（Webkitが効かない場合用） */
+  scrollbar-width: thin;
+  scrollbar-color: #ffd700 rgba(0, 0, 0, 0.15);
+}
+
+/* --- ▼▼▼ ここからゴールド・スクロールバー (POPスタイル) ▼▼▼ --- */
+
+/* 軌道（背景） */
+.config-scroll-area::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15); /* 少し暗くして溝を作る */
+  border-radius: 10px;
+  margin: 10px 0; /* 上下の角丸と被らないように余白 */
+}
+
+/* つまみ（ここをゴールドに！） */
+.config-scroll-area::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ffd700 0%, #ffaa00 100%); /* 黄金のグラデーション */
+  border-radius: 10px; /* 丸くする */
+  border: 2px solid rgba(255, 255, 255, 0.3); /* 白い枠線でぷっくり感を出す */
+  background-clip: padding-box; /* 枠線の内側に背景を収める */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* 影をつけて浮き上がらせる */
+}
+
+/* つまみホバー時（キラッと明るく） */
+.config-scroll-area::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #fff700 0%, #ffcc00 100%);
+  cursor: pointer;
 }
 
 /* 3. タイトル (SETTING) */
 .config-title {
-  font-size: 3rem;
-  margin-bottom: 30px;
+  /* ★変更：文字サイズを6cqhから8cqhへ大きく */
+  font-size: 8cqh;
+  
+  margin-bottom: 2cqh;
   font-weight: 800;
   color: #fff;
+  flex-shrink: 0;
   
-  /* 文字にオレンジの縁取り（夕日感） */
   text-shadow: 
-    2px 2px 0px #ff9a9e, 
-    4px 4px 0px rgba(0,0,0,0.2);
+    0.3cqh 0.3cqh 0px #ff9a9e, 
+    0.5cqh 0.5cqh 0px rgba(0,0,0,0.2);
     
-  /* 下線は点線で可愛く */
-  border-bottom: 3px dashed rgba(255, 255, 255, 0.5);
-  padding-bottom: 15px;
+  border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
+  padding-bottom: 2cqh;
   letter-spacing: 0.1em;
 }
 
-/* 4. 各設定項目 */
+/* 4. 各設定項目エリア */
+.config-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5cqh; 
+}
+
+/* 項目の座布団 */
 .config-item {
-  margin-bottom: 40px;
   text-align: left;
-  background: rgba(0, 0, 0, 0.2); /* 項目ごとに薄い座布団を敷く */
-  padding: 15px 20px;
-  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 2.5cqh 3cqh;
+  border-radius: 2cqh;
 }
 
 /* 5. チェックボックス周り */
@@ -1425,30 +1485,28 @@ body {
   display: flex;
   align-items: center;
   cursor: pointer;
-  font-size: 1.3rem;
+  font-size: 3.2cqh; 
   color: #fff;
   font-weight: 700;
 }
 
 .config-label input[type="checkbox"] {
-  /* ブラウザ標準の見た目を消す */
   appearance: none;
   -webkit-appearance: none;
   
-  width: 28px;
-  height: 28px;
+  width: 4.5cqh;
+  height: 4.5cqh;
   background: #fff;
-  border-radius: 8px;
-  margin-right: 20px;
+  border-radius: 1cqh;
+  margin-right: 2.5cqh;
   cursor: pointer;
   position: relative;
   transition: all 0.2s;
-  border: 2px solid #ffecd2;
+  border: 0.3cqh solid #ffecd2;
 }
 
-/* チェックされた時の見た目（オレンジのチェックマーク） */
 .config-label input[type="checkbox"]:checked {
-  background: #ff9a9e; /* ピンクオレンジ */
+  background: #ff9a9e;
   border-color: #fff;
 }
 
@@ -1456,7 +1514,7 @@ body {
   content: '✔';
   position: absolute;
   color: #fff;
-  font-size: 20px;
+  font-size: 3.5cqh;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -1466,48 +1524,43 @@ body {
 .slider-label-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 10px;
-  font-size: 1.1rem;
-  color: #ffecd2; /* 薄いオレンジ */
+  margin-bottom: 2cqh;
+  font-size: 2.8cqh;
+  color: #ffecd2;
   font-weight: bold;
 }
 
 /* スライダー本体 */
 .volume-slider {
   width: 100%;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.3); /* 半透明の白 */
-  border-radius: 10px;
+  height: 1.8cqh;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 1cqh;
   outline: none;
   appearance: none;
   -webkit-appearance: none;
   cursor: pointer;
-  box-shadow: inset 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: inset 0 0.3cqh 0.6cqh rgba(0,0,0,0.2);
 }
 
-/* スライダーの「つまみ」 (Chrome/Safari) - 夕日っぽいオレンジ玉 */
+/* スライダーの「つまみ」 */
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 26px;
-  height: 26px;
-  background: #fbc2eb; /* パステルピンク */
-  border: 3px solid #fff;
+  width: 4cqh;
+  height: 4cqh;
+  background: #fbc2eb;
+  border: 0.4cqh solid #fff;
   border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  box-shadow: 0 0.3cqh 0.6cqh rgba(0,0,0,0.3);
   cursor: pointer;
   transition: transform 0.1s;
 }
-
-.volume-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2); /* ホバーで少し大きくなる */
-}
-
-/* スライダーの「つまみ」 (Firefox) */
+.volume-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
 .volume-slider::-moz-range-thumb {
-  width: 26px;
-  height: 26px;
+  width: 4cqh;
+  height: 4cqh;
   background: #fbc2eb;
-  border: 3px solid #fff;
+  border: 0.4cqh solid #fff;
   border-radius: 50%;
   cursor: pointer;
 }
@@ -1520,26 +1573,29 @@ body {
 }
 
 /* 7. 閉じるボタン */
+.config-buttons {
+    margin-top: 2cqh;
+    flex-shrink: 0;
+}
+
 .config-buttons button.pop-btn.primary {
   background: linear-gradient(135deg, hsl(42, 100%, 65%) 0%, #ffa442 40%, #d8a4ff 100%);
-  color: #fffce0; /* 背景色と同じ濃いピンク */
+  color: #fffce0;
   font-weight: 800;
   border: none;
-  padding: 12px 50px;
-  border-radius: 50px;
-  font-size: 1.2rem;
-  box-shadow: 0 5px 2px #ffc9b4;
+  
+  padding: 1.5cqh 6cqh;
+  border-radius: 5cqh;
+  font-size: 2.8cqh;
+  
+  box-shadow: 0 0.6cqh 0.3cqh #ffc9b4;
   transition: transform 0.1s, box-shadow 0.1s;
+  cursor: pointer;
 }
 
 .config-buttons button.pop-btn.primary:active {
   transform: scale(0.95);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  box-shadow: 0 0.3cqh 0.6cqh rgba(0,0,0,0.2);
 }
 
 /* 開発者スコアボタン（王冠）の特別色 */
@@ -1701,135 +1757,254 @@ body {
 .dev-pop-back-btn:active { transform: translateY(1px); box-shadow: none !important; filter: brightness(0.95); }
 
 /* =========================================
-   遊び方画面 (HOW TO PLAY)
+   遊び方画面：左の画像を完璧に再現するスタイル
    ========================================= */
 
-/* 設定画面より少し横長にする */
+/* 1. モーダル全体（外枠）- アスペクト比固定コンテナ */
 .config-modal.howto-modal {
-  width: 1400px;
-  padding: 30px 40px;
-  text-align: left; /* 基本は左揃え */
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  aspect-ratio: 16 / 9; /* ゲーム画面と同じ比率に固定 */
+  width: min(70vw, 170vh); /* 画面からはみ出さない最大サイズ計算 */
+  height: auto;
+  max-height: 95vh;
+
+  /* コンテナクエリ設定：ここを基準に文字サイズを決める */
+  container-type: size;
+  
+  /* デザイン */
+  background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
+  border: 0.4cqh solid #ffe0cb;
+  border-radius: 2cqh;
+  box-shadow: 0 0 5cqh rgba(0,0,0,0.5);
+  padding: 3cqh 4cqw;
+  box-sizing: border-box;
+  overflow: hidden;
+  color: #fff;
+  font-family: "M PLUS Rounded 1c", sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
-/* 遊び方画面のタイトルだけ中央揃えにする */
+/* 全体の文字サイズ基準設定 */
+.config-modal.howto-modal * {
+  box-sizing: border-box;
+}
+
+/* タイトル */
 .config-title {
   text-align: center;
-  width: 100%; /* 幅を確保して中央に配置 */
+  font-size: 5cqh;
+  margin-bottom: 2cqh;
+  font-weight: 800;
+  text-shadow: 0.2cqh 0.2cqh 0 #ff9a9e;
+  border-bottom: 0.3cqh dashed rgba(255, 255, 255, 0.5);
+  padding-bottom: 1cqh;
+  flex-shrink: 0;
 }
 
 /* 2カラムレイアウト */
 .howto-grid-container {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* 左右均等 */
-  gap: 40px;
-  max-height: 60vh; /* 画面が小さい時はスクロール */
-  overflow-y: auto;
-  padding-right: 10px; /* スクロールバー分の余白 */
+  grid-template-columns: 1.1fr 0.9fr; /* 左を少し広めに */
+  gap: 3cqw;
+  flex: 1;
+  min-height: 0;
 }
 
-/* 各カラム */
+/* カラム共通 */
 .howto-col {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 1.5cqh;
 }
 
-/* 見出し */
+/* 見出し（ルール、操作方法） */
 .howto-heading {
-  font-size: 1.5rem;
-  color: #ffecd2; /* 薄いオレンジ */
-  border-bottom: 2px dashed rgba(255, 255, 255, 0.4);
-  padding-bottom: 5px;
-  margin-bottom: 10px;
-  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-size: 3cqh;
   font-weight: bold;
+  color: #ffecd2;
   text-align: center;
+  border-bottom: 0.2cqh dashed rgba(255, 255, 255, 0.4);
+  padding-bottom: 0.5cqh;
+  margin-bottom: 0.5cqh;
+}
+.howto-heading_sub {
+    font-size: 2.5cqh;
+    font-weight: bold;
+    color: #ffecd2;
+    margin-bottom: 0.5cqh;
+}
+
+/* --- 左側：リストスタイル --- */
+.howto-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.2cqh; /* リスト間の隙間 */
 }
 
 .howto-list li {
-  margin-bottom: 15px;
-  font-size: 1.3rem;
+  font-size: 2.5cqh;
   line-height: 1.5;
   background: rgba(0, 0, 0, 0.2);
-  padding: 10px;
-  border-radius: 10px;
+  padding: 1cqh;
+  border-radius: 1cqh;
+  display: flex;
+  align-items: flex-start; /* アイコンとテキストの上揃え */
+  text-align: left;
 }
 
+/* アイコン */
 .howto-list .icon {
-  font-size: 1.4rem;
-  margin-right: 5px;
-  vertical-align: middle;
+  font-size: 2.5cqh;
+  margin-right: 1cqh;
+  flex-shrink: 0;
+  width: 3cqh;
+  text-align: center;
+  line-height: 1;
 }
-
-/* テキスト（右側） */
-.howto-text {
-  font-size: 1.3rem;
-  line-height: 1.6;
-  margin-bottom: 10px;
-}
-
-/* ハイライト文字 */
-.highlight { color: #00ffff; font-weight: bold; }
-.highlight-orange { color: #ffa500; font-weight: bold; text-shadow: 0 0 5px rgba(255, 165, 0, 0.5); }
-.highlight-green { color: #7fff00; font-weight: bold; text-shadow: 0 0 5px rgba(127, 255, 0, 0.5); }
-.highlight-blue { color: #00bfff; font-weight: bold; }
-.highlight-gold { color: #ffd700; font-weight: bold; text-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
 
 /* 注釈 */
 .note {
-  font-size: 0.85rem;
-  color: #ccc;
   display: block;
-  margin-top: 2px;
+  font-size: 2cqh;
+  opacity: 0.9;
+  margin-top: 0.2cqh;
+  line-height: 1.2;
 }
-.red-note { color: #ff6b6b; font-weight: bold; }
 
-/* キー入力例ボックス */
+/* --- 右側：テキストと表 --- */
+.howto-text {
+  font-size: 3cqh;
+  line-height: 1.6;
+  text-align: center;
+}
+
+/* ローマ字表ボックス */
 .key-example-box {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 15px;
-  padding: 15px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 1.5cqh;
+  padding: 1.5cqh 2cqh;
+  border: 0.2cqh solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .key-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 5px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding: 0.6cqh 0;
 }
-.key-row:last-child { border-bottom: none; }
+.key-row:last-of-type { border-bottom: none; }
 
-.key-char {
-  font-size: 1.4rem;
+.key-char { font-size: 2.5cqh; font-weight: bold; }
+.key-val  { font-size: 2.2cqh; font-family: monospace; color: #ff9a9e; }
+
+/* --- ハイライト色定義（画像の通りに再現） --- */
+.highlight-gold { color: #ffd700; font-weight: bold; text-shadow: 0 0 0.5cqh rgba(255, 215, 0, 0.5); }
+.highlight-blue { color: #40c4ff; font-weight: bold; text-shadow: 0 0 0.5cqh rgba(64, 196, 255, 0.5); }
+.highlight-green { color: #69f0ae; font-weight: bold; text-shadow: 0 0 0.5cqh rgba(105, 240, 174, 0.5); }
+.highlight-red { color: #ff5252; font-weight: bold; text-shadow: 0 0 0.5cqh rgba(255, 82, 82, 0.5); }
+.red-note { color: #ff8a80; }
+
+/* 閉じるボタンエリア */
+.config-buttons {
+  margin-top: 1.5cqh;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.config-buttons button.pop-btn.primary {
+  font-size: 3cqh;
+  padding: 2cqh 4cqh;
+  border-radius: 5cqh;
+  border: none;
+  background: linear-gradient(135deg, hsl(42, 100%, 65%) 0%, #ffa442 40%, #d8a4ff 100%);
+  color: #fffce0;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 0.4cqh 0.2cqh #ffc9b4;
+}
+
+/* 入力フォームをポップに */
+.pop-input-field {
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid #00d2ff;
+  border-radius: 50px; /* 丸くする */
+  padding: 10px 20px;
+  font-size: 1.2rem;
+  color: #330066;
   font-weight: bold;
-  color: #fff;
-  text-shadow: 2px 2px 0 #000;
+  text-align: center;
+  outline: none;
+  width: 80%;
+  margin-top: 15px; /* 上の余白 */
+  margin-bottom: 20px; /* 下の余白（狭めました） */
+  box-shadow: 0 4px 0 rgba(0, 210, 255, 0.5); /* 立体感 */
+  transition: all 0.2s;
 }
 
-.key-val {
-  font-family: monospace;
-  font-size: 1.1rem;
-  color: #ff9a9e; /* ピンク */
+.pop-input-field:focus {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(0, 210, 255, 0.5);
+}
+
+/* 設定内の名前変更ボタンもポップに */
+.btn-change-name {
+  background: linear-gradient(to bottom, #ffeb3b, #fbc02d);
+  color: #5a4a00;
   font-weight: bold;
+  border: 2px solid #fff;
+  border-radius: 20px;
+  padding: 5px 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #f57f17;
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+.btn-change-name:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 #f57f17;
 }
 
-/* モバイル対応：縦並びにする */
-@media (max-width: 768px) {
-  .howto-grid-container {
-    grid-template-columns: 1fr; /* 1カラム */
-    gap: 20px;
+/* src/App.css の末尾に追加 */
+
+/* エラーメッセージのふわっと表示アニメーション */
+.error-fade-in {
+  color: #ff4444;
+  font-weight: bold;
+  animation: fadeInError 0.4s ease forwards;
+}
+
+@keyframes fadeInError {
+  from { 
+    opacity: 0; 
+    transform: translateY(-5px); /* 少し上から降りてくる感じ */
   }
-  .config-modal.howto-modal {
-    width: 95%;
-    padding: 20px;
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
   }
 }
 
-/* 遊び方画面のボタンエリアを右寄せにする */
-.config-modal.howto-modal .config-buttons {
-  display: flex;             /* フレックスボックスであることを保証 */
-  width: 100%;               /* 横幅を親要素いっぱいまで広げる */
-  justify-content: flex-end; /* 右寄せ */
+/* エラー時の入力フォームの揺れ（任意） */
+.input-error-shake {
+  animation: shake 0.3s;
+  border-color: #ff4444 !important; /* 強制的に赤枠 */
+  background: rgba(50, 0, 0, 0.3) !important; /* 薄い赤背景 */
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.4) !important;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
 }
