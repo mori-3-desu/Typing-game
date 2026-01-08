@@ -670,7 +670,7 @@ function App() {
     // 全国ランキング取得データ
     const { data, error } = await supabase
       .from("scores")
-      .select("*, user_data:users!scores_user_id_fkey!inner(role)")
+      .select("*")
       .eq("difficulty", searchDiff)
       .eq("user_data.role", "user")
       .order("score", { ascending: false })
