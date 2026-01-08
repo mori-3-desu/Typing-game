@@ -1,203 +1,220 @@
-import { ROMA_VARIATIONS } from '../utils/romajiMap';
-// 2. Segment クラス
+import { ROMA_VARIATIONS } from "../utils/romajiMap";
+
+// Segment クラス
 export class Segment {
-    canonical: string;
-    patterns: string[];
-    inputBuffer: string;
-    typedLog: { char: string; color: string }[];
-    isExpanded: boolean;
+  canonical: string; // 基準となる正解パターン
+  patterns: string[]; // 様々な正解ルート
+  inputBuffer: string; // 現在入力されてるキーを保存
+  typedLog: { char: string; color: string }[]; // 入力されたキーに対して正解なら緑、ミスなら赤
+  isExpanded: boolean;
 
-    constructor(canonical: string) {
-        this.canonical = canonical;
-        this.patterns = ROMA_VARIATIONS[canonical] || [canonical]; 
-        this.inputBuffer = "";
-        this.typedLog = []; 
-        this.isExpanded = false; 
+  // 単語とローマ字と入力された文字の初期化
+  constructor(canonical: string) {
+    this.canonical = canonical;
+    this.patterns = ROMA_VARIATIONS[canonical] || [canonical];
+    this.inputBuffer = "";
+    this.typedLog = [];
+    this.isExpanded = false;
+  }
+
+  // 現在の単語とローマ字と入力文字を表示
+  get display() {
+    if (this.inputBuffer === "") return this.patterns[0];
+    // 入力バッファ（例: "sh"）に前方一致するパターンを配列の前から探す
+    // ・入力が "s"  → "si" がヒット (siを表示)
+    // ・入力が "sh" → "si" は不一致、"shi" がヒット (shiに表示が切り替わる！)
+    const match = this.patterns.find((p) => p.startsWith(this.inputBuffer));
+    return match ? match : this.patterns[0];
+  }
+
+  getCurrentChar() {
+    const display = this.display;
+    return display[this.inputBuffer.length] || "";
+  }
+
+  getRemaining() {
+    const display = this.display;
+    return display.slice(this.inputBuffer.length + 1);
+  }
+
+  handleKey(k: string): string {
+    let inputChar = k;
+    const nextExpected = this.getCurrentChar();
+
+    // 句読点置換処理
+    if (nextExpected === "、" && k === ",") inputChar = "、";
+    else if (nextExpected === "。" && k === ".") inputChar = "。";
+
+    const nextBuffer = this.inputBuffer + inputChar;
+    const possibleRoutes = this.patterns.filter((p) =>
+      p.startsWith(nextBuffer)
+    );
+
+    // 正解ルート
+    if (possibleRoutes.length > 0) {
+      this.inputBuffer = nextBuffer;
+      this.typedLog.push({ char: inputChar, color: "#4aff50" }); // 緑
+
+      const exactMatch = possibleRoutes.find((p) => p === this.inputBuffer);
+      if (exactMatch) return "NEXT";
+      return "OK";
     }
 
-    get display() {
-        if (this.inputBuffer === "") return this.patterns[0];
-        const match = this.patterns.find(p => p.startsWith(this.inputBuffer));
-        return match ? match : this.patterns[0];
+    // --- B. ミスルート ---
+    if (this.patterns.includes(this.inputBuffer)) {
+      return "MISS";
     }
 
-    getCurrentChar() { 
-        const disp = this.display;
-        return disp[this.inputBuffer.length] || ""; 
-    }
-    
-    getRemaining() { 
-        const disp = this.display;
-        return disp.slice(this.inputBuffer.length + 1); 
-    }
+    // 正解ルートの先読み
+    const currentPattern =
+      this.patterns.find((p) => p.startsWith(this.inputBuffer)) ||
+      this.patterns[0];
+    const expectedChar = currentPattern[this.inputBuffer.length];
 
-    handleKey(k: string): string {
-        let inputChar = k;
-        const nextExpected = this.getCurrentChar();
-        if (nextExpected === '、' && k === ',') inputChar = '、';
-        else if (nextExpected === '。' && k === '.') inputChar = '。';
+    if (!expectedChar) return "MISS";
 
-        const nextBuffer = this.inputBuffer + inputChar;
-        const possibleRoutes = this.patterns.filter(p => p.startsWith(nextBuffer));
+    // 赤色進行
+    this.inputBuffer += expectedChar;
+    this.typedLog.push({ char: expectedChar, color: "#ff4444" });
 
-        // --- A. 正解ルート ---
-        if (possibleRoutes.length > 0) {
-            this.inputBuffer = nextBuffer;
-            this.typedLog.push({ char: inputChar, color: "#4aff50" }); // 緑
-
-            const exactMatch = possibleRoutes.find(p => p === this.inputBuffer);
-            if (exactMatch) return "NEXT"; 
-            return "OK";
-        }
-
-        // --- B. ミスルート ---
-        if (this.patterns.includes(this.inputBuffer)) {
-            return "MISS";
-        }
-
-        const currentPattern = this.patterns.find(p => p.startsWith(this.inputBuffer)) || this.patterns[0];
-        const expectedChar = currentPattern[this.inputBuffer.length];
-
-        if (!expectedChar) return "MISS"; 
-
-        // 赤色進行
-        this.inputBuffer += expectedChar;
-        this.typedLog.push({ char: expectedChar, color: "#ff4444" });
-
-        if (this.patterns.includes(this.inputBuffer)) {
-            return "MISS_NEXT"; 
-        }
-        
-        return "MISS_ADVANCE"; 
+    if (this.patterns.includes(this.inputBuffer)) {
+      return "MISS_NEXT"; // TypingGame側でミスしてたら次の単語に進めないようにする
     }
 
-    // ★重要：ここを追加！これが無いとエラーになります
-    backspace(): boolean {
-        if (this.inputBuffer.length > 0) {
-            this.inputBuffer = this.inputBuffer.slice(0, -1);
-            this.typedLog.pop();
-            return true;
-        }
-        return false;
-    }
+    return "MISS_ADVANCE"; // ミスタイプしても次に進める
+  }
 
-    isDone() {
-        return this.patterns.includes(this.inputBuffer);
+  // Backspace処理
+  backspace(): boolean {
+    if (this.inputBuffer.length > 0) {
+      this.inputBuffer = this.inputBuffer.slice(0, -1);
+      this.typedLog.pop();
+      return true;
     }
+    return false;
+  }
+
+  isDone() {
+    return this.patterns.includes(this.inputBuffer); // 緑も消せる
+  }
 }
 
-// 3. TypingEngine クラス
+// TypingEngineクラス
 export class TypingEngine {
-    segments: Segment[];
-    segIndex: number;
+  segments: Segment[];
+  segIndex: number;
 
-    constructor(romaText: string) {
-        this.segments = this.segmentize(romaText);
-        this.segIndex = 0;
+  //初期化
+  constructor(romaText: string) {
+    this.segments = this.segmentize(romaText); // 渡されたローマ字をセグメントに分解して保存
+    this.segIndex = 0; // 今どこを打っているかをリセット
+  }
+
+  segmentize(roma: string): Segment[] {
+    const out: Segment[] = [];
+    let i = 0;
+    const keys = Object.keys(ROMA_VARIATIONS).sort(
+      (a, b) => b.length - a.length
+    ); //romajiMapの文字数を長い順に(バラバラに分解されるのを防ぐ)
+
+    // ここで入力分岐を判定
+    while (i < roma.length) {
+      let hit = false;
+      for (const key of keys) {
+        // 例) sityu-
+        if (roma.startsWith(key, i)) {
+          // siがあるかチェック
+          out.push(new Segment(key)); // siを返す
+          i += key.length; // セグメントを二つ進める
+          hit = true;
+          break;
+        }
+      }
+      if (!hit) {
+        out.push(new Segment(roma[i])); // ヒットしなかったら一文字で進める
+        i++;
+      }
+    }
+    return out;
+  }
+
+  // 入力処理
+  input(key: string): { status: string } {
+    const segment = this.segments[this.segIndex];
+
+    // n拡張チェック
+    if (key === "n" && this.segIndex > 0) {
+      const prevSegment = this.segments[this.segIndex - 1];
+
+      // nの特殊処理、nnでも行けるかを調べる。
+      let isCorrectForCurrent = false;
+      if (segment) {
+        isCorrectForCurrent = segment.patterns.some((p) =>
+          p.startsWith(segment.inputBuffer + key)
+        ); // nを見つける(n、nnだったらn優先)
+      }
+      if (
+        !isCorrectForCurrent &&
+        prevSegment.canonical === "n" &&
+        prevSegment.inputBuffer === "n"
+      ) {
+        // 必須じゃないところにnnが入力された
+        prevSegment.inputBuffer = "nn";
+        prevSegment.typedLog.push({ char: "n", color: "#4aff50" }); // nnにして正解判定
+        prevSegment.isExpanded = true; // Τ nn拡張専用のバックスペース処理で使うフラグ
+        return { status: "EXPANDED" }; // 」
+      }
     }
 
-    segmentize(roma: string): Segment[] {
-        const out: Segment[] = [];
-        let i = 0;
-        const keys = Object.keys(ROMA_VARIATIONS).sort((a, b) => b.length - a.length);
+    // 一致しない場合はミス判定にし、次へ
+    if (!segment) return { status: "END" };
 
-        while (i < roma.length) {
-            let hit = false;
-            for (const key of keys) {
-                if (roma.startsWith(key, i)) {
-                    out.push(new Segment(key));
-                    i += key.length;
-                    hit = true;
-                    break;
-                }
-            }
-            if (!hit) {
-                out.push(new Segment(roma[i]));
-                i++;
-            }
-        }
-        return out;
+    const result = segment.handleKey(key);
+
+    if (result === "NEXT" || result === "MISS_NEXT") {
+      this.segIndex++;
+      return { status: result };
     }
 
-    input(key: string): { status: string } {
-        const seg = this.segments[this.segIndex];
-        
-        // n拡張チェック
-        if (key === 'n' && this.segIndex > 0) {
-            const prevSeg = this.segments[this.segIndex - 1];
-            let isCorrectForCurrent = false;
-            if (seg) {
-                isCorrectForCurrent = seg.patterns.some(p => p.startsWith(seg.inputBuffer + key));
-            }
-            if (!isCorrectForCurrent && prevSeg.canonical === 'n' && prevSeg.inputBuffer === 'n') {
-                prevSeg.inputBuffer = "nn";
-                prevSeg.typedLog.push({ char: 'n', color: "#4aff50" });
-                prevSeg.isExpanded = true; 
-                return { status: "EXPANDED" };
-            }
-        }
+    if (result === "MISS_ADVANCE") return { status: "MISS_ADVANCE" };
+    if (result === "OK") return { status: "OK" };
 
-        if (!seg) return { status: "END" };
+    return { status: "MISS" };
+  }
 
-        const result = seg.handleKey(key);
-        
-        if (result === "NEXT" || result === "MISS_NEXT") {
-            this.segIndex++;
-            return { status: result };
-        }
-        
-        if (result === "MISS_ADVANCE") return { status: "MISS_ADVANCE" };
-        if (result === "OK") return { status: "OK" };
-        
-        return { status: "MISS" };
+  // nn拡張際も含めたBackspace処理
+  backspace(): { status: string } {
+    if (this.segIndex >= this.segments.length) {
+      this.segIndex = this.segments.length - 1;
     }
 
-    // ★重要：ここも追加！
-    backspace(): { status: string } {
-        if (this.segIndex >= this.segments.length) {
-            this.segIndex = this.segments.length - 1;
-        }
+    let segment = this.segments[this.segIndex];
 
-        let seg = this.segments[this.segIndex];
-        
-        if (seg.inputBuffer.length === 0 && this.segIndex > 0) {
-            this.segIndex--;
-            seg = this.segments[this.segIndex];
-        }
-
-        if (seg.isExpanded && seg.inputBuffer === "nn") {
-            seg.inputBuffer = "";
-            seg.typedLog = [];
-            seg.isExpanded = false;
-            return { status: "BACK_EXPANDED" };
-        }
-
-        seg.backspace();
-        
-        // 戻した結果、まだ完了状態なら（あまりないケースだが）戻す？
-        // 基本的には文字を消すだけ
-        return { status: "BACK" };
+    if (segment.inputBuffer.length === 0 && this.segIndex > 0) {
+      this.segIndex--;
+      segment = this.segments[this.segIndex];
     }
 
-    getDisplayState() {
-        let typed = "";
-        let current = "";
-        let remaining = "";
-
-        this.segments.forEach((seg, i) => {
-            if (i < this.segIndex) {
-                typed += seg.inputBuffer; 
-            } else if (i === this.segIndex) {
-                current = seg.inputBuffer + seg.getRemaining();
-            } else {
-                remaining += seg.display;
-            }
-        });
-
-        return { 
-            segments: this.segments, 
-            currentIndex: this.segIndex,
-            isFinished: this.segIndex >= this.segments.length
-        };
+    if (segment.isExpanded && segment.inputBuffer === "nn") {
+      segment.inputBuffer = ""; // nn拡張なら一気に消す(ここは試験的実装なのでnに変える可能性あり)
+      segment.typedLog = [];
+      segment.isExpanded = false; // 拡張フラグを元に戻す
+      return { status: "BACK_EXPANDED" }; // 戻したよのステータス
     }
+
+    segment.backspace();
+
+    // 戻した結果、まだ完了状態なら（あまりないケースだが）戻す？
+    // 基本的には文字を消すだけ
+    return { status: "BACK" };
+  }
+
+  // Displayに現在進行形で反映
+  getDisplayState() {
+    return {
+      segments: this.segments,
+      currentIndex: this.segIndex,
+      isFinished: this.segIndex >= this.segments.length,
+    };
+  }
 }

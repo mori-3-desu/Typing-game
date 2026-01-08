@@ -1,8 +1,4 @@
-import { type SoundKey, playSE } from './audio';
-
-// =========================================
-// 1. Ready画面の描画 (降下アニメーション)
-// =========================================
+// Ready画面の描画 (降下アニメーション)
 export const drawReadyAnimation = (
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -11,26 +7,30 @@ export const drawReadyAnimation = (
   readyImage: HTMLImageElement | null,
   showEnterText: boolean
 ) => {
-  ctx.clearRect(0, 0, width, height);
+  ctx.clearRect(0, 0, width, height); // ※重要 キャンバスを掃除して綺麗にする(これがないと残像アニメーションに)
 
   // 画像の描画
   if (readyImage) {
-    ctx.drawImage(readyImage, 0, readyY, width, height);
+    ctx.drawImage(readyImage, 0, readyY, width, height); //キャンバスを描く
   }
 
   // テキストの描画
   if (showEnterText) {
     ctx.textAlign = "center";
-    
+
     // 点滅演出
     const blinkAlpha = (Math.sin(Date.now() / 220) + 1) / 2;
-    
+
     // 注意書き
     ctx.font = "800 35px 'M PLUS Rounded 1c', sans-serif";
     ctx.lineJoin = "round";
     ctx.lineWidth = 6;
     ctx.strokeStyle = `rgba(255, 255, 255, ${blinkAlpha})`;
-    ctx.strokeText("※遊ぶ際にはキーボードを使います！", width / 2, readyY + 550);
+    ctx.strokeText(
+      "※遊ぶ際にはキーボードを使います！",
+      width / 2,
+      readyY + 550
+    );
     ctx.fillStyle = `rgba(255, 0, 0, ${blinkAlpha})`;
     ctx.fillText("※遊ぶ際にはキーボードを使います！", width / 2, readyY + 550);
 
@@ -39,7 +39,7 @@ export const drawReadyAnimation = (
     ctx.lineWidth = 12;
     ctx.strokeStyle = "white";
     ctx.strokeText("Enter で開始", width / 2, readyY + 625);
-    
+
     // グラデーション
     let grad = ctx.createLinearGradient(0, readyY + 590, 0, readyY + 635);
     grad.addColorStop(0, "#ffc2ffff");
@@ -57,9 +57,7 @@ export const drawReadyAnimation = (
   }
 };
 
-// =========================================
-// 2. GO! アニメーションの描画 (★ここを追加！)
-// =========================================
+// GO!アニメーションの描画
 export const drawGoAnimation = (
   ctx: CanvasRenderingContext2D,
   width: number,
@@ -67,15 +65,15 @@ export const drawGoAnimation = (
   scale: number
 ) => {
   ctx.clearRect(0, 0, width, height);
-  
-  ctx.save();
+
+  ctx.save(); // 今の状態を覚えておく
   ctx.translate(width / 2, height / 2);
   ctx.scale(scale, scale);
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
 
-  ctx.font = "250px 'Fredoka One', sans-serif"; 
-  ctx.lineJoin = "round"; 
+  ctx.font = "250px 'Fredoka One', sans-serif";
+  ctx.lineJoin = "round";
 
   // 極太の白いフチ
   ctx.lineWidth = 25;
@@ -84,66 +82,17 @@ export const drawGoAnimation = (
 
   // 3色グラデーション
   const gradient = ctx.createLinearGradient(0, -60, 0, 60);
-  gradient.addColorStop(0, "#FFEA00"); 
-  gradient.addColorStop(0.5, "#FF0099"); 
-  gradient.addColorStop(1, "#00E5FF"); 
+  gradient.addColorStop(0, "#FFEA00");
+  gradient.addColorStop(0.5, "#FF0099");
+  gradient.addColorStop(1, "#00E5FF");
 
   ctx.fillStyle = gradient;
   ctx.fillText("GO!", 0, 0);
-  
+
   // 内側のハイライト
   ctx.lineWidth = 4;
   ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
   ctx.strokeText("GO!", 0, 0);
 
-  ctx.restore();
+  ctx.restore(); // saveの状態に戻す
 };
-
-// =========================================
-// 3. リザルト画面での演出管理クラス
-// =========================================
-export class ResultAnimator {
-  private timers: number[] = [];
-
-  // 演出開始
-  start(
-    rank: string, 
-    onShowElement: (id: string) => void,
-    playRankSound: (rank: string) => void
-  ) {
-    this.clear(); // リセット
-
-    const sequence = [
-      { id: 'res-anim-1', delay: 600, sound: 'result' as SoundKey },
-      { id: 'res-anim-2', delay: 1300, sound: 'result' as SoundKey },
-      { id: 'res-anim-3', delay: 2000, sound: 'result' as SoundKey },
-      { id: 'res-anim-5', delay: 3500, sound: 'rank' }, // 特殊
-      { id: 'res-anim-6', delay: 4500, sound: null },
-    ];
-
-    sequence.forEach(({ id, delay, sound }) => {
-      const timer = window.setTimeout(() => {
-        onShowElement(id); // React側のステートを更新して表示させる
-        
-        if (sound === 'rank') {
-          playRankSound(rank);
-        } else if (sound) {
-          playSE(sound as SoundKey);
-        }
-      }, delay);
-      this.timers.push(timer);
-    });
-  }
-
-  // スキップ機能
-  skip() {
-    this.clear();
-    // ここで全要素を表示する処理が必要（React側で制御）
-  }
-
-  // クリーンアップ
-  clear() {
-    this.timers.forEach(t => clearTimeout(t));
-    this.timers = [];
-  }
-}
