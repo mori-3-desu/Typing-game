@@ -569,7 +569,7 @@ function App() {
     jpText,
   ]);
 
-  const saveScore = useCallback(async () => {
+const saveScore = useCallback(async () => {
     if (saveStatus === "saving" || saveStatus === "success") return;
 
     const targetStats = lastGameStats || {
@@ -590,52 +590,46 @@ function App() {
     setSaveStatus("saving");
 
     try {
+      // 1. まずサーバー上の最新スコアを確認（低い点数で上書きしないため）
       const { data: existingData, error: fetchError } = await supabase
         .from("scores")
-        .select("*")
+        .select("score") // スコアだけ分かればOK
         .eq("user_id", userId)
         .eq("difficulty", difficulty)
         .single();
 
+      // エラーが「データなし」以外の場合は中断
       if (fetchError && fetchError.code !== "PGRST116") {
         throw fetchError;
       }
 
-      if (existingData) {
-        if (targetStats.score > existingData.score) {
-          const { error: updateError } = await supabase
-            .from("scores")
-            .update({
-              name: playerName,
-              score: targetStats.score,
-              correct: targetStats.correct,
-              miss: targetStats.miss,
-              backspace: targetStats.backspace,
-              combo: targetStats.combo,
-              speed: targetStats.speed,
-              created_at: new Date().toISOString(),
-            })
-            .eq("id", existingData.id);
+      // 2. 既に高いスコアがサーバーにある場合は、保存せずに終了
+      if (existingData && targetStats.score <= existingData.score) {
+        console.log("ハイスコアではないため保存しません");
+        setSaveStatus("success");
+        return;
+      }
 
-          if (updateError) throw updateError;
-        }
-      } else {
-        const { error: insertError } = await supabase.from("scores").insert([
+      // 3. upsertを実行（これ1つで 新規登録 or 上書き を自動判断！）
+      const { error: upsertError } = await supabase
+        .from("scores")
+        .upsert(
           {
             user_id: userId,
-            name: playerName,
             difficulty: difficulty,
+            name: playerName, // 名前も常に最新に更新
             score: targetStats.score,
             correct: targetStats.correct,
             miss: targetStats.miss,
             backspace: targetStats.backspace,
             combo: targetStats.combo,
             speed: targetStats.speed,
+            created_at: new Date().toISOString(),
           },
-        ]);
+          { onConflict: "user_id, difficulty" } // この組み合わせが被ったら上書きせよ、という合図
+        );
 
-        if (insertError) throw insertError;
-      }
+      if (upsertError) throw upsertError;
 
       setSaveStatus("success");
     } catch (error: any) {
