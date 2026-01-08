@@ -103,6 +103,7 @@ const playSE = (key: SoundKey) => {
 export const playDecisionSound = () => playSE("decision");
 export const playStartSound = () => playSE("start");
 export const playTypeSound = () => playSE("type");
+export const playDiffSound = () => playSE("diff")
 export const playBsSound = () => playSE("bs");
 export const playCorrectSound = () => playSE("correct");
 export const playComboSound = () => playSE("combo");
@@ -110,7 +111,6 @@ export const playGaugeSound = () => playSE("gauge");
 export const playMissSound = () => playSE("miss");
 export const playFinishSound = () => playSE("finish");
 export const playResultSound = () => playSE("result");
-
 export const playRankSSound = () => playSE("rankS");
 export const playRankASound = () => playSE("rankA");
 export const playRankBSound = () => playSE("rankB");

@@ -656,6 +656,7 @@ function App() {
     userId,
   ]);
 
+  // 全国ランキング取得
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
     playDecisionSound();
     const searchDiff = targetDiff || difficulty;
@@ -667,14 +668,13 @@ function App() {
     setIsDevRankingMode(false);
     setRankingData([]);
 
-    // 全国ランキング取得データ
     const { data, error } = await supabase
       .from("scores")
       .select("*")
       .eq("difficulty", searchDiff)
-      .eq("user_data.role", "user")
+      .eq("is_creator", false) // 作成者フラグが「OFF」の人だけ集める
       .order("score", { ascending: false })
-      .limit(10); // 10位まで表示するが拡張するかも
+      .limit(10);
 
     if (error) {
       console.error("ランキング取得エラー:", error);
@@ -692,9 +692,9 @@ function App() {
     try {
       const { data, error } = await supabase
         .from("scores")
-        .select("*, user_data:users!scores_user_id_fkey!inner(role)")
+        .select("*")
         .eq("difficulty", difficulty)
-        .eq("user_data.role", "admin")
+        .eq("is_creator", true)
         .order("score", { ascending: false })
         .limit(1);
 
@@ -1146,7 +1146,7 @@ function App() {
       `CRITICAL TYPINGでスコア:${score.toLocaleString()} ランク:${rank} を獲得しました！`
     );
     const hashtags = encodeURIComponent("CriticalTyping,タイピング");
-    const url = encodeURIComponent("https://example.com");
+    const url = encodeURIComponent(window.location.origin);
     return `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
   };
 
