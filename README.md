@@ -1,5 +1,5 @@
 # 🌙 CRITICAL TYPING 🌙
-![ゲームのデモ動画](./images/demo.gif)
+![ゲームのデモ動画](./public/images/demo.gif)
 **正確性×継続性を重視した実戦的かつ爽快感のあるポップなタイピングゲーム**
 
 ## 📖 概要 
