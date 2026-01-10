@@ -116,14 +116,32 @@ function App() {
     "normal"
   );
 
-  const [userId] = useState(() => {
-    let id = localStorage.getItem("typing_user_id");
-    if (!id) {
-      id = crypto.randomUUID();
-      localStorage.setItem("typing_user_id", id);
-    }
-    return id;
-  });
+// 1. setUserId を使えるようにして、初期値を空文字にします
+  const [userId, setUserId] = useState("");
+
+  // 2. アプリ起動時に「Supabaseから正式なID」をもらう処理を追加
+  useEffect(() => {
+    const initAuth = async () => {
+      // (A) すでにログイン状態が残っているか確認（リロード時など）
+      const { data: { session } } = await supabase.auth.getSession();
+
+      if (session) {
+        setUserId(session.user.id);
+      } else {
+        // (B) ログインしていなければ、匿名ログインを実行！
+        // ▼ data も受け取るように修正
+        const { data, error } = await supabase.auth.signInAnonymously();
+
+        if (error) {
+          console.error("❌ ログイン失敗:", error.message);
+        } else if (data.user) {
+           setUserId(data.user.id);
+        }
+      }
+    };
+
+    initAuth();
+  }, []);
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInputLocked, setIsInputLocked] = useState(true); // 入力ロック
