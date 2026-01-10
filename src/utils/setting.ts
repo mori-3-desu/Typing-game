@@ -40,9 +40,24 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
 // 連打メーターの設定値
 export const GAUGE_CONFIG = {
   INITIAL_MAX: 150, // 連打メーター初期値
-  INCREMENT: 50,    // ゲージMAXした際の連打メーター上昇値
-  CEILING: 300,     // 連打メーター上限値
-  RECOVER_SEC: 10,  // 連打メーターMAX時のタイムボーナス上昇値
-  GAIN: 1,          // 正解で増える量
-  PENALTY: 20,      // ミスで減る量
+  INCREMENT: 50, // ゲージMAXした際の連打メーター上昇値
+  CEILING: 300, // 連打メーター上限値
+  RECOVER_SEC: 10, // 連打メーターMAX時のタイムボーナス上昇値
+  GAIN: 1, // 正解で増える量
+  PENALTY: 20, // ミスで減る量
+};
+
+// スコア計算の設定値
+export const SCORE_CONFIG = {
+  BASE_POINT: 100, // 正解キーの基本点
+  MISS_PENALTY: 300, // ミス時の減点ポイント
+  BACKSPACE_PENALTY: 1000, // バックスペース時の減点ポイント
+  PERFECT_BONUS_CHAR_REN: 500, // 文字数×この値＝PERFECTボーナス
+} as const; // as const をつけると誤って書き換えられなくなるので安全です
+
+export const RANK_THRESHOLDS = {
+  // ミスなく継続すれば比較的簡単に到達するのでランク追加したりで調整予定
+  EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
+  NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
+  HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
 };
