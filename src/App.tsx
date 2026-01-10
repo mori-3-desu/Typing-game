@@ -30,7 +30,7 @@ const preloadImages = () => {
     "/images/level.png",
     "/images/cloud.png",
     "/images/Ready.jpg",
-    "/images/icon_x.svg",
+    "/images/icon_x.jpg",
     "/images/ranking.png",
     "/images/X.jpg",
     ...Object.values(DIFFICULTY_SETTINGS).map((s) => s.bg),
