@@ -596,7 +596,7 @@ const saveScore = useCallback(async () => {
         .select("score") // スコアだけ分かればOK
         .eq("user_id", userId)
         .eq("difficulty", difficulty)
-        .single();
+        .maybeSingle();
 
       // エラーが「データなし」以外の場合は中断
       if (fetchError && fetchError.code !== "PGRST116") {

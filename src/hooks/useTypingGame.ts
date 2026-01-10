@@ -1,6 +1,12 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { TypingEngine, Segment } from "./useTypingEngine";
-import { type DifficultyLevel, DIFFICULTY_SETTINGS } from "../utils/setting";
+import {
+  type DifficultyLevel,
+  DIFFICULTY_SETTINGS,
+  SCORE_CONFIG,
+  GAUGE_CONFIG,
+  RANK_THRESHOLDS,
+} from "../utils/setting";
 import {
   playTypeSound,
   playMissSound,
@@ -9,7 +15,6 @@ import {
   playComboSound,
   playBsSound,
 } from "../utils/audio";
-import { GAUGE_CONFIG } from "../utils/setting";
 
 type MissedWord = { word: string; misses: number };
 type TypedLog = { char: string; color: string };
@@ -25,13 +30,6 @@ type ScorePopup = {
 };
 type PerfectPopup = { id: number };
 export type WordDataMap = Record<string, { jp: string; roma: string }[]>;
-
-const RANK_THRESHOLDS = {
-  // ミスなく継続すれば比較的簡単に到達するのでランク追加したりで調整予定
-  EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
-  NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
-  HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
-};
 
 // ランク計算
 export const calculateRank = (
@@ -78,7 +76,7 @@ export const useTypingGame = (
   const [combo, setCombo] = useState(0);
   const [maxCombo, setMaxCombo] = useState(0);
   const [gaugeValue, setGaugeValue] = useState(0);
-  const [gaugeMax, setGaugeMax] = useState(150);
+  const [gaugeMax, setGaugeMax] = useState(GAUGE_CONFIG.INITIAL_MAX);
 
   // 入力エンジン & テキスト管理
   const engineRef = useRef<TypingEngine | null>(null);
@@ -261,7 +259,7 @@ export const useTypingGame = (
     setCompletedWords(0);
     setBackspaceCount(0);
     setGaugeValue(0);
-    setGaugeMax(150);
+    setGaugeMax(GAUGE_CONFIG.INITIAL_MAX);
     setMissedWordsRecord([]);
     setMissedCharsRecord({});
     setTimeLeft(DIFFICULTY_SETTINGS[difficulty].time);
@@ -283,8 +281,8 @@ export const useTypingGame = (
     playBsSound();
     engineRef.current.backspace();
 
-    setScore((s) => Math.max(0, s - 1000));
-    addScorePopup(-1000);
+    setScore((s) => Math.max(0, s - SCORE_CONFIG.BACKSPACE_PENALTY));
+    addScorePopup(-SCORE_CONFIG.BACKSPACE_PENALTY);
     setBackspaceCount((c) => c + 1);
 
     updateDisplay();
@@ -307,9 +305,9 @@ export const useTypingGame = (
           setShakeStatus("error");
           setTimeout(() => setShakeStatus("none"), 400);
 
-          setScore((s) => Math.max(0, s - 300));
-          addScorePopup(-300);
-          setGaugeValue((g) => Math.max(0, g - 20));
+          setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
+          addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
+          setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
           setMissCount((c) => c + 1);
           setCombo(0);
           return;
@@ -337,9 +335,9 @@ export const useTypingGame = (
         setShakeStatus("light");
         setTimeout(() => setShakeStatus("none"), 200);
 
-        setGaugeValue((g) => Math.max(0, g - 20));
-        setScore((s) => Math.max(0, s - 300));
-        addScorePopup(-300);
+        setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
+        setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
+        addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
 
         if (targetChar) {
           setMissedCharsRecord((prev) => ({
@@ -384,14 +382,14 @@ export const useTypingGame = (
           addTime(timeBonus, isLarge);
         }
 
-        const basePoint = 100;
+        const basePoint = SCORE_CONFIG.BASE_POINT;
         const multiplier = getScoreMultiplier(nextCombo);
         const addScore = basePoint * multiplier;
 
         setScore((s) => s + addScore);
         addScorePopup(addScore);
 
-        setGaugeValue((prev) => prev + 1);
+        setGaugeValue((prev) => prev + GAUGE_CONFIG.GAIN);
       }
 
       updateDisplay();
@@ -412,7 +410,7 @@ export const useTypingGame = (
               (acc, s) => acc + s.display.length,
               0
             );
-            const bonus = wordLength * 500;
+            const bonus = wordLength * SCORE_CONFIG.PERFECT_BONUS_CHAR_REN;
             setScore((s) => s + bonus);
             addScorePopup(bonus);
             triggerPerfect();
@@ -430,9 +428,9 @@ export const useTypingGame = (
           setShakeStatus("error");
           setTimeout(() => setShakeStatus("none"), 400);
 
-          setScore((s) => Math.max(0, s - 300));
-          addScorePopup(-300);
-          setGaugeValue((g) => Math.max(0, g - 20));
+          setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
+          addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
+          setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
           setCombo(0);
         }
       }
