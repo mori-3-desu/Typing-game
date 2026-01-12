@@ -88,6 +88,7 @@ function App() {
   // 設定画面用
   const [tempPlayerName, setTempPlayerName] = useState("");
   const [nameError, setNameError] = useState("");
+  const [isNameChange, setIsNameChange] = useState("");
 
   const [gameState, setGameState] = useState<GameState>("loading");
   const [difficulty, setDifficulty] = useState<DifficultyLevel>("NORMAL");
@@ -101,7 +102,7 @@ function App() {
   // プレイヤー名（保存されたものを読み込む）
   const [playerName, setPlayerName] = useState(() => {
     const savedName = localStorage.getItem("typing_player_name");
-    return savedName || "Guest";
+    return savedName || "";
   });
 
   // 名前決定済みフラグ（保存されていれば true）
@@ -116,14 +117,16 @@ function App() {
     "normal"
   );
 
-// 1. setUserId を使えるようにして、初期値を空文字にします
+  // 1. setUserId を使えるようにして、初期値を空文字にします
   const [userId, setUserId] = useState("");
 
   // 2. アプリ起動時に「Supabaseから正式なID」をもらう処理を追加
   useEffect(() => {
     const initAuth = async () => {
       // (A) すでにログイン状態が残っているか確認（リロード時など）
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
       if (session) {
         setUserId(session.user.id);
@@ -135,7 +138,7 @@ function App() {
         if (error) {
           console.error("❌ ログイン失敗:", error.message);
         } else if (data.user) {
-           setUserId(data.user.id);
+          setUserId(data.user.id);
         }
       }
     };
@@ -323,8 +326,17 @@ function App() {
     }
 
     // ローカル保存
-    setPlayerName(trimmedName);
-    localStorage.setItem("typing_player_name", trimmedName);
+    const finalName = trimmedName || "Guest";
+    setPlayerName(finalName);
+    localStorage.setItem("typing_player_name", finalName);
+
+    setIsNameChange("名前を保存しました！");
+    setNameError(""); // エラーが出てたら消す
+
+    // 2秒後にメッセージを自動で消す
+    setTimeout(() => {
+      setIsNameChange("");
+    }, 2000);
 
     // DB更新
     try {
@@ -448,10 +460,6 @@ function App() {
 
     setNameError(""); // エラーリセット
 
-    if (!trimmedName) {
-      setPlayerName("Guest");
-    }
-
     if (trimmedName && trimmedName.length > MAX_LENGTH) {
       setNameError(`名前は${MAX_LENGTH}文字以内で入力してください`);
       return;
@@ -466,6 +474,7 @@ function App() {
       return;
     }
 
+    // 入力が空なら"Guest"に、文字があればそれをセット
     setPlayerName(trimmedName || "Guest");
     playDecisionSound();
     setTitlePhase("confirm");
@@ -587,7 +596,7 @@ function App() {
     jpText,
   ]);
 
-const saveScore = useCallback(async () => {
+  const saveScore = useCallback(async () => {
     if (saveStatus === "saving" || saveStatus === "success") return;
 
     const targetStats = lastGameStats || {
@@ -629,23 +638,21 @@ const saveScore = useCallback(async () => {
       }
 
       // 3. upsertを実行（これ1つで 新規登録 or 上書き を自動判断！）
-      const { error: upsertError } = await supabase
-        .from("scores")
-        .upsert(
-          {
-            user_id: userId,
-            difficulty: difficulty,
-            name: playerName, // 名前も常に最新に更新
-            score: targetStats.score,
-            correct: targetStats.correct,
-            miss: targetStats.miss,
-            backspace: targetStats.backspace,
-            combo: targetStats.combo,
-            speed: targetStats.speed,
-            created_at: new Date().toISOString(),
-          },
-          { onConflict: "user_id, difficulty" } // この組み合わせが被ったら上書きせよ、という合図
-        );
+      const { error: upsertError } = await supabase.from("scores").upsert(
+        {
+          user_id: userId,
+          difficulty: difficulty,
+          name: playerName, // 名前も常に最新に更新
+          score: targetStats.score,
+          correct: targetStats.correct,
+          miss: targetStats.miss,
+          backspace: targetStats.backspace,
+          combo: targetStats.combo,
+          speed: targetStats.speed,
+          created_at: new Date().toISOString(),
+        },
+        { onConflict: "user_id, difficulty" } // この組み合わせが被ったら上書きせよ、という合図
+      );
 
       if (upsertError) throw upsertError;
 
@@ -1401,9 +1408,11 @@ const saveScore = useCallback(async () => {
                   >
                     遊び方
                   </button>
-                  <button className="menu-btn" onClick={handleOpenConfig}>
-                    設定
-                  </button>
+                  {isNameConfirmed && (
+                    <button className="menu-btn" onClick={handleOpenConfig}>
+                      設定
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -2642,22 +2651,41 @@ const saveScore = useCallback(async () => {
                     変更
                   </button>
                 </div>
-
                 <div
                   style={{
                     height: "20px",
                     marginTop: "5px",
                     marginLeft: "5px",
+                    display: "flex", // 必要に応じて追加
+                    alignItems: "center", // 上下中央揃え
                   }}
                 >
                   {nameError ? (
+                    // 【優先度1】 エラーがある時
                     <p
                       className="error-fade-in"
-                      style={{ fontSize: "0.85rem", margin: 0 }}
+                      style={{
+                        fontSize: "0.85rem",
+                        margin: 0,
+                        color: "#ff4d4d",
+                      }}
                     >
                       {nameError}
                     </p>
+                  ) : isNameChange ? (
+                    // 【優先度2】 エラーがなく、保存成功メッセージがある時
+                    <p
+                      className="fade-in"
+                      style={{
+                        fontSize: "0.85rem",
+                        margin: 0,
+                        color: "#4dff88",
+                      }} // 緑色で強調
+                    >
+                      ✓ {isNameChange}
+                    </p>
                   ) : (
+                    // 【優先度3】 何もない時（デフォルトの補足）
                     <p
                       style={{
                         fontSize: "0.8rem",
