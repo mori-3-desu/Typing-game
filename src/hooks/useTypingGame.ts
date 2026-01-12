@@ -6,6 +6,9 @@ import {
   SCORE_CONFIG,
   GAUGE_CONFIG,
   RANK_THRESHOLDS,
+  COMBO_THRESHOLDS,
+  SCORE_COMBO_MULTIPLIER,
+  COMBO_TIME_BONUS,
 } from "../utils/setting";
 import {
   playTypeSound,
@@ -46,17 +49,20 @@ export const calculateRank = (
 
 // コンボ数に応じたクラス名
 const getComboClass = (val: number) => {
-  if (val >= 200) return "is-rainbow";
-  if (val >= 100) return "is-gold";
+  if (val >= COMBO_THRESHOLDS.RAINBOW) return "is-rainbow";
+  if (val >= COMBO_THRESHOLDS.GOLD) return "is-gold";
   return "";
 };
 
 // コンボ数に応じたスコア倍率
 const getScoreMultiplier = (currentCombo: number) => {
-  if (currentCombo <= 50) return 1;
-  if (currentCombo <= 100) return 2;
-  if (currentCombo <= 200) return 4;
-  return 10;
+  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_1)
+    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_BASE;
+  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_2)
+    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MID;
+  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_3)
+    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_HIGH;
+  return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
 };
 
 export const useTypingGame = (
@@ -117,7 +123,7 @@ export const useTypingGame = (
   const comboClass = getComboClass(combo);
 
   // レインボーモードも「コンボが200以上」ならTrue、そうでなければFalse
-  const isRainbowMode = combo >= 200;
+  const isRainbowMode = combo >= COMBO_THRESHOLDS.RAINBOW;
 
   // 現在の入力速度 (miss、backspaseは反映されないように設定する)
   const currentSpeed =
@@ -361,18 +367,30 @@ export const useTypingGame = (
         setCombo(nextCombo);
         if (nextCombo > maxCombo) setMaxCombo(nextCombo);
 
-        let timeBonus = 0;
+        let timeBonus = COMBO_TIME_BONUS.INIT_BONUS;
         let isLarge = false;
-        if (nextCombo <= 100) {
-          if (nextCombo > 0 && nextCombo % 20 === 0) timeBonus = 1;
-        } else if (nextCombo <= 200) {
-          if ((nextCombo - 100) % 25 === 0) {
-            timeBonus = 3;
+        if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) {
+          if (
+            nextCombo > 0 &&
+            nextCombo % COMBO_TIME_BONUS.INTERVAL_LEVEL_1 === 0
+          )
+            timeBonus = COMBO_TIME_BONUS.BONUS_BASE;
+        } else if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_2) {
+          if (
+            (nextCombo - COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) %
+              COMBO_TIME_BONUS.INTERVAL_LEVEL_2 ===
+            0
+          ) {
+            timeBonus = COMBO_TIME_BONUS.BONUS_MID;
             isLarge = false;
           }
         } else {
-          if ((nextCombo - 200) % 30 === 0) {
-            timeBonus = 5;
+          if (
+            (nextCombo - COMBO_TIME_BONUS.THRESHOLDS_LEVEL_2) %
+              COMBO_TIME_BONUS.INTERVAL_LEVEL_3 ===
+            0
+          ) {
+            timeBonus = COMBO_TIME_BONUS.BONUS_MAX;
             isLarge = true;
           }
         }

@@ -35,7 +35,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     bgm: "/bgm/Stardust.mp3",
     color: "#ffff00", // 黄色系
   },
-};
+} as const;
 
 // 連打メーターの設定値
 export const GAUGE_CONFIG = {
@@ -53,11 +53,52 @@ export const SCORE_CONFIG = {
   MISS_PENALTY: 300, // ミス時の減点ポイント
   BACKSPACE_PENALTY: 1000, // バックスペース時の減点ポイント
   PERFECT_BONUS_CHAR_REN: 500, // 文字数×この値＝PERFECTボーナス
-} as const; // as const をつけると誤って書き換えられなくなるので安全です
+} as const;
 
+// ランク基準
 export const RANK_THRESHOLDS = {
   // ミスなく継続すれば比較的簡単に到達するのでランク追加したりで調整予定
   EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
   NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
   HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
+} as const;
+
+// コンボに応じたクラス
+export const COMBO_THRESHOLDS = {
+  GOLD: 100,
+  RAINBOW: 200,
+} as const;
+
+// コンボ数によるスコア倍率
+export const SCORE_COMBO_MULTIPLIER = {
+  // ここまで到達したらの閾値
+  THRESHOLDS_LEVEL_1: 50,
+  THRESHOLDS_LEVEL_2: 100,
+  THRESHOLDS_LEVEL_3: 200,
+
+  // コンボ倍率
+  MULTIPLIER_BASE: 1,
+  MULTIPLIER_MID: 2,
+  MULTIPLIER_HIGH: 4,
+  MULTIPLIER_MAX: 10,
+} as const;
+
+// コンボ継続タイムボーナス
+export const COMBO_TIME_BONUS = {
+  // 初期ボーナス値
+  INIT_BONUS: 0,
+
+  // ボーナスが発生する間隔
+  INTERVAL_LEVEL_1: 20, // 20コンボごと
+  INTERVAL_LEVEL_2: 25, // 25コンボごと
+  INTERVAL_LEVEL_3: 30, // 30コンボごと
+
+  // ここまで到達したらの閾値
+  THRESHOLDS_LEVEL_1: 100, // 100コンボ
+  THRESHOLDS_LEVEL_2: 200, // 200コンボ
+
+  // タイムボーナス加算量
+  BONUS_BASE: 1,
+  BONUS_MID: 3,
+  BONUS_MAX: 5,
 };
