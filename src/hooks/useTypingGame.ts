@@ -3,7 +3,10 @@ import { TypingEngine, Segment } from "./useTypingEngine";
 import {
   type DifficultyLevel,
   DIFFICULTY_SETTINGS,
+  UI_ANIMATION_CONFIG,
+  JUDGE_COLOR,
   SCORE_CONFIG,
+  SCORE_DIRECTION,
   GAUGE_CONFIG,
   RANK_THRESHOLDS,
   COMBO_THRESHOLDS,
@@ -129,7 +132,7 @@ export const useTypingGame = (
   const currentSpeed =
     elapsedTime > 0.1 ? (correctCount / elapsedTime).toFixed(2) : "0.00";
 
-  // 汎用のポップアップ追加関数 (これをマスターにする)
+  // 汎用のポップアップ追加関数
   const addPopup = useCallback(
     (text: string, type: "normal" | "large" | "miss") => {
       const newPopup: BonusPopup = {
@@ -142,7 +145,7 @@ export const useTypingGame = (
       // 1秒後に自動削除
       setTimeout(() => {
         setBonusPopups((prev) => prev.filter((p) => p.id !== newPopup.id));
-      }, 1000);
+      }, UI_ANIMATION_CONFIG.POPUP_DURATION_MS);
     },
     []
   );
@@ -153,7 +156,10 @@ export const useTypingGame = (
       // ロジック部分
       setTimeLeft((t) => t + sec);
       setIsTimeAdded(true);
-      setTimeout(() => setIsTimeAdded(false), 500);
+      setTimeout(
+        () => setIsTimeAdded(false),
+        UI_ANIMATION_CONFIG.TIME_DURATION_MS
+      );
 
       // 表示部分 (addPopupに丸投げ！)
       addPopup(`+${sec}秒`, isLarge ? "large" : "normal");
@@ -164,19 +170,20 @@ export const useTypingGame = (
   // スコア追加 (操作する配列が違うので独立のまま)
   const addScorePopup = useCallback((amount: number) => {
     let type: ScorePopup["type"] = "popup-normal";
-    if (amount < 0) type = "popup-miss";
-    else if (amount >= 10000) type = "popup-rainbow";
-    else if (amount > 1000) type = "popup-gold";
+    if (amount < SCORE_DIRECTION.PENALTY) type = "popup-miss";
+    else if (amount >= SCORE_DIRECTION.RAINBOW) type = "popup-rainbow";
+    else if (amount >= SCORE_DIRECTION.GOLD) type = "popup-gold";
 
+    // データの重複を防ぐためにIDにランダムな乱数を追加(ユニークにしないとsetTimeoutで消すときに出したばかりのポップアップまで消える為)
     const newP: ScorePopup = {
-      id: Date.now() + Math.random(),
+      id: Date.now() + Math.random(), // ここでデータが衝突しないようランダムな乱数を追加する
       text: amount > 0 ? `+${amount}` : `${amount}`,
       type,
     };
     setScorePopups((prev) => [...prev, newP]);
     setTimeout(
       () => setScorePopups((prev) => prev.filter((p) => p.id !== newP.id)),
-      1000
+      UI_ANIMATION_CONFIG.POPUP_DURATION_MS
     );
   }, []);
 
@@ -186,7 +193,7 @@ export const useTypingGame = (
     setPerfectPopups((prev) => [...prev, newP]);
     setTimeout(
       () => setPerfectPopups((prev) => prev.filter((p) => p.id !== newP.id)),
-      1000
+      UI_ANIMATION_CONFIG.POPUP_DURATION_MS
     );
   }, []);
 
@@ -303,13 +310,16 @@ export const useTypingGame = (
       const isFinished = engine.segIndex >= engine.segments.length;
       if (isFinished) {
         const allGreen = engine.segments.every((s) =>
-          s.typedLog.every((t) => t.color === "#4aff50")
+          s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT)
         );
         if (!allGreen) {
           // ミスが含まれてたら次に進ませない
           playMissSound();
           setShakeStatus("error");
-          setTimeout(() => setShakeStatus("none"), 400);
+          setTimeout(
+            () => setShakeStatus("none"),
+            UI_ANIMATION_CONFIG.NO_ALLGREEN_DURATION_MS
+          );
 
           setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
           addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
@@ -339,7 +349,10 @@ export const useTypingGame = (
         setCombo(0); // コンボリセット→自動的にRainbowも解除
 
         setShakeStatus("light");
-        setTimeout(() => setShakeStatus("none"), 200);
+        setTimeout(
+          () => setShakeStatus("none"),
+          UI_ANIMATION_CONFIG.MISS_DURATION_MS
+        );
 
         setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
         setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
@@ -415,7 +428,7 @@ export const useTypingGame = (
       const currentIsFinished = engine.segIndex >= engine.segments.length;
       if (currentIsFinished) {
         const allGreen = engine.segments.every((s) =>
-          s.typedLog.every((t) => t.color === "#4aff50")
+          s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT)
         );
 
         if (allGreen) {
@@ -444,7 +457,10 @@ export const useTypingGame = (
         } else {
           playMissSound();
           setShakeStatus("error");
-          setTimeout(() => setShakeStatus("none"), 400);
+          setTimeout(
+            () => setShakeStatus("none"),
+            UI_ANIMATION_CONFIG.NO_ALLGREEN_DURATION_MS
+          );
 
           setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
           addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
@@ -482,11 +498,17 @@ export const useTypingGame = (
   useEffect(() => {
     if (displayScore !== score) {
       const diff = score - displayScore;
+      const easing = UI_ANIMATION_CONFIG.SCORE_EASING;
       const step =
-        Math.abs(diff) < 5 ? (diff > 0 ? 1 : -1) : Math.ceil(diff / 5);
+        // ここで差分に応じてダイヤル式に増減させてる
+        Math.abs(diff) < easing
+          ? diff > 0
+            ? 1
+            : -1
+          : Math.ceil(diff / easing);
       const timer = setTimeout(() => {
         setDisplayScore((prev) => prev + step);
-      }, 16);
+      }, UI_ANIMATION_CONFIG.SCORE_FLUCTUATION_MS);
       return () => clearTimeout(timer);
     }
   }, [score, displayScore]);
