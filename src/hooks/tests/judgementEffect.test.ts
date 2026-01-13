@@ -12,14 +12,23 @@ vi.mock("../../utils/audio", () => ({
   playBsSound: vi.fn(),
 }));
 
-// Settingモック
-vi.mock("../../utils/setting", () => ({
-  DIFFICULTY_SETTINGS: {
-    EASY: { time: 60, bgm: "dummy" },
-    NORMAL: { time: 60, bgm: "dummy" },
-    HARD: { time: 60, bgm: "dummy" },
-  },
-}));
+vi.mock("../../utils/setting", async (importOriginal) => {
+  // 1. 本物のファイルを全部持ってくる
+  const actual = await importOriginal<typeof import("../../utils/setting")>();
+
+  return {
+    // 2. 本物の定数（GAUGE_CONFIG, SCORE_CONFIGなど全部）をここに展開！
+    // 書かなくていいんです。ここに全部入ってます。
+    ...actual,
+
+    // 3. 上書きしたい「難易度設定」だけ手動で書く
+    DIFFICULTY_SETTINGS: {
+      EASY: { time: 60, bgm: "dummy" },
+      NORMAL: { time: 45, bgm: "dummy" },
+      HARD: { time: 30, bgm: "dummy" },
+    },
+  };
+});
 
 describe("キー判定テスト（データ固定版）", () => {
   // テスト用データ：必ず "test" が出るようにする
