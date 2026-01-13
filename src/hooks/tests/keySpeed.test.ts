@@ -12,13 +12,23 @@ vi.mock("../../utils/audio", () => ({
   playBsSound: vi.fn(),
 }));
 
-vi.mock("../../utils/setting", () => ({
-  DIFFICULTY_SETTINGS: {
-    EASY: { time: 60, bgm: "d" },
-    NORMAL: { time: 60, bgm: "d" },
-    HARD: { time: 60, bgm: "d" },
-  },
-}));
+vi.mock("../../utils/setting", async (importOriginal) => {
+  // 1. 本物のファイルを全部持ってくる
+  const actual = await importOriginal<typeof import("../../utils/setting")>();
+
+  return {
+    // 2. 本物の定数（GAUGE_CONFIG, SCORE_CONFIGなど全部）をここに展開！
+    // 書かなくていいんです。ここに全部入ってます。
+    ...actual,
+
+    // 3. 上書きしたい「難易度設定」だけ手動で書く
+    DIFFICULTY_SETTINGS: {
+      EASY: { time: 60, bgm: "dummy" },
+      NORMAL: { time: 45, bgm: "dummy" },
+      HARD: { time: 30, bgm: "dummy" },
+    },
+  };
+});
 
 describe("入力速度(Speed)の計算テスト", () => {
   const mockData: WordDataMap = {

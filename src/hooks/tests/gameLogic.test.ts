@@ -12,14 +12,23 @@ vi.mock("../../utils/audio", () => ({
   playBsSound: vi.fn(),
 }));
 
-// 2. 設定のモック
-vi.mock("../../utils/setting", () => ({
-  DIFFICULTY_SETTINGS: {
-    EASY: { time: 60, bgm: "dummy" },
-    NORMAL: { time: 45, bgm: "dummy" },
-    HARD: { time: 30, bgm: "dummy" },
-  },
-}));
+vi.mock("../../utils/setting", async (importOriginal) => {
+  // 1. 本物のファイルを全部持ってくる
+  const actual = await importOriginal<typeof import("../../utils/setting")>();
+
+  return {
+    // 2. 本物の定数（GAUGE_CONFIG, SCORE_CONFIGなど全部）をここに展開！
+    // 書かなくていいんです。ここに全部入ってます。
+    ...actual,
+
+    // 3. 上書きしたい「難易度設定」だけ手動で書く
+    DIFFICULTY_SETTINGS: {
+      EASY: { time: 60, bgm: "dummy" },
+      NORMAL: { time: 45, bgm: "dummy" },
+      HARD: { time: 30, bgm: "dummy" },
+    },
+  };
+});
 
 // ★変更点: ファイルのモック(vi.mock('../data/words'))はもう不要なので削除！
 
