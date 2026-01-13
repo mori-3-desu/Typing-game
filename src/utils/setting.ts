@@ -37,6 +37,22 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   },
 } as const;
 
+// 判定の色
+export const JUDGE_COLOR = {
+  CORRECT: "#4aff50",
+  MISS: "#ff4444"
+} as const;
+
+// UIの表示時間、アニメーション時間の設定
+export const UI_ANIMATION_CONFIG = {
+  POPUP_DURATION_MS: 1000, // 一秒でポップが消える(各種)
+  TIME_DURATION_MS: 500, // 0.5秒でポップが消える(コンボのタイムボーナス)
+  MISS_DURATION_MS: 200, // ミスタイプ時の揺らす演出
+  NO_ALLGREEN_DURATION_MS: 400, // ミスが含まれている状態で最後まで入力された時の揺らす演出
+  SCORE_FLUCTUATION_MS: 16, // スコア増減の演出(ダイヤル式、60FPS基準)
+  SCORE_EASING: 5 // スコア増減の速さ(ダイヤルの速さ)
+}
+
 // 連打メーターの設定値
 export const GAUGE_CONFIG = {
   INITIAL_MAX: 150, // 連打メーター初期値
@@ -55,12 +71,11 @@ export const SCORE_CONFIG = {
   PERFECT_BONUS_CHAR_REN: 500, // 文字数×この値＝PERFECTボーナス
 } as const;
 
-// ランク基準
-export const RANK_THRESHOLDS = {
-  // ミスなく継続すれば比較的簡単に到達するのでランク追加したりで調整予定
-  EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
-  NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
-  HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
+// スコア増加量によって変わる演出
+export const SCORE_DIRECTION = {
+  PENALTY: 0,
+  GOLD: 1000,
+  RAINBOW: 10000,
 } as const;
 
 // コンボに応じたクラス
@@ -102,3 +117,11 @@ export const COMBO_TIME_BONUS = {
   BONUS_MID: 3,
   BONUS_MAX: 5,
 };
+
+// ランク基準
+export const RANK_THRESHOLDS = {
+  // ミスなく継続すれば比較的簡単に到達するのでランク追加したりで調整予定
+  EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
+  NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
+  HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
+} as const;

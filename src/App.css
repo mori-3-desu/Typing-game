@@ -407,7 +407,7 @@ body {
    ========================================= */
 
 /* ポップなモーダルの枠 */
-.pop-modal-frame {
+.modal-frame {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -2389,11 +2389,11 @@ body {
   }
   80% {
     opacity: 1;
-    transform: translateY(-20px) scale(1);
+    transform: translateY(-10px) scale(1);
   }
   100% {
     opacity: 0;
-    transform: translateY(-40px) scale(1);
+    transform: translateY(-28px) scale(1);
   }
 }
 
@@ -2412,7 +2412,7 @@ body {
   }
   100% {
     opacity: 0;
-    transform: translateY(-50px) scale(1.5);
+    transform: translateY(-55px) scale(1.5);
   }
 }
 
@@ -2427,7 +2427,7 @@ body {
   }
   100% {
     opacity: 0;
-    transform: translateY(30px) rotate(10deg);
+    transform: translateY(20px) rotate(10deg);
   }
 }
 
@@ -2443,7 +2443,7 @@ body {
   -webkit-text-stroke: 1px #8b4500;
   text-shadow: 2px 2px 0px #fff;
   font-size: 32px;
-  animation: popup-normal 1s ease-out forwards;
+  animation: popup-normal 0.55s ease-out forwards;
 }
 
 .popup-rainbow {
@@ -2461,7 +2461,7 @@ body {
   -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
   filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.5));
   font-size: 40px;
-  animation: popup-rainbow 1.5s ease-out forwards;
+  animation: popup-rainbow 1.3s ease-out forwards;
 }
 
 .popup-miss {

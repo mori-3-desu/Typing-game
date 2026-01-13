@@ -1,4 +1,5 @@
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
+import { JUDGE_COLOR } from "../utils/setting";
 
 // Segment クラス
 export class Segment {
@@ -37,13 +38,13 @@ export class Segment {
     return display.slice(this.inputBuffer.length + 1);
   }
 
-  handleKey(k: string): string {
-    let inputChar = k;
+  handleKey(key: string): string {
+    let inputChar = key;
     const nextExpected = this.getCurrentChar();
 
     // 句読点置換処理
-    if (nextExpected === "、" && k === ",") inputChar = "、";
-    else if (nextExpected === "。" && k === ".") inputChar = "。";
+    if (nextExpected === "、" && key === ",") inputChar = "、";
+    else if (nextExpected === "。" && key === ".") inputChar = "。";
 
     const nextBuffer = this.inputBuffer + inputChar;
     const possibleRoutes = this.patterns.filter((p) =>
@@ -53,7 +54,7 @@ export class Segment {
     // 正解ルート
     if (possibleRoutes.length > 0) {
       this.inputBuffer = nextBuffer;
-      this.typedLog.push({ char: inputChar, color: "#4aff50" }); // 緑
+      this.typedLog.push({ char: inputChar, color: JUDGE_COLOR.CORRECT }); // 緑
 
       const exactMatch = possibleRoutes.find((p) => p === this.inputBuffer);
       if (exactMatch) return "NEXT";
@@ -75,7 +76,7 @@ export class Segment {
 
     // 赤色進行
     this.inputBuffer += expectedChar;
-    this.typedLog.push({ char: expectedChar, color: "#ff4444" });
+    this.typedLog.push({ char: expectedChar, color: JUDGE_COLOR.MISS });
 
     if (this.patterns.includes(this.inputBuffer)) {
       return "MISS_NEXT"; // TypingGame側でミスしてたら次の単語に進めないようにする
@@ -160,7 +161,7 @@ export class TypingEngine {
       ) {
         // 必須じゃないところにnnが入力された
         prevSegment.inputBuffer = "nn";
-        prevSegment.typedLog.push({ char: "n", color: "#4aff50" }); // nnにして正解判定
+        prevSegment.typedLog.push({ char: "n", color: JUDGE_COLOR.CORRECT }); // nnにして正解判定
         prevSegment.isExpanded = true; // Τ nn拡張専用のバックスペース処理で使うフラグ
         return { status: "EXPANDED" }; // 」
       }
