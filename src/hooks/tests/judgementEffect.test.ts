@@ -17,7 +17,6 @@ vi.mock("../../utils/setting", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../../utils/setting")>();
 
   return {
-    // 2. 本物の定数（GAUGE_CONFIG, SCORE_CONFIGなど全部）をここに展開！
     // 書かなくていいんです。ここに全部入ってます。
     ...actual,
 
