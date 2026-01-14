@@ -380,21 +380,21 @@ export const useTypingGame = (
         setCombo(nextCombo);
         if (nextCombo > maxCombo) setMaxCombo(nextCombo);
 
-        let timeBonus = COMBO_TIME_BONUS.INIT_BONUS;
+        let timeBonus = COMBO_TIME_BONUS.INIT_BONUS_SEC;
         let isLarge = false;
         if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) {
           if (
             nextCombo > 0 &&
             nextCombo % COMBO_TIME_BONUS.INTERVAL_LEVEL_1 === 0
           )
-            timeBonus = COMBO_TIME_BONUS.BONUS_BASE;
+            timeBonus = COMBO_TIME_BONUS.BONUS_BASE_SEC;
         } else if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_2) {
           if (
             (nextCombo - COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) %
               COMBO_TIME_BONUS.INTERVAL_LEVEL_2 ===
             0
           ) {
-            timeBonus = COMBO_TIME_BONUS.BONUS_MID;
+            timeBonus = COMBO_TIME_BONUS.BONUS_MID_SEC;
             isLarge = false;
           }
         } else {
@@ -403,7 +403,7 @@ export const useTypingGame = (
               COMBO_TIME_BONUS.INTERVAL_LEVEL_3 ===
             0
           ) {
-            timeBonus = COMBO_TIME_BONUS.BONUS_MAX;
+            timeBonus = COMBO_TIME_BONUS.BONUS_MAX_SEC;
             isLarge = true;
           }
         }
