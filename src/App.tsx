@@ -1,7 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
-import { type DifficultyLevel, DIFFICULTY_SETTINGS } from "./utils/setting";
+import {
+  type DifficultyLevel,
+  DIFFICULTY_SETTINGS,
+  PLAYER_NAME_CHARS,
+  UI_TIMINGS,
+  DISPLAY_SCALE,
+  READY_ANIMATION
+} from "./utils/setting";
 import {
   initAudio,
   playDecisionSound,
@@ -303,7 +310,6 @@ function App() {
 
   const handleConfigNameSubmit = async () => {
     const trimmedName = tempPlayerName.trim();
-    const MAX_LENGTH = 10;
 
     setNameError(""); // エラーリセット
 
@@ -311,8 +317,8 @@ function App() {
       setNameError("名前を入力してください");
       return;
     }
-    if (trimmedName.length > MAX_LENGTH) {
-      setNameError(`名前は${MAX_LENGTH}文字以内で入力してください`);
+    if (trimmedName.length > PLAYER_NAME_CHARS.MAX) {
+      setNameError(`名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`);
       return;
     }
 
@@ -336,7 +342,7 @@ function App() {
     // 2秒後にメッセージを自動で消す
     setTimeout(() => {
       setIsNameChange("");
-    }, 2000);
+    }, UI_TIMINGS.MESSAGE_AUTO_CLOSE);
 
     // DB更新
     try {
@@ -365,7 +371,7 @@ function App() {
   const readyImageRef = useRef<HTMLImageElement | null>(null); // 画像データの保持
 
   const animationState = useRef({
-    readyY: -800,
+    readyY: -READY_ANIMATION.INIT,
     isReadyAnimating: false,
     showEnterText: false,
     showGoText: false,
@@ -388,8 +394,7 @@ function App() {
     const checkLoad = setInterval(() => {
       // 経過時間を計算
       const elapsedTime = Date.now() - startTime;
-      const MIN_LOADING_TIME = 1200; // 最低時間を指定
-      if (dbWordData && elapsedTime > MIN_LOADING_TIME) {
+      if (dbWordData && elapsedTime > UI_TIMINGS.MIN_LOADING_TIME) {
         clearInterval(checkLoad);
         setIsLoaded(true);
         setGameState("title");
@@ -399,8 +404,8 @@ function App() {
           setTimeout(() => {
             setEnableBounce(true);
             setIsInputLocked(false); // 入力許可
-          }, 1200);
-        }, 500);
+          }, UI_TIMINGS.TITLE.BOUNCE_DELAY);
+        }, UI_TIMINGS.TITLE.SHOW_DELAY);
       }
     }, 100);
 
@@ -444,7 +449,7 @@ function App() {
       setIsInputLocked(false);
       setNameError(""); // エラーリセット
       setTitlePhase("input");
-    }, 700);
+    }, UI_TIMINGS.TITLE.BUTTON_FADE_OUT);
   };
 
   // タイトル画面：入力キャンセル（タイトルロゴへ戻る）
@@ -456,12 +461,11 @@ function App() {
   // タイトル画面：名前決定処理
   const handleNameSubmit = () => {
     const trimmedName = playerName.trim();
-    const MAX_LENGTH = 10;
 
     setNameError(""); // エラーリセット
 
-    if (trimmedName && trimmedName.length > MAX_LENGTH) {
-      setNameError(`名前は${MAX_LENGTH}文字以内で入力してください`);
+    if (trimmedName && trimmedName.length > PLAYER_NAME_CHARS.MAX) {
+      setNameError(`名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`);
       return;
     }
 
@@ -500,8 +504,8 @@ function App() {
       const scaler = document.getElementById("scaler");
       if (scaler) {
         const scale = Math.min(
-          window.innerWidth / 1200,
-          window.innerHeight / 780
+          window.innerWidth / DISPLAY_SCALE.WIDTH,
+          window.innerHeight / DISPLAY_SCALE.HEIGHT
         );
         scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
       }
@@ -570,13 +574,13 @@ function App() {
         setIsNewRecord(false);
       }
 
-      setTimeout(() => setIsFinishExit(true), 1500);
-      setTimeout(() => setIsWhiteFade(true), 2000);
+      setTimeout(() => setIsFinishExit(true), UI_TIMINGS.GAME.FINISH_ANIMATION);
+      setTimeout(() => setIsWhiteFade(true), UI_TIMINGS.GAME.WHITE_FADE_OUT);
       setTimeout(() => {
         setGameState("result");
         setIsWhiteFade(false);
         setIsFinishExit(false);
-      }, 2500);
+      }, UI_TIMINGS.GAME.GO_TO_RESULT);
     }
   }, [
     timeLeft,
@@ -795,12 +799,12 @@ function App() {
       resultTimersRef.current = [];
 
       const schedule = [
-        { step: 1, delay: 600, sound: playResultSound },
-        { step: 2, delay: 1300, sound: playResultSound },
-        { step: 3, delay: 2000, sound: playResultSound },
+        { step: 1, delay: UI_TIMINGS.RESULT.STEP_1, sound: playResultSound },
+        { step: 2, delay: UI_TIMINGS.RESULT.STEP_2, sound: playResultSound },
+        { step: 3, delay: UI_TIMINGS.RESULT.STEP_3, sound: playResultSound },
         {
           step: 4,
-          delay: 3500,
+          delay: UI_TIMINGS.RESULT.STEP_4,
           sound: () => {
             // ランクによって変動
             if (currentStats.rank === "S") playRankSSound();
@@ -810,7 +814,7 @@ function App() {
             else playRankDSound();
           },
         },
-        { step: 5, delay: 4500, sound: null },
+        { step: 5, delay: UI_TIMINGS.RESULT.STEP_5, sound: null },
       ];
 
       schedule.forEach(({ step, delay, sound }) => {
@@ -892,13 +896,13 @@ function App() {
       ctx &&
       (gameState === "playing" || gameState === "finishing")
     ) {
-      canvas.width = 1200;
-      canvas.height = 780;
+      canvas.width = DISPLAY_SCALE.WIDTH;
+      canvas.height = DISPLAY_SCALE.HEIGHT;
 
       // ready降下(まぁ別に降下しなくていいかも)
       if (playPhase === "ready") {
         if (state.isReadyAnimating) {
-          state.readyY += 18;
+          state.readyY += READY_ANIMATION.DROP;
           if (state.readyY >= 0) {
             state.readyY = 0;
             state.isReadyAnimating = false;
@@ -941,7 +945,7 @@ function App() {
     setSaveStatus("idle");
     setPlayPhase("ready");
     animationState.current = {
-      readyY: -800,
+      readyY: -READY_ANIMATION.INIT,
       isReadyAnimating: true,
       showEnterText: false,
       showGoText: false,
@@ -975,7 +979,7 @@ function App() {
     setTimeLeft(DIFFICULTY_SETTINGS[difficulty].time);
     stopSelectBgm();
     animationState.current = {
-      readyY: -800,
+      readyY: -READY_ANIMATION.INIT,
       isReadyAnimating: true,
       showEnterText: false,
       showGoText: false,
@@ -1014,8 +1018,8 @@ function App() {
       startSelectBgm();
       setGameState("difficulty");
       setIsTitleExiting(false);
-      setTimeout(() => setIsInputLocked(false), 500);
-    }, 600);
+      setTimeout(() => setIsInputLocked(false), UI_TIMINGS.TITLE.INPUT_LOCK);
+    }, UI_TIMINGS.DIFFICULTY.SELECT_START);
   };
 
   useEffect(() => {
@@ -1120,7 +1124,7 @@ function App() {
     setTimeLeft(DIFFICULTY_SETTINGS[diff].time);
     stopSelectBgm();
     animationState.current = {
-      readyY: -800,
+      readyY: -READY_ANIMATION.INIT,
       isReadyAnimating: true,
       showEnterText: false,
       showGoText: false,
@@ -1155,7 +1159,7 @@ function App() {
       setTimeout(() => {
         setEnableBounce(true);
         setIsInputLocked(false);
-      }, 1200);
+      }, UI_TIMINGS.TITLE.BOUNCE_DELAY);
     }, 100);
   };
 
@@ -2623,11 +2627,11 @@ function App() {
                       nameError ? "input-error-shake" : ""
                     }`}
                     value={tempPlayerName}
+                    maxLength={PLAYER_NAME_CHARS.MAX}
                     onChange={(e) => {
                       setTempPlayerName(e.target.value);
                       if (nameError) setNameError("");
                     }}
-                    maxLength={10}
                     placeholder="Guest"
                     style={{
                       flex: 1,
