@@ -1,3 +1,4 @@
+// TODO: ポップの丸め誤差修正する。(ランダムかけたけどエラー出た)
 import { useState, useRef, useCallback, useEffect } from "react";
 import { TypingEngine, Segment } from "./useTypingEngine";
 import {
@@ -22,20 +23,14 @@ import {
   playBsSound,
 } from "../utils/audio";
 
-type MissedWord = { word: string; misses: number };
-type TypedLog = { char: string; color: string };
-type BonusPopup = {
-  id: number;
-  text: string;
-  type: "normal" | "large" | "miss";
-};
-type ScorePopup = {
-  id: number;
-  text: string;
-  type: "popup-normal" | "popup-gold" | "popup-rainbow" | "popup-miss";
-};
-type PerfectPopup = { id: number };
-export type WordDataMap = Record<string, { jp: string; roma: string }[]>;
+import {
+  type ScorePopup,
+  type BonusPopup,
+  type TypedLog,
+  type PerfectPopup,
+  type MissedWord,
+  type WordDataMap,
+} from "../types";
 
 // ランク計算
 export const calculateRank = (
@@ -181,6 +176,7 @@ export const useTypingGame = (
       type,
     };
     setScorePopups((prev) => [...prev, newP]);
+    // todo:ここ読みづらいので削除関数を作る
     setTimeout(
       () => setScorePopups((prev) => prev.filter((p) => p.id !== newP.id)),
       UI_ANIMATION_CONFIG.POPUP_DURATION_MS
