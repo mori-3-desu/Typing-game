@@ -1,3 +1,5 @@
+// todo:マジックナンバーを消す
+// TODO:全体的に分かりずらいから修正していく
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
@@ -7,7 +9,9 @@ import {
   PLAYER_NAME_CHARS,
   UI_TIMINGS,
   DISPLAY_SCALE,
-  READY_ANIMATION
+  STORAGE_KEYS,
+  READY_GO_ANIMATION,
+  LIMIT_DATA,
 } from "./utils/setting";
 import {
   initAudio,
@@ -28,7 +32,14 @@ import {
 import { setVolumes } from "./utils/audio";
 import { useConfig } from "./hooks/useConfig";
 import { drawReadyAnimation, drawGoAnimation } from "./utils/transitions";
-import { useTypingGame, type WordDataMap } from "./hooks/useTypingGame";
+import { useTypingGame } from "./hooks/useTypingGame";
+import {
+  type WordDataMap,
+  type GameResultStats,
+  type RankingScore,
+  type WeakWord,
+  type WordRow,
+} from "./types";
 
 // ゲーム始まる前に取得
 const preloadImages = () => {
@@ -50,18 +61,18 @@ const preloadImages = () => {
 
 // スコア数値のみ取得（後方互換）
 const getSavedHighScore = (level: DifficultyLevel): number => {
-  const key = `typing_hiscore_${level.toLowerCase()}`;
+  const key = `${STORAGE_KEYS.HISCORE_REGISTER}${level.toLowerCase()}`;
   const saved = localStorage.getItem(key);
-  return saved ? parseInt(saved, 10) : 0;
+  return saved ? parseInt(saved, 10) : 0; // 10進数で保存
 };
 
 // 詳細データも取得
 const getSavedHighScoreResult = (level: DifficultyLevel) => {
-  const key = `typing_hiscore_data_${level.toLowerCase()}`;
+  const key = `${STORAGE_KEYS.HISCORE_DATA_REGISTER}_${level.toLowerCase()}`;
   const saved = localStorage.getItem(key);
   if (saved) {
     try {
-      return JSON.parse(saved); // 元のオブジェクトに変換
+      return JSON.parse(saved) as GameResultStats; // 元のオブジェクトに変換
     } catch (e) {
       console.error("Save data parse error", e);
       return null;
@@ -108,13 +119,13 @@ function App() {
 
   // プレイヤー名（保存されたものを読み込む）
   const [playerName, setPlayerName] = useState(() => {
-    const savedName = localStorage.getItem("typing_player_name");
+    const savedName = localStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
     return savedName || "";
   });
 
   // 名前決定済みフラグ（保存されていれば true）
   const [isNameConfirmed, setIsNameConfirmed] = useState(() => {
-    const savedName = localStorage.getItem("typing_player_name");
+    const savedName = localStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
     return !!savedName;
   });
 
@@ -165,7 +176,7 @@ function App() {
   >("idle");
 
   // ランキング機能
-  const [rankingData, setRankingData] = useState<any[]>([]);
+  const [rankingData, setRankingData] = useState<RankingScore[]>([]);
   const [showRanking, setShowRanking] = useState(false);
   const [isDevRankingMode, setIsDevRankingMode] = useState(false);
 
@@ -178,10 +189,12 @@ function App() {
   const [scoreDiff, setScoreDiff] = useState(0);
 
   // 閲覧モード用の詳細データ保持
-  const [reviewData, setReviewData] = useState<any>(null);
+  const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
 
   // 直前のゲーム結果を固定保持するためのステート
-  const [lastGameStats, setLastGameStats] = useState<any>(null);
+  const [lastGameStats, setLastGameStats] = useState<GameResultStats | null>(
+    null
+  );
 
   const [resultAnimStep, setResultAnimStep] = useState(0);
   const resultTimersRef = useRef<number[]>([]);
@@ -261,8 +274,10 @@ function App() {
             HARD: [],
           };
 
-          wordsData.forEach((row: any) => {
-            if (formattedData[row.difficulty]) {
+          wordsData.forEach((row: WordRow) => {
+            // ここのコード見返す
+            const level = row.difficulty as DifficultyLevel;
+            if (formattedData[level]) {
               formattedData[row.difficulty].push({
                 jp: row.jp,
                 roma: row.roma,
@@ -282,7 +297,7 @@ function App() {
 
         if (ngData) {
           // DBの形 [{word: "xx"}, {word: "yy"}] を ["xx", "yy"] に変換
-          const list = ngData.map((item: any) => item.word);
+          const list = ngData.map((item: { word: string }) => item.word);
 
           setNgWordsList(list); // Stateに保存
         }
@@ -334,7 +349,7 @@ function App() {
     // ローカル保存
     const finalName = trimmedName || "Guest";
     setPlayerName(finalName);
-    localStorage.setItem("typing_player_name", finalName);
+    localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, finalName);
 
     setIsNameChange("名前を保存しました！");
     setNameError(""); // エラーが出てたら消す
@@ -371,11 +386,11 @@ function App() {
   const readyImageRef = useRef<HTMLImageElement | null>(null); // 画像データの保持
 
   const animationState = useRef({
-    readyY: -READY_ANIMATION.INIT,
+    readyY: -READY_GO_ANIMATION.INIT,
     isReadyAnimating: false,
     showEnterText: false,
     showGoText: false,
-    goScale: 0,
+    goScale: READY_GO_ANIMATION.GO_INIT,
     phase: "idle",
   });
 
@@ -426,8 +441,8 @@ function App() {
 
   useEffect(() => {
     setVolumes(bgmVol, seVol);
-    localStorage.setItem("typing_bgm_vol", bgmVol.toString());
-    localStorage.setItem("typing_se_vol", seVol.toString());
+    localStorage.setItem(STORAGE_KEYS.VOLUME_BGM, bgmVol.toString());
+    localStorage.setItem(STORAGE_KEYS.VOLUME_SE, seVol.toString());
   }, [bgmVol, seVol]);
 
   // タイトル画面で入力フォームを開く処理
@@ -485,7 +500,7 @@ function App() {
   };
 
   const handleFinalConfirm = () => {
-    localStorage.setItem("typing_player_name", playerName);
+    localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, playerName);
     playDecisionSound();
     startSelectBgm();
     setIsNameConfirmed(true);
@@ -519,8 +534,10 @@ function App() {
     let interval: number;
     if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
       interval = window.setInterval(() => {
-        setTimeLeft((prev) => Math.max(0, prev - 0.1));
-        setElapsedTime((prev) => prev + 0.1);
+        setTimeLeft((prev) =>
+          Math.max(0, prev - UI_TIMINGS.GAME.TIMER_DECREMENT)
+        );
+        setElapsedTime((prev) => prev + UI_TIMINGS.GAME.TIMER_DECREMENT);
       }, 100);
     }
     return () => clearInterval(interval);
@@ -546,7 +563,7 @@ function App() {
 
       const sortedWeakWordsRecord = finalWeakWords
         .sort((a, b) => b.misses - a.misses)
-        .slice(0, 5);
+        .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
 
       // 別枠で終了時のデータを保存
       setLastGameStats({
@@ -556,7 +573,7 @@ function App() {
         miss: missCount,
         backspace: backspaceCount,
         combo: maxCombo,
-        speed: currentSpeed,
+        speed: Number(currentSpeed),
         rank: rank,
         weakWords: sortedWeakWordsRecord,
         weakKeys: missedCharsRecord,
@@ -610,7 +627,7 @@ function App() {
       miss: missCount,
       backspace: backspaceCount,
       combo: maxCombo,
-      speed: currentSpeed,
+      speed: Number(currentSpeed),
     };
 
     if (targetStats.score <= 0) {
@@ -661,8 +678,9 @@ function App() {
       if (upsertError) throw upsertError;
 
       setSaveStatus("success");
-    } catch (error: any) {
-      console.error("❌ 保存エラー:", error.message);
+    } catch (error) {
+      const err = error as { message: string };
+      console.error("❌ 保存エラー:", err.message);
       setSaveStatus("error");
     }
   }, [
@@ -697,7 +715,7 @@ function App() {
       .eq("difficulty", searchDiff)
       .eq("is_creator", false) // 作成者フラグが「OFF」の人だけ集める
       .order("score", { ascending: false })
-      .limit(10);
+      .limit(LIMIT_DATA.RANKING_LIMIT);
 
     if (error) {
       console.error("ランキング取得エラー:", error);
@@ -743,8 +761,12 @@ function App() {
         hasSaved.current = true;
       }
 
-      const storageKey = `typing_hiscore_${difficulty.toLowerCase()}`;
-      const dataKey = `typing_hiscore_data_${difficulty.toLowerCase()}`;
+      const storageKey = `${
+        STORAGE_KEYS.HISCORE_REGISTER
+      }${difficulty.toLowerCase()}`;
+      const dataKey = `${
+        STORAGE_KEYS.HISCORE_DATA_REGISTER
+      }_${difficulty.toLowerCase()}`;
 
       // 終わった地点のデータを取得
       const currentStats = lastGameStats || {
@@ -781,7 +803,7 @@ function App() {
           correct: currentStats.correct,
           miss: currentStats.miss,
           backspace: currentStats.backspace,
-          maxCombo: currentStats.combo,
+          combo: currentStats.combo,
           speed: currentStats.speed,
           weakWords: currentStats.weakWords,
           weakKeys: currentStats.weakKeys,
@@ -902,7 +924,7 @@ function App() {
       // ready降下(まぁ別に降下しなくていいかも)
       if (playPhase === "ready") {
         if (state.isReadyAnimating) {
-          state.readyY += READY_ANIMATION.DROP;
+          state.readyY += READY_GO_ANIMATION.DROP;
           if (state.readyY >= 0) {
             state.readyY = 0;
             state.isReadyAnimating = false;
@@ -922,7 +944,8 @@ function App() {
           hasSaved.current = false;
         }
 
-        if (state.goScale < 1.0) state.goScale += 0.1;
+        if (state.goScale < READY_GO_ANIMATION.GO_MAX)
+          state.goScale += READY_GO_ANIMATION.GO_HIG;
         drawGoAnimation(ctx, canvas.width, canvas.height, state.goScale);
       } else if (playPhase === "game") {
         ctx.clearRect(0, 0, canvas.width, canvas.height); // まっさらにする(これがないと残像になり、残る)
@@ -945,11 +968,11 @@ function App() {
     setSaveStatus("idle");
     setPlayPhase("ready");
     animationState.current = {
-      readyY: -READY_ANIMATION.INIT,
+      readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
       showEnterText: false,
       showGoText: false,
-      goScale: 0,
+      goScale: READY_GO_ANIMATION.GO_INIT,
       phase: "ready",
     };
   };
@@ -979,11 +1002,11 @@ function App() {
     setTimeLeft(DIFFICULTY_SETTINGS[difficulty].time);
     stopSelectBgm();
     animationState.current = {
-      readyY: -READY_ANIMATION.INIT,
+      readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
       showEnterText: false,
       showGoText: false,
-      goScale: 0,
+      goScale: READY_GO_ANIMATION.GO_INIT,
       phase: "ready",
     };
     setTimeout(() => {
@@ -1068,7 +1091,7 @@ function App() {
         if (e.key === "Enter") {
           playStartSound();
           setPlayPhase("go");
-          state.goScale = 0;
+          state.goScale = READY_GO_ANIMATION.GO_INIT;
           setTimeout(() => {
             setPlayPhase("game");
             startGame();
@@ -1124,11 +1147,11 @@ function App() {
     setTimeLeft(DIFFICULTY_SETTINGS[diff].time);
     stopSelectBgm();
     animationState.current = {
-      readyY: -READY_ANIMATION.INIT,
+      readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
       showEnterText: false,
       showGoText: false,
-      goScale: 0,
+      goScale: READY_GO_ANIMATION.GO_INIT,
       phase: "ready",
     };
 
@@ -1202,7 +1225,7 @@ function App() {
         miss: 0,
         backspace: 0,
         speed: 0,
-        maxCombo: 0,
+        combo: 0,
         rank: "-",
         weakWords: [],
         weakKeys: {},
@@ -1228,14 +1251,14 @@ function App() {
 
   const sortedWeakWords = [...missedWordsRecord]
     .sort((a, b) => b.misses - a.misses)
-    .slice(0, 5);
+    .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
   const sortedWeakKeys = Object.entries(missedCharsRecord)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
+    .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
 
   const hasPunctuation = jpText.endsWith("。") || jpText.endsWith("、"); // 句読点末尾にあると中央ずれてるように見えるのでインデントを調整
 
-  let targetResultData: any;
+  let targetResultData: GameResultStats;
   // 過去の記録
   if (gameState === "hiscore_review" && reviewData) {
     targetResultData = {
@@ -1245,7 +1268,7 @@ function App() {
       miss: reviewData.miss,
       backspace: reviewData.backspace,
       speed: reviewData.speed,
-      maxCombo: reviewData.maxCombo,
+      combo: reviewData.combo,
       rank: reviewData.rank,
       weakWords: reviewData.weakWords || [],
       weakKeys: reviewData.weakKeys || {},
@@ -1259,7 +1282,7 @@ function App() {
       miss: lastGameStats.miss,
       backspace: lastGameStats.backspace,
       speed: lastGameStats.speed,
-      maxCombo: lastGameStats.combo,
+      combo: lastGameStats.combo,
       rank: lastGameStats.rank,
       weakWords: lastGameStats.weakWords,
       weakKeys: lastGameStats.weakKeys,
@@ -1272,8 +1295,8 @@ function App() {
       correct: correctCount,
       miss: missCount,
       backspace: backspaceCount,
-      speed: currentSpeed,
-      maxCombo: maxCombo,
+      speed: Number(currentSpeed),
+      combo: maxCombo,
       rank: rank,
       weakWords: sortedWeakWords,
       weakKeys: missedCharsRecord,
@@ -1289,8 +1312,8 @@ function App() {
   const displayWeakKeys =
     gameState === "hiscore_review" || (gameState === "result" && lastGameStats)
       ? Object.entries(targetResultData.weakKeys)
-          .sort((a: any, b: any) => b[1] - a[1])
-          .slice(0, 5)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT)
       : sortedWeakKeys;
 
   return (
@@ -1951,7 +1974,7 @@ function App() {
                     <div className="stat-row combo-row">
                       <span className="stat-label c-orange">MAX COMBO</span>
                       <span className="stat-val c-orange" id="res-max-combo">
-                        {targetResultData.maxCombo}
+                        {targetResultData.combo}
                       </span>
                     </div>
                   </div>
@@ -1967,7 +1990,7 @@ function App() {
                   >
                     <div className="label-small">苦手な単語</div>
                     <ul id="weak-words-list" className="weak-list">
-                      {displayWeakWords.map((item: any, idx: number) => (
+                      {displayWeakWords.map((item: WeakWord, idx: number) => (
                         <li key={idx}>
                           <span>{item.word}</span>{" "}
                           <span className="miss-count">{item.misses}ミス</span>
@@ -2003,7 +2026,7 @@ function App() {
                       style={{ display: "flex", flexDirection: "column" }}
                     >
                       {displayWeakKeys.map(
-                        ([char, count]: any, idx: number) => (
+                        ([char, count]: [string, number], idx: number) => (
                           <li
                             key={idx}
                             style={{

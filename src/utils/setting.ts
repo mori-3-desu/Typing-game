@@ -49,6 +49,16 @@ export const DISPLAY_SCALE = {
   HEIGHT:  780
 }
 
+// Ready?画面の座標管理、GOのスケール
+export const READY_GO_ANIMATION = {
+  // Ready画面
+  INIT:     800, // Ready画像初期位置
+  DROP:      18, // 降りてくるスピード
+  GO_INIT:    0, // GO初期の大きさ
+  GO_HIG:   0.1, // 0.1ずつ拡大
+  GO_MAX:   1.0  // 最大値
+}
+
 // アニメーションや待機時間の定数管理
 export const UI_TIMINGS = {
   // 共通・システム系
@@ -70,6 +80,8 @@ export const UI_TIMINGS = {
 
   // ゲーム進行・リザルト系
   GAME: {
+    TIMER_DECREMENT:   0.1, // 一回の処理で減らす回数(主にキースピードで)
+    TIMER_COUNT_DOWN:  100, // 一秒ずつ減らす
     READY_TO_GO:      1000, // Ready... から Go! になる間隔
     FINISH_ANIMATION: 1500, // "FINISH!" が出てからハケるまで
     WHITE_FADE_OUT:   2000, // ホワイトアウト開始
@@ -86,12 +98,19 @@ export const UI_TIMINGS = {
   }
 } as const;
 
-// Ready?画面の座標管理、GOのスケール
-export const READY_ANIMATION = {
-  // Ready画面
-  INIT: 800,
-  DROP:  18,
+export const LIMIT_DATA = {
+  RANKING_LIMIT:   10, // ランキング表示制限
+  WAKE_DATA_LIMIT:  5  // 苦手単語/キー表示制限
 }
+
+// localStorage保存データ
+export const STORAGE_KEYS = {
+  PLAYER_NAME:           "typing_player_name",
+  HISCORE_REGISTER:      "typing_hiscore_",      
+  HISCORE_DATA_REGISTER: "typing_hiscore_data_",
+  VOLUME_BGM:            "typing_bgm_vol",
+  VOLUME_SE:             "typing_se_vol",
+};
 
 // useTypingEngine
 // 判定の色
