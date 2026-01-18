@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { setSystemMute, setVolumes } from "../utils/audio"; // ※パスは環境に合わせて調整してください
+import { setSystemMute, setVolumes } from "../utils/audio"; 
 
 export const useConfig = () => {
-  // --- 1. Stateの定義 (App.tsxから移動) ---
+  // --- 1. Stateの定義 ---
   const [isMuted, setIsMuted] = useState(() => {
     return localStorage.getItem("typing_is_muted") === "true";
   });

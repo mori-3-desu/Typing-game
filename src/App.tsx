@@ -1,10 +1,11 @@
 // todo:マジックナンバーを消す
 // TODO:全体的に分かりずらいから修正していく
+import { TitleScreen } from "./components/screens/TitleScreen";
+import { DifficultySelectScreen } from "./components/screens/Difficulty";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
 import {
-  type DifficultyLevel,
   DIFFICULTY_SETTINGS,
   PLAYER_NAME_CHARS,
   UI_TIMINGS,
@@ -34,11 +35,13 @@ import { useConfig } from "./hooks/useConfig";
 import { drawReadyAnimation, drawGoAnimation } from "./utils/transitions";
 import { useTypingGame } from "./hooks/useTypingGame";
 import {
+  type DifficultyLevel,
   type WordDataMap,
   type GameResultStats,
   type RankingScore,
   type WeakWord,
   type WordRow,
+  type TitlePhase,
 } from "./types";
 
 // ゲーム始まる前に取得
@@ -131,9 +134,7 @@ function App() {
 
   const [ngWordsList, setNgWordsList] = useState<string[]>([]);
 
-  const [titlePhase, setTitlePhase] = useState<"normal" | "input" | "confirm">(
-    "normal"
-  );
+  const [titlePhase, setTitlePhase] = useState<TitlePhase>("normal");
 
   // 1. setUserId を使えるようにして、初期値を空文字にします
   const [userId, setUserId] = useState("");
@@ -1196,19 +1197,6 @@ function App() {
     return `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
   };
 
-  const handleMouseEnter = (diff: DifficultyLevel) => {
-    if (!isTransitioning && !isInputLocked) {
-      setHoverDifficulty(diff);
-      setDifficulty(diff);
-    }
-  };
-
-  const handleMenuLeave = () => {
-    if (!isTransitioning && !isInputLocked) {
-      setHoverDifficulty(null);
-    }
-  };
-
   // ハイスコア時のリザルトを難易度選択でも見れるように
   const handleShowHighScoreDetail = () => {
     const displayDiff = hoverDifficulty || difficulty;
@@ -1235,9 +1223,6 @@ function App() {
     setResultAnimStep(5);
     setGameState("hiscore_review");
   };
-
-  const displayDiff = hoverDifficulty || difficulty;
-  const displayHighScore = getSavedHighScore(displayDiff);
 
   const allBackgrounds = [
     { key: "title", src: "/images/title.png" },
@@ -1307,8 +1292,8 @@ function App() {
     gameState === "hiscore_review"
       ? targetResultData.weakWords
       : gameState === "result" && lastGameStats
-      ? lastGameStats.weakWords
-      : sortedWeakWords;
+        ? lastGameStats.weakWords
+        : sortedWeakWords;
   const displayWeakKeys =
     gameState === "hiscore_review" || (gameState === "result" && lastGameStats)
       ? Object.entries(targetResultData.weakKeys)
@@ -1384,261 +1369,41 @@ function App() {
 
           {/* TITLE SCREEN */}
           {gameState === "title" && (
-            <div className="title-screen">
-              <div
-                className={`title-content-wrapper ${
-                  titlePhase !== "normal" ? "exit" : "enter"
-                }`}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  width: "100%",
-                }}
-              >
-                <div
-                  className={`title-anim-wrapper ${
-                    showTitle ? "visible" : ""
-                  } ${
-                    titlePhase !== "normal" || isTitleExiting ? "exit-up" : ""
-                  }`}
-                >
-                  <h1
-                    className={`game-title ${enableBounce ? "bouncing" : ""}`}
-                  >
-                    CRITICAL TYPING
-                  </h1>
-                </div>
-
-                <div
-                  className={`main-menu-buttons fade-element ${
-                    showTitle ? "visible" : ""
-                  } ${
-                    titlePhase !== "normal" || isTitleExiting ? "exit-down" : ""
-                  }`}
-                >
-                  <button
-                    className="menu-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleStartSequence();
-                    }}
-                  >
-                    ゲームスタート
-                  </button>
-                  <button
-                    className="menu-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleOpenHowToPlay();
-                    }}
-                  >
-                    遊び方
-                  </button>
-                  {isNameConfirmed && (
-                    <button className="menu-btn" onClick={handleOpenConfig}>
-                      設定
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* 名前入力モーダル */}
-              {titlePhase === "input" && (
-                <div
-                  className="pop-modal-frame fade-in-pop"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <label
-                    className="pop-label"
-                    style={{ textAlign: "center", width: "100%", margin: 0 }}
-                  >
-                    名前を入力して下さい
-                  </label>
-
-                  <input
-                    type="text"
-                    className={`pop-input ${
-                      nameError ? "input-error-shake" : ""
-                    }`}
-                    value={playerName}
-                    onChange={(e) => {
-                      setPlayerName(e.target.value);
-                      if (nameError) setNameError("");
-                    }}
-                    maxLength={10}
-                    placeholder="Guest"
-                    autoFocus
-                    style={{ marginTop: "15px", transition: "all 0.3s" }}
-                  />
-
-                  <div
-                    style={{
-                      height: "20px",
-                      marginTop: "5px",
-                      width: "100%",
-                      textAlign: "center",
-                    }}
-                  >
-                    {nameError ? (
-                      <p
-                        className="error-fade-in"
-                        style={{
-                          fontSize: "0.85rem",
-                          color: "#ff4444",
-                          margin: 0,
-                          fontWeight: "bold",
-                        }}
-                      >
-                        {nameError}
-                      </p>
-                    ) : (
-                      <p className="pop-note" style={{ margin: 0 }}>
-                        ※名前はあとからでも変更出来ます
-                      </p>
-                    )}
-                  </div>
-
-                  <div
-                    style={{
-                      marginTop: "15px",
-                      display: "flex",
-                      gap: "15px",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <button className="pop-btn" onClick={handleCancelInput}>
-                      キャンセル
-                    </button>
-                    <button
-                      className="pop-btn primary"
-                      onClick={handleNameSubmit}
-                    >
-                      OK
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* 名前確認モーダル */}
-              {titlePhase === "confirm" && (
-                <div
-                  className="pop-modal-frame fade-in-pop"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <label className="pop-label">
-                    以下の名前で始めます。
-                    <br />
-                    よろしいですか？
-                  </label>
-                  <div className="confirm-name-disp">{playerName}</div>
-                  <div
-                    style={{
-                      marginTop: "25px",
-                      display: "flex",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <button className="pop-btn" onClick={handleBackToInput}>
-                      戻る
-                    </button>
-                    <button
-                      className="pop-btn primary"
-                      onClick={handleFinalConfirm}
-                    >
-                      はい
-                    </button>
-                  </div>
-                  <p className="pop-note">※名前は後からでも変更できます。</p>
-                </div>
-              )}
-            </div>
+            <TitleScreen
+              showTitle={showTitle}
+              enableBounce={enableBounce}
+              titlePhase={titlePhase}
+              isTitleExiting={isTitleExiting}
+              isNameConfirmed={isNameConfirmed}
+              playerName={playerName}
+              setPlayerName={setPlayerName}
+              nameError={nameError}
+              setNameError={setNameError}
+              handleStartSequence={handleStartSequence}
+              handleOpenHowToPlay={handleOpenHowToPlay}
+              handleOpenConfig={handleOpenConfig}
+              handleCancelInput={handleCancelInput}
+              handleNameSubmit={handleNameSubmit}
+              handleBackToInput={handleBackToInput}
+              handleFinalConfirm={handleFinalConfirm}
+            />
           )}
 
           {/* DIFFICULTY SCREEN */}
           {gameState === "difficulty" && (
-            <div
-              id="difficulty-view"
-              style={{ position: "relative", zIndex: 5 }}
-            >
-              <h1 className="diff-view-title">SELECT DIFFICULTY</h1>
-              <div className="diff-main-container">
-                <div
-                  className={`diff-button-menu ${
-                    isInputLocked ? "no-click" : ""
-                  }`}
-                  onMouseLeave={handleMenuLeave}
-                >
-                  {(["EASY", "NORMAL", "HARD"] as DifficultyLevel[]).map(
-                    (diff) => (
-                      <button
-                        key={diff}
-                        className={`diff-btn ${diff.toLowerCase()}`}
-                        onMouseEnter={() => handleMouseEnter(diff)}
-                        onClick={() => handleSelectDifficulty(diff)}
-                      >
-                        {diff}
-                      </button>
-                    )
-                  )}
-                  <button
-                    id="btn-back"
-                    className="diff-btn"
-                    onClick={backToTitle}
-                  >
-                    BACK
-                  </button>
-                </div>
-
-                <div className={`diff-info-panel visible`}>
-                  <>
-                    <div className="diff-header-group">
-                      <img
-                        src="/images/ranking.png"
-                        alt="Ranking"
-                        className="crown-icon-only"
-                        onClick={() => fetchRanking(displayDiff)}
-                      />
-                      <div className="diff-hiscore-box">
-                        <div className="hiscore-label-group">
-                          <button
-                            className="hiscore-detail-btn"
-                            onClick={() => {
-                              playDecisionSound();
-                              handleShowHighScoreDetail();
-                            }}
-                            title="詳細リザルトを見る"
-                          >
-                            📄
-                          </button>
-                          <span className="label">HI-SCORE</span>
-                        </div>
-                        <span id="menu-hiscore-val">
-                          {displayHighScore.toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-                    <h2
-                      id="display-diff-name"
-                      style={{ color: DIFFICULTY_SETTINGS[displayDiff].color }}
-                    >
-                      {displayDiff}
-                    </h2>
-                    <p id="display-diff-text">
-                      {DIFFICULTY_SETTINGS[displayDiff].text}
-                    </p>
-                    <div className="diff-info-footer">
-                      <div className="status-item" id="display-diff-time">
-                        {DIFFICULTY_SETTINGS[displayDiff].time}s
-                      </div>
-                      <div className="status-item" id="display-diff-chars">
-                        {DIFFICULTY_SETTINGS[displayDiff].chars}
-                      </div>
-                    </div>
-                  </>
-                </div>
-              </div>
-            </div>
+            <DifficultySelectScreen
+              difficulty={difficulty}
+              setDifficulty={setDifficulty}
+              hoverDifficulty={hoverDifficulty}
+              setHoverDifficulty={setHoverDifficulty}
+              isInputLocked={isInputLocked}
+              isTransitioning={isTransitioning}
+              handleSelectDifficulty={handleSelectDifficulty}
+              backToTitle={backToTitle}
+              fetchRanking={fetchRanking}
+              handleShowHighScoreDetail={handleShowHighScoreDetail}
+              playDecisionSound={playDecisionSound}
+            />
           )}
 
           {/* GAME HUD */}
@@ -1702,8 +1467,8 @@ function App() {
                         shakeStatus === "light"
                           ? "light-shake"
                           : shakeStatus === "error"
-                          ? "error-shake"
-                          : ""
+                            ? "error-shake"
+                            : ""
                       }
                       style={{
                         padding: showRomaji ? "20px 65px" : "20px 30px",
@@ -1798,8 +1563,8 @@ function App() {
                       isTimeAdded
                         ? "time-plus"
                         : timeLeft <= 10
-                        ? "timer-pinch"
-                        : "timer-normal"
+                          ? "timer-pinch"
+                          : "timer-normal"
                     }
                   >
                     {Math.ceil(timeLeft)}
@@ -1887,8 +1652,8 @@ function App() {
                               scoreDiff > 0
                                 ? "diff-plus"
                                 : scoreDiff < 0
-                                ? "diff-minus"
-                                : "diff-zero"
+                                  ? "diff-minus"
+                                  : "diff-zero"
                             }`}
                             id="score-diff"
                           >
