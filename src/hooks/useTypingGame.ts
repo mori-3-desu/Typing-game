@@ -2,7 +2,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { TypingEngine, Segment } from "./useTypingEngine";
 import {
-  type DifficultyLevel,
   DIFFICULTY_SETTINGS,
   UI_ANIMATION_CONFIG,
   JUDGE_COLOR,
@@ -24,6 +23,7 @@ import {
 } from "../utils/audio";
 
 import {
+  type DifficultyLevel,
   type ScorePopup,
   type BonusPopup,
   type TypedLog,

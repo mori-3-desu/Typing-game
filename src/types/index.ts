@@ -1,3 +1,17 @@
+// タイトルの画面状態
+export type TitlePhase = "normal" | "input" | "confirm";
+
+export type DifficultyLevel = "EASY" | "NORMAL" | "HARD";
+
+export type DifficultyConfig = {
+  bg:    string; // 難易度ごとの画像パス
+  time:  number; // 制限時間
+  chars: string; // "1 ~ 7 文字" など
+  text:  string; // 難易度毎の説明文
+  bgm:   string; // 曲
+  color: string; // 難易度ごとのテーマカラー
+};
+
 // ■ ランキングのデータ
 export type RankingScore = {
   id: number;
