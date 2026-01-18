@@ -237,6 +237,22 @@ function App() {
     currentSpeed,
     setTimeLeft,
   } = useTypingGame(difficulty, dbWordData);
+  // ▼▼▼ デバッグ用：強制リセット処理 ▼▼▼
+  useEffect(() => {
+    console.log("🔧 DEBUG MODE: データをリセットします");
+    
+    // ローカルストレージの名前を消す
+    localStorage.removeItem('typing_player_name');
+    
+    // Stateも初期化して、入力フォームが出るようにする
+    setPlayerName(''); 
+    setIsNameConfirmed(false); // ← これで名前入力画面が出るはず！
+    
+    // (必要なら) ハイスコアも消す場合はコメントアウトを外す
+    // localStorage.removeItem('typing_hiscore_easy');
+    // localStorage.removeItem('typing_hiscore_normal');
+    // localStorage.removeItem('typing_hiscore_hard');
+  }, []);
 
   // 現在入力中の単語のミス数を追跡
   const currentWordMissRef = useRef(0);

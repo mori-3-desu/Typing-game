@@ -107,7 +107,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             className="pop-label"
             style={{ textAlign: "center", width: "100%", margin: 0 }}
           >
-            名前を入力して下さい
+            名前を入力してください
           </label>
 
           <input
