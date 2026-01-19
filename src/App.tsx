@@ -1379,23 +1379,22 @@ function App() {
               onClickScreen={handleResultClick}
             />
           )}
+          {/* ▼▼▼ 修正: モーダルたちを scaler の外に出しました！ ▼▼▼ */}
+          {/* これで画面サイズやズームに関係なく、常に画面中央に正しく表示されます */}
+
+          {showRanking && (
+            <Ranking
+              difficulty={difficulty}
+              rankingData={rankingData}
+              userId={userId}
+              isDevRankingMode={isDevRankingMode}
+              onClose={closeRanking}
+              onShowDevScore={handleShowDevScore}
+              onFetchRanking={fetchRanking}
+            />
+          )}
         </div>
       </div>
-
-      {/* ▼▼▼ 修正: モーダルたちを scaler の外に出しました！ ▼▼▼ */}
-      {/* これで画面サイズやズームに関係なく、常に画面中央に正しく表示されます */}
-
-      {showRanking && (
-        <Ranking
-          difficulty={difficulty}
-          rankingData={rankingData}
-          userId={userId}
-          isDevRankingMode={isDevRankingMode}
-          onClose={closeRanking}
-          onShowDevScore={handleShowDevScore}
-          onFetchRanking={fetchRanking}
-        />
-      )}
 
       {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
 

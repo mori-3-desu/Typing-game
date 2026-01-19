@@ -2471,452 +2471,6 @@ body {
   animation: popup-miss 0.8s ease-in forwards;
 }
 
-/* --- ランキングモーダル全体 --- */
-.ranking-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(
-    255,
-    255,
-    255,
-    0.8
-  ); /* 背景を少し暗くしてモーダルを目立たせる */
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  animation: fadeIn 0.3s forwards;
-  font-family: "Arial Rounded MT Bold", "M PLUS Rounded 1c", "Varela Round",
-    sans-serif;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* モーダル本体（さらに大きく！） */
-.ranking-modal {
-  width: 90%; /* ほぼ画面いっぱい */
-  height: 90%;
-  max-width: 1200px;
-  /* 背景色は難易度クラスで指定するため削除 */
-  backdrop-filter: blur(15px); /* すりガラスを強く */
-  border-radius: 25px;
-  display: flex;
-  flex-direction: column;
-  padding: 25px 35px;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-/* --- 難易度別テーマ --- */
-
-/* EASY: さわやかな海の海岸（エメラルドグリーン〜青のグラデーション） */
-.ranking-modal.rank-theme-easy {
-  background: linear-gradient(
-    150deg,
-    rgba(122, 228, 255, 0.9) 0%,
-    rgba(149, 213, 255, 0.7) 45%,
-    rgba(184, 255, 255, 0.4) 100%
-  );
-  border: 4px solid rgba(255, 255, 255, 0.8); /* 白い波のような枠線 */
-  box-shadow: 0 0 30px rgba(0, 200, 255, 0.4);
-}
-
-/* NORMAL: 夕焼け（オレンジ〜紫のグラデーション） */
-.ranking-modal.rank-theme-normal {
-  background: linear-gradient(
-    85deg,
-    rgba(255, 102, 26, 0.9) 0%,
-    rgba(255, 223, 150, 0.9) 100%
-  );
-  border: 4px solid rgba(255, 200, 180, 0.8); /* 夕日の光のような枠線 */
-  box-shadow: 0 0 30px rgba(255, 100, 100, 0.5);
-}
-
-/* HARD: 七夕の星空（深い群青色〜夜空のグラデーション + 金色の枠） */
-.ranking-modal.rank-theme-hard {
-  background: linear-gradient(
-    to bottom,
-    rgba(15, 32, 39, 0.95) 0%,
-    rgba(32, 58, 67, 0.95) 50%,
-    rgba(44, 83, 100, 0.9) 100%
-  );
-  border: 4px solid rgba(255, 215, 0, 0.7); /* 星や短冊をイメージした金色の枠 */
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); /* ほんのり金色の光 */
-}
-
-/* ヘッダー */
-.ranking-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  border-bottom: 3px dashed rgba(255, 255, 255, 0.3);
-  padding-bottom: 10px;
-}
-
-.ranking-title {
-  font-size: 4rem; /* タイトルさらに大きく */
-  font-weight: bold;
-  color: #fff; /* 背景が濃いので白文字 */
-  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
-  margin: 0;
-  letter-spacing: 7px;
-  text-transform: uppercase;
-}
-
-/* リストエリア */
-.ranking-list {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 25px;
-}
-
-.ranking-list::-webkit-scrollbar {
-  width: 12px;
-}
-
-.ranking-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-}
-
-.ranking-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 6px;
-  border: 2px solid transparent;
-  background-clip: content-box;
-}
-
-/* --- カードのデザイン --- */
-.ranking-card {
-  display: flex;
-  background: rgba(255, 255, 255, 0.9); /* カードは白く明るく */
-  margin-bottom: 15px;
-  padding: 10px 23px;
-  border-radius: 40px;
-  align-items: center;
-  border: 2px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.1s;
-}
-
-/* 順位バッジ */
-.rank-badge {
-  width: 90px;
-  text-align: center;
-  margin-right: 25px;
-}
-
-.rank-num {
-  font-size: 3.2rem;
-  line-height: 1;
-  font-weight: 800;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
-}
-
-/* 1位〜3位 */
-.rank-1 .rank-num {
-  color: #ffd700;
-  text-shadow: 3px 3px 0 #d4d9a3;
-  font-size: 4.5rem;
-}
-
-.rank-2 .rank-num {
-  color: #c0c0c0;
-  text-shadow: 3px 3px 0 #a5a39f;
-  font-size: 4rem;
-}
-
-.rank-3 .rank-num {
-  color: #cd7f32;
-  text-shadow: 3px 3px 0 #dbb5a7;
-  font-size: 3.5rem;
-}
-
-/* ★ 4位以降：斜めに薄くグラデーション ★ */
-.ranking-card:not(.rank-1):not(.rank-2):not(.rank-3) .rank-num {
-  background: linear-gradient(
-    135deg,
-    #ff5277 0%,
-    #ffc4cb 70%,
-    rgba(255, 255, 255, 0.5) 100%
-  );
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent; /* 文字色を透明にして背景のグラデを見せる */
-  text-shadow: none; /* グラデーションを見せるため影は消すか薄く */
-  opacity: 0.9;
-}
-
-/* =========================================
-   順位の装飾 (静的キラキラ・調整版)
-   ========================================= */
-
-/* 共通設定 */
-.rank-1 .rank-num,
-.rank-2 .rank-num,
-.rank-3 .rank-num {
-  position: relative;
-  display: inline-block;
-  overflow: visible;
-}
-
-/* ----------------------------------
-   1位: 2位の装飾をベースに少し増やして豪華に (ゴールド)
-   ---------------------------------- */
-.rank-1 .rank-num::before {
-  content: " .✧*⟡·."; /* 元の2位の記号を少し増やしたバージョン */
-  position: absolute;
-  top: -22px; /* 位置調整 */
-  left: -21px; /* 位置調整 */
-  font-size: 1.8rem;
-  color: #ffd700; /* ゴールド */
-  text-shadow: 0 0 5px rgba(255, 215, 0, 0.6); /* 強い発光 */
-  font-family: "Arial", sans-serif;
-  white-space: nowrap;
-}
-
-.rank-1 .rank-num::after {
-  content: "*✧˖.⟡✧*"; /* 下側も同様に少し増やす */
-  position: absolute;
-  bottom: -22px; /* 位置調整 */
-  right: -35px; /* 位置調整 */
-  font-size: 1.6rem;
-  color: #ffd700;
-  text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
-  font-family: "Arial", sans-serif;
-  white-space: nowrap;
-}
-
-/* ----------------------------------
-   2位: ちょい控えめにキラキラ (さっきの1位に近い豪華さ)
-   ---------------------------------- */
-.rank-2 .rank-num::before {
-  content: ".⟡*・";
-  position: absolute;
-  top: -10px;
-  left: -13px;
-  font-size: 1.2rem;
-  color: #c0c0c0; /* シルバー */
-}
-
-.rank-2 .rank-num::after {
-  content: "·.⟡*";
-  position: absolute;
-  bottom: -10px;
-  right: -15px;
-  font-size: 1.2rem;
-  color: #c0c0c0;
-}
-
-/* ----------------------------------
-   3位: いまの2位みたいな感じ (シンプルに)
-   ---------------------------------- */
-.rank-3 .rank-num::before {
-  content: ".*";
-  position: absolute;
-  top: -5px;
-  left: -10px;
-  font-size: 1rem;
-  color: #cd7f32; /* ブロンズ */
-}
-
-.rank-3 .rank-num::after {
-  content: ".*";
-  position: absolute;
-  bottom: 0px;
-  right: -10px;
-  font-size: 1rem;
-  color: #cd7f32;
-}
-
-/* 4位以下は装飾なし */
-
-/* 情報エリア */
-.rank-info {
-  flex: 1;
-}
-
-.rank-name-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-
-.rank-name {
-  font-size: 1.6rem;
-  font-weight: 800;
-  color: #444;
-}
-
-.rank-date {
-  font-size: 1rem;
-  color: #888;
-  font-weight: bold;
-}
-
-/* スコア */
-.rank-score {
-  font-size: 3.2rem;
-  font-weight: 900;
-  color: #f5a6ea;
-  letter-spacing: 1px;
-  line-height: 1;
-  margin: 0px 0 10px 0;
-  text-shadow: 2px 2px 0px #ddd;
-}
-
-/* 詳細ステータス */
-.rank-stats-grid {
-  display: flex;
-  gap: 15px;
-  font-size: 0.95rem;
-  font-weight: 800;
-  background: rgba(0, 0, 0, 0.03);
-  padding: 10px 15px;
-  border-radius: 12px;
-  flex-wrap: wrap;
-}
-
-.stat-box {
-  white-space: nowrap;
-}
-
-/* 色クラス */
-.c-green {
-  color: #2ecc71;
-  text-shadow: 1px 1px 0 #fff;
-}
-
-.c-red {
-  color: #e74c3c;
-  text-shadow: 1px 1px 0 #fff;
-}
-
-.c-blue {
-  color: #3498db;
-  text-shadow: 1px 1px 0 #fff;
-}
-
-.c-cyan {
-  color: #00bcd4;
-  text-shadow: 1px 1px 0 #fff;
-}
-
-.c-orange {
-  background: linear-gradient(45deg, #f1c40f, #e67e22);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(2px 2px 0px rgba(255, 255, 255, 0.8));
-}
-
-/* 自分のカードだけ背景色を変える */
-.ranking-card.my-rank {
-  background: #fff9c4 !important; /* 薄い黄色で強調 */
-  border: 4px solid rgb(255, 200, 0) !important; /* 枠線をゴールドに */
-  transform: scale(1.02); /* ほんの少し大きくして目立たせる */
-  box-shadow: 0 8px 15px rgba(255, 202, 40, 0.4);
-  position: relative !important; /* バッジの位置基準 */
-  z-index: 5; /* 他より手前に表示 */
-}
-
-/* 「YOU」バッジのデザイン */
-.you-badge {
-  position: absolute;
-  top: -18px;
-  left: 5px;
-  background: linear-gradient(
-    130deg,
-    hsl(234, 100%, 82%) 5%,
-    #e7a0fd 70%,
-    #ffa8fe 100%
-  );
-  color: #fff;
-  font-family: "Arial Rounded MT Bold", sans-serif;
-  font-weight: 800;
-  font-size: 1.1rem;
-  padding: 2px 20px;
-  border-radius: 20px;
-  border: 3px solid #fff;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  z-index: 10;
-  animation: popBadge 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-}
-
-/* バッジが出る時のアニメーション */
-@keyframes popBadge {
-  0% {
-    transform: scale(0);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-/* --- ランキング画面のヘッダーボタン修正 --- */
-
-/* ヘッダー内のタイトルとボタン群を横並びにするコンテナ */
-.ranking-header {
-  display: flex;
-  justify-content: space-between; /* タイトル左、ボタン右 */
-  align-items: center;
-  padding: 10px 20px;
-  width: 100%;
-}
-
-/* ボタンを横並びにするラッパー */
-.ranking-header-buttons {
-  display: flex;
-  gap: 15px; /* ボタン同士の間隔 */
-  align-items: center;
-}
-
-/* 閉じるボタン (頂いたコードを適用) */
-.close-btn {
-  width: 50px; /* 少しサイズ調整（画面からはみ出ないように） */
-  height: 50px;
-  background: #fff;
-  border-radius: 50%;
-
-  font-size: 2rem; /* 絵文字サイズ */
-  font-weight: bold;
-  color: #d6d6d6;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-
-  box-shadow: 0 4px 0 #ddd;
-  transition: transform 0.1s, box-shadow 0.1s;
-  border: 2px solid #eee; /* 薄い枠線を追加 */
-  padding-bottom: 4px; /* 絵文字の微調整 */
-}
-
-.close-btn:hover {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 #ddd;
-  background: #f9f9f9;
-  border-color: #e0e0e0;
-}
-
-.close-btn:active {
-  transform: translateY(4px);
-  box-shadow: none;
-}
-
 /* =========================================
    設定画面 (CONFIG MODAL) - タイトル拡大・微調整版
    ========================================= */
@@ -3653,4 +3207,450 @@ body {
   100% {
     transform: translateX(0);
   }
+}
+
+/* --- ランキングモーダル全体 --- */
+.ranking-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(
+    255,
+    255,
+    255,
+    0.8
+  ); /* 背景を少し暗くしてモーダルを目立たせる */
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  animation: fadeIn 0.3s forwards;
+  font-family: "Arial Rounded MT Bold", "M PLUS Rounded 1c", "Varela Round",
+    sans-serif;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* モーダル本体（さらに大きく！） */
+.ranking-modal {
+  width: 90%; /* ほぼ画面いっぱい */
+  height: 90%;
+  max-width: 1200px;
+  /* 背景色は難易度クラスで指定するため削除 */
+  backdrop-filter: blur(15px); /* すりガラスを強く */
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  padding: 25px 35px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+/* --- 難易度別テーマ --- */
+
+/* EASY: さわやかな海の海岸（エメラルドグリーン〜青のグラデーション） */
+.ranking-modal.rank-theme-easy {
+  background: linear-gradient(
+    150deg,
+    rgba(122, 228, 255, 0.9) 0%,
+    rgba(149, 213, 255, 0.7) 45%,
+    rgba(184, 255, 255, 0.4) 100%
+  );
+  border: 4px solid rgba(255, 255, 255, 0.8); /* 白い波のような枠線 */
+  box-shadow: 0 0 30px rgba(0, 200, 255, 0.4);
+}
+
+/* NORMAL: 夕焼け（オレンジ〜紫のグラデーション） */
+.ranking-modal.rank-theme-normal {
+  background: linear-gradient(
+    85deg,
+    rgba(255, 102, 26, 0.9) 0%,
+    rgba(255, 223, 150, 0.9) 100%
+  );
+  border: 4px solid rgba(255, 200, 180, 0.8); /* 夕日の光のような枠線 */
+  box-shadow: 0 0 30px rgba(255, 100, 100, 0.5);
+}
+
+/* HARD: 七夕の星空（深い群青色〜夜空のグラデーション + 金色の枠） */
+.ranking-modal.rank-theme-hard {
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 32, 39, 0.95) 0%,
+    rgba(32, 58, 67, 0.95) 50%,
+    rgba(44, 83, 100, 0.9) 100%
+  );
+  border: 4px solid rgba(255, 215, 0, 0.7); /* 星や短冊をイメージした金色の枠 */
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); /* ほんのり金色の光 */
+}
+
+/* ヘッダー */
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  border-bottom: 3px dashed rgba(255, 255, 255, 0.3);
+  padding-bottom: 10px;
+}
+
+.ranking-title {
+  font-size: 4rem; /* タイトルさらに大きく */
+  font-weight: bold;
+  color: #fff; /* 背景が濃いので白文字 */
+  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+  margin: 0;
+  letter-spacing: 7px;
+  text-transform: uppercase;
+}
+
+/* リストエリア */
+.ranking-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 25px;
+}
+
+.ranking-list::-webkit-scrollbar {
+  width: 12px;
+}
+
+.ranking-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.ranking-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+/* --- カードのデザイン --- */
+.ranking-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.9); /* カードは白く明るく */
+  margin-bottom: 15px;
+  padding: 10px 23px;
+  border-radius: 40px;
+  align-items: center;
+  border: 2px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.1s;
+}
+
+/* 順位バッジ */
+.rank-badge {
+  width: 90px;
+  text-align: center;
+  margin-right: 25px;
+}
+
+.rank-num {
+  font-size: 3.2rem;
+  line-height: 1;
+  font-weight: 800;
+  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
+}
+
+/* 1位〜3位 */
+.rank-1 .rank-num {
+  color: #ffd700;
+  text-shadow: 3px 3px 0 #d4d9a3;
+  font-size: 4.5rem;
+}
+
+.rank-2 .rank-num {
+  color: #c0c0c0;
+  text-shadow: 3px 3px 0 #a5a39f;
+  font-size: 4rem;
+}
+
+.rank-3 .rank-num {
+  color: #cd7f32;
+  text-shadow: 3px 3px 0 #dbb5a7;
+  font-size: 3.5rem;
+}
+
+/* ★ 4位以降：斜めに薄くグラデーション ★ */
+.ranking-card:not(.rank-1):not(.rank-2):not(.rank-3) .rank-num {
+  background: linear-gradient(
+    135deg,
+    #ff5277 0%,
+    #ffc4cb 70%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent; /* 文字色を透明にして背景のグラデを見せる */
+  text-shadow: none; /* グラデーションを見せるため影は消すか薄く */
+  opacity: 0.9;
+}
+
+/* =========================================
+   順位の装飾 (静的キラキラ・調整版)
+   ========================================= */
+
+/* 共通設定 */
+.rank-1 .rank-num,
+.rank-2 .rank-num,
+.rank-3 .rank-num {
+  position: relative;
+  display: inline-block;
+  overflow: visible;
+}
+
+/* ----------------------------------
+   1位: 2位の装飾をベースに少し増やして豪華に (ゴールド)
+   ---------------------------------- */
+.rank-1 .rank-num::before {
+  content: " .✧*⟡·."; /* 元の2位の記号を少し増やしたバージョン */
+  position: absolute;
+  top: -22px; /* 位置調整 */
+  left: -21px; /* 位置調整 */
+  font-size: 1.8rem;
+  color: #ffd700; /* ゴールド */
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.6); /* 強い発光 */
+  font-family: "Arial", sans-serif;
+  white-space: nowrap;
+}
+
+.rank-1 .rank-num::after {
+  content: "*✧˖.⟡✧*"; /* 下側も同様に少し増やす */
+  position: absolute;
+  bottom: -22px; /* 位置調整 */
+  right: -35px; /* 位置調整 */
+  font-size: 1.6rem;
+  color: #ffd700;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
+  font-family: "Arial", sans-serif;
+  white-space: nowrap;
+}
+
+/* ----------------------------------
+   2位: ちょい控えめにキラキラ (さっきの1位に近い豪華さ)
+   ---------------------------------- */
+.rank-2 .rank-num::before {
+  content: ".⟡*・";
+  position: absolute;
+  top: -10px;
+  left: -13px;
+  font-size: 1.2rem;
+  color: #c0c0c0; /* シルバー */
+}
+
+.rank-2 .rank-num::after {
+  content: "·.⟡*";
+  position: absolute;
+  bottom: -10px;
+  right: -15px;
+  font-size: 1.2rem;
+  color: #c0c0c0;
+}
+
+/* ----------------------------------
+   3位: いまの2位みたいな感じ (シンプルに)
+   ---------------------------------- */
+.rank-3 .rank-num::before {
+  content: ".*";
+  position: absolute;
+  top: -5px;
+  left: -10px;
+  font-size: 1rem;
+  color: #cd7f32; /* ブロンズ */
+}
+
+.rank-3 .rank-num::after {
+  content: ".*";
+  position: absolute;
+  bottom: 0px;
+  right: -10px;
+  font-size: 1rem;
+  color: #cd7f32;
+}
+
+/* 4位以下は装飾なし */
+
+/* 情報エリア */
+.rank-info {
+  flex: 1;
+}
+
+.rank-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.rank-name {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #444;
+}
+
+.rank-date {
+  font-size: 1rem;
+  color: #888;
+  font-weight: bold;
+}
+
+/* スコア */
+.rank-score {
+  font-size: 3.2rem;
+  font-weight: 900;
+  color: #f5a6ea;
+  letter-spacing: 1px;
+  line-height: 1;
+  margin: 0px 0 10px 0;
+  text-shadow: 2px 2px 0px #ddd;
+}
+
+/* 詳細ステータス */
+.rank-stats-grid {
+  display: flex;
+  gap: 15px;
+  font-size: 0.95rem;
+  font-weight: 800;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 10px 15px;
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.stat-box {
+  white-space: nowrap;
+}
+
+/* 色クラス */
+.c-green {
+  color: #2ecc71;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.c-red {
+  color: #e74c3c;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.c-blue {
+  color: #3498db;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.c-cyan {
+  color: #00bcd4;
+  text-shadow: 1px 1px 0 #fff;
+}
+
+.c-orange {
+  background: linear-gradient(45deg, #f1c40f, #e67e22);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(2px 2px 0px rgba(255, 255, 255, 0.8));
+}
+
+/* 自分のカードだけ背景色を変える */
+.ranking-card.my-rank {
+  background: #fff9c4 !important; /* 薄い黄色で強調 */
+  border: 4px solid rgb(255, 200, 0) !important; /* 枠線をゴールドに */
+  transform: scale(1.02); /* ほんの少し大きくして目立たせる */
+  box-shadow: 0 8px 15px rgba(255, 202, 40, 0.4);
+  position: relative !important; /* バッジの位置基準 */
+  z-index: 5; /* 他より手前に表示 */
+}
+
+/* 「YOU」バッジのデザイン */
+.you-badge {
+  position: absolute;
+  top: -18px;
+  left: 5px;
+  background: linear-gradient(
+    130deg,
+    hsl(234, 100%, 82%) 5%,
+    #e7a0fd 70%,
+    #ffa8fe 100%
+  );
+  color: #fff;
+  font-family: "Arial Rounded MT Bold", sans-serif;
+  font-weight: 800;
+  font-size: 1.1rem;
+  padding: 2px 20px;
+  border-radius: 20px;
+  border: 3px solid #fff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  animation: popBadge 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* バッジが出る時のアニメーション */
+@keyframes popBadge {
+  0% {
+    transform: scale(0);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* --- ランキング画面のヘッダーボタン修正 --- */
+
+/* ヘッダー内のタイトルとボタン群を横並びにするコンテナ */
+.ranking-header {
+  display: flex;
+  justify-content: space-between; /* タイトル左、ボタン右 */
+  align-items: center;
+  padding: 10px 20px;
+  width: 100%;
+}
+
+/* ボタンを横並びにするラッパー */
+.ranking-header-buttons {
+  display: flex;
+  gap: 15px; /* ボタン同士の間隔 */
+  align-items: center;
+}
+
+/* 閉じるボタン (頂いたコードを適用) */
+.close-btn {
+  width: 50px; /* 少しサイズ調整（画面からはみ出ないように） */
+  height: 50px;
+  background: #fff;
+  border-radius: 50%;
+
+  font-size: 2rem; /* 絵文字サイズ */
+  font-weight: bold;
+  color: #d6d6d6;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  box-shadow: 0 4px 0 #ddd;
+  transition: transform 0.1s, box-shadow 0.1s;
+  border: 2px solid #eee; /* 薄い枠線を追加 */
+  padding-bottom: 4px; /* 絵文字の微調整 */
+}
+
+.close-btn:hover {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 #ddd;
+  background: #f9f9f9;
+  border-color: #e0e0e0;
+}
+
+.close-btn:active {
+  transform: translateY(4px);
+  box-shadow: none;
 }
