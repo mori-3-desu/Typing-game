@@ -10,9 +10,11 @@ import { DifficultySelectScreen } from "./components/screens/Difficulty";
 import { GameScreen } from "./components/screens/GameScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 
+// ▼▼▼ 修正: 正しいファイル名とコンポーネント名でインポート ▼▼▼
 import { Ranking } from "./components/modals/Ranking";
 import { HowToPlay } from "./components/modals/HowToPlay";
 import { Setting } from "./components/modals/Setting";
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 // --- Utils & Hooks ---
 import {
@@ -446,8 +448,8 @@ function App() {
   };
 
   // タイトル画面：名前決定処理
-  const handleNameSubmit = (inputName: string) => {
-    const trimmedName = inputName.trim();
+  const handleNameSubmit = () => {
+    const trimmedName = playerName.trim();
 
     setNameError(""); // エラーリセット
 
@@ -1136,7 +1138,7 @@ function App() {
     setShowTitle(false);
     setEnableBounce(false);
     setIsTitleExiting(false);
-    setTitlePhase("normal");
+
     setIsInputLocked(true);
     setTimeout(() => {
       setShowTitle(true);
