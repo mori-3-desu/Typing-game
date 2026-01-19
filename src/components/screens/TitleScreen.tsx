@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { type TitlePhase } from "../../types";
 
 type TitleScreenProps = {
@@ -18,7 +18,7 @@ type TitleScreenProps = {
     handleOpenHowToPlay: () => void;
     handleOpenConfig: () => void;
     handleCancelInput: () => void;
-    handleNameSubmit: () => void;
+    handleNameSubmit: (name: string) => void;
     handleBackToInput: () => void;
     handleFinalConfirm: () => void;
 };
@@ -41,6 +41,19 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   handleBackToInput,
   handleFinalConfirm,
 }) => {
+  // ★一時的な入力値を管理するStateを追加
+  const [tempName, setTempName] = useState(playerName);
+
+  // 親のplayerNameが変わったら（初期表示など）、tempNameも合わせる
+  useEffect(() => {
+    setTempName(playerName);
+  }, [playerName]);
+
+  // ★決定ボタンを押したときの処理
+  const onSubmit = () => {
+    // ここで直接値を渡す！これで「State更新待ち」問題が解決します
+    handleNameSubmit(tempName);
+  };
   return (
     <div className="title-screen">
       <div
@@ -113,7 +126,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           <input
             type="text"
             className={`pop-input ${nameError ? "input-error-shake" : ""}`}
-            value={playerName}
+            value={tempName}
             onChange={(e) => {
               setPlayerName(e.target.value);
               if (nameError) setNameError("");
@@ -164,7 +177,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             </button>
             <button
               className="pop-btn primary"
-              onClick={handleNameSubmit}
+              onClick={onSubmit}
             >
               OK
             </button>
@@ -183,7 +196,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <br />
             よろしいですか？
           </label>
-          <div className="confirm-name-disp">{playerName}</div>
+          <div className="confirm-name-disp">{tempName}</div>
           <div
             style={{
               marginTop: "25px",

@@ -48,7 +48,7 @@ export class Segment {
 
     const nextBuffer = this.inputBuffer + inputChar;
     const possibleRoutes = this.patterns.filter((p) =>
-      p.startsWith(nextBuffer)
+      p.startsWith(nextBuffer),
     );
 
     // 正解ルート
@@ -115,24 +115,19 @@ export class TypingEngine {
     const out: Segment[] = [];
     let i = 0;
     const keys = Object.keys(ROMA_VARIATIONS).sort(
-      (a, b) => b.length - a.length
+      (a, b) => b.length - a.length,
     ); //romajiMapの文字数を長い順に(バラバラに分解されるのを防ぐ)
 
     // ここで入力分岐を判定
     while (i < roma.length) {
-      let hit = false;
-      for (const key of keys) {
-        // 例) sityu-
-        if (roma.startsWith(key, i)) {
-          // siがあるかチェック
-          out.push(new Segment(key)); // siを返す
-          i += key.length; // セグメントを二つ進める
-          hit = true;
-          break;
-        }
-      }
-      if (!hit) {
-        out.push(new Segment(roma[i])); // ヒットしなかったら一文字で進める
+      // startsWithでマッチするキーを探す(今はfindが優先らしい)
+      const hitKey = keys.find((key) => roma.startsWith(key, i));
+
+      if (hitKey) {
+        out.push(new Segment(hitKey));
+        i += hitKey.length;
+      } else {
+        out.push(new Segment(roma[i]));
         i++;
       }
     }
@@ -151,7 +146,7 @@ export class TypingEngine {
       let isCorrectForCurrent = false;
       if (segment) {
         isCorrectForCurrent = segment.patterns.some((p) =>
-          p.startsWith(segment.inputBuffer + key)
+          p.startsWith(segment.inputBuffer + key),
         ); // nを見つける(n、nnだったらn優先)
       }
       if (
