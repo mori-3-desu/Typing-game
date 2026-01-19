@@ -1,10 +1,20 @@
-// todo:マジックナンバーを消す
-// TODO:全体的に分かりずらいから修正していく
-import { TitleScreen } from "./components/screens/TitleScreen";
-import { DifficultySelectScreen } from "./components/screens/Difficulty";
+// src/App.tsx
+
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
+
+// --- Components ---
+import { TitleScreen } from "./components/screens/TitleScreen";
+import { DifficultySelectScreen } from "./components/screens/Difficulty";
+import { GameScreen } from "./components/screens/GameScreen";
+import { ResultScreen } from "./components/screens/ResultScreen";
+
+import { Ranking } from "./components/modals/Ranking";
+import { HowToPlay } from "./components/modals/HowToPlay";
+import { Setting } from "./components/modals/Setting";
+
+// --- Utils & Hooks ---
 import {
   DIFFICULTY_SETTINGS,
   PLAYER_NAME_CHARS,
@@ -39,7 +49,6 @@ import {
   type WordDataMap,
   type GameResultStats,
   type RankingScore,
-  type WeakWord,
   type WordRow,
   type TitlePhase,
 } from "./types";
@@ -106,10 +115,8 @@ function App() {
     setShowRomaji,
   } = useConfig();
 
-  // 設定画面用
-  const [tempPlayerName, setTempPlayerName] = useState("");
+  // ★名前: nameError は TitleScreen でも使うので残します
   const [nameError, setNameError] = useState("");
-  const [isNameChange, setIsNameChange] = useState("");
 
   const [gameState, setGameState] = useState<GameState>("loading");
   const [difficulty, setDifficulty] = useState<DifficultyLevel>("NORMAL");
@@ -151,7 +158,6 @@ function App() {
         setUserId(session.user.id);
       } else {
         // (B) ログインしていなければ、匿名ログインを実行！
-        // ▼ data も受け取るように修正
         const { data, error } = await supabase.auth.signInAnonymously();
 
         if (error) {
@@ -194,7 +200,7 @@ function App() {
 
   // 直前のゲーム結果を固定保持するためのステート
   const [lastGameStats, setLastGameStats] = useState<GameResultStats | null>(
-    null
+    null,
   );
 
   const [resultAnimStep, setResultAnimStep] = useState(0);
@@ -237,22 +243,6 @@ function App() {
     currentSpeed,
     setTimeLeft,
   } = useTypingGame(difficulty, dbWordData);
-  // ▼▼▼ デバッグ用：強制リセット処理 ▼▼▼
-  useEffect(() => {
-    console.log("🔧 DEBUG MODE: データをリセットします");
-    
-    // ローカルストレージの名前を消す
-    localStorage.removeItem('typing_player_name');
-    
-    // Stateも初期化して、入力フォームが出るようにする
-    setPlayerName(''); 
-    setIsNameConfirmed(false); // ← これで名前入力画面が出るはず！
-    
-    // (必要なら) ハイスコアも消す場合はコメントアウトを外す
-    // localStorage.removeItem('typing_hiscore_easy');
-    // localStorage.removeItem('typing_hiscore_normal');
-    // localStorage.removeItem('typing_hiscore_hard');
-  }, []);
 
   // 現在入力中の単語のミス数を追跡
   const currentWordMissRef = useRef(0);
@@ -292,7 +282,6 @@ function App() {
           };
 
           wordsData.forEach((row: WordRow) => {
-            // ここのコード見返す
             const level = row.difficulty as DifficultyLevel;
             if (formattedData[level]) {
               formattedData[row.difficulty].push({
@@ -313,9 +302,7 @@ function App() {
         if (ngError) throw ngError;
 
         if (ngData) {
-          // DBの形 [{word: "xx"}, {word: "yy"}] を ["xx", "yy"] に変換
           const list = ngData.map((item: { word: string }) => item.word);
-
           setNgWordsList(list); // Stateに保存
         }
       } catch (err) {
@@ -325,13 +312,11 @@ function App() {
     fetchAllData();
   }, []);
 
-  // 設定画面用の変数と関数
+  // --- Modal Handlers ---
   const [showConfig, setShowConfig] = useState(false);
 
   const handleOpenConfig = () => {
     playDecisionSound();
-    setTempPlayerName(playerName);
-    setNameError(""); // エラーリセット
     setShowConfig(true);
   };
 
@@ -340,56 +325,38 @@ function App() {
     setShowConfig(false);
   };
 
-  const handleConfigNameSubmit = async () => {
-    const trimmedName = tempPlayerName.trim();
-
-    setNameError(""); // エラーリセット
-
-    if (!trimmedName) {
-      setNameError("名前を入力してください");
-      return;
-    }
-    if (trimmedName.length > PLAYER_NAME_CHARS.MAX) {
-      setNameError(`名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`);
-      return;
-    }
-
-    const isNg = ngWordsList.some((word) =>
-      trimmedName.toLowerCase().includes(word.toLowerCase())
-    );
-
-    if (isNg) {
-      setNameError("不適切な文字が含まれています");
-      return;
-    }
-
-    // ローカル保存
-    const finalName = trimmedName || "Guest";
+  // ConfigModalに渡す、名前保存処理だけをここに残す
+  const handleSaveName = async (newName: string) => {
+    const finalName = newName || "Guest";
     setPlayerName(finalName);
     localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, finalName);
-
-    setIsNameChange("名前を保存しました！");
-    setNameError(""); // エラーが出てたら消す
-
-    // 2秒後にメッセージを自動で消す
-    setTimeout(() => {
-      setIsNameChange("");
-    }, UI_TIMINGS.MESSAGE_AUTO_CLOSE);
 
     // DB更新
     try {
       const { error } = await supabase
         .from("scores")
-        .update({ name: trimmedName })
+        .update({ name: newName })
         .eq("user_id", userId);
 
       if (error) throw error;
     } catch (err) {
       console.error("名前更新エラー:", err);
     }
-    playDecisionSound();
   };
 
+  const [showHowToPlay, setShowHowToPlay] = useState(false);
+
+  const handleOpenHowToPlay = () => {
+    playDecisionSound();
+    setShowHowToPlay(true);
+  };
+
+  const handleCloseHowToPlay = () => {
+    playDecisionSound();
+    setShowHowToPlay(false);
+  };
+
+  // ... (Ref更新、アニメーション、タイマー、キー操作などは変更なし) ...
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
 
@@ -444,18 +411,6 @@ function App() {
     return () => clearInterval(checkLoad);
   }, [dbWordData]);
 
-  const [showHowToPlay, setShowHowToPlay] = useState(false);
-
-  const handleOpenHowToPlay = () => {
-    playDecisionSound();
-    setShowHowToPlay(true);
-  };
-
-  const handleCloseHowToPlay = () => {
-    playDecisionSound();
-    setShowHowToPlay(false);
-  };
-
   useEffect(() => {
     setVolumes(bgmVol, seVol);
     localStorage.setItem(STORAGE_KEYS.VOLUME_BGM, bgmVol.toString());
@@ -491,8 +446,8 @@ function App() {
   };
 
   // タイトル画面：名前決定処理
-  const handleNameSubmit = () => {
-    const trimmedName = playerName.trim();
+  const handleNameSubmit = (inputName: string) => {
+    const trimmedName = inputName.trim();
 
     setNameError(""); // エラーリセット
 
@@ -502,7 +457,7 @@ function App() {
     }
 
     const isNg = ngWordsList.some((word) =>
-      trimmedName.toLowerCase().includes(word.toLowerCase())
+      trimmedName.toLowerCase().includes(word.toLowerCase()),
     );
 
     if (isNg) {
@@ -537,7 +492,7 @@ function App() {
       if (scaler) {
         const scale = Math.min(
           window.innerWidth / DISPLAY_SCALE.WIDTH,
-          window.innerHeight / DISPLAY_SCALE.HEIGHT
+          window.innerHeight / DISPLAY_SCALE.HEIGHT,
         );
         scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
       }
@@ -552,7 +507,7 @@ function App() {
     if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
       interval = window.setInterval(() => {
         setTimeLeft((prev) =>
-          Math.max(0, prev - UI_TIMINGS.GAME.TIMER_DECREMENT)
+          Math.max(0, prev - UI_TIMINGS.GAME.TIMER_DECREMENT),
         );
         setElapsedTime((prev) => prev + UI_TIMINGS.GAME.TIMER_DECREMENT);
       }, 100);
@@ -689,7 +644,7 @@ function App() {
           speed: targetStats.speed,
           created_at: new Date().toISOString(),
         },
-        { onConflict: "user_id, difficulty" } // この組み合わせが被ったら上書きせよ、という合図
+        { onConflict: "user_id, difficulty" }, // この組み合わせが被ったら上書きせよ、という合図
       );
 
       if (upsertError) throw upsertError;
@@ -793,7 +748,7 @@ function App() {
         miss: missCount,
         backspace: backspaceCount,
         combo: maxCombo,
-        speed: currentSpeed,
+        speed: Number(currentSpeed), // speedは数字にしておく
         rank,
         weakWords: missedWordsRecord,
         weakKeys: missedCharsRecord,
@@ -814,18 +769,7 @@ function App() {
         localStorage.setItem(storageKey, currentStats.score.toString());
 
         // 詳細データ保存
-        const highScoreData = {
-          score: currentStats.score,
-          words: currentStats.words,
-          correct: currentStats.correct,
-          miss: currentStats.miss,
-          backspace: currentStats.backspace,
-          combo: currentStats.combo,
-          speed: currentStats.speed,
-          weakWords: currentStats.weakWords,
-          weakKeys: currentStats.weakKeys,
-          rank: currentStats.rank,
-        };
+        const highScoreData = { ...currentStats };
         // ローカルストレージは文字しか入れられないから文字にしてから保存する
         localStorage.setItem(dataKey, JSON.stringify(highScoreData));
       } else {
@@ -954,7 +898,7 @@ function App() {
           canvas.height,
           state.readyY,
           readyImageRef.current,
-          state.showEnterText
+          state.showEnterText,
         );
       } else if (playPhase === "go") {
         if (hasSaved.current !== false) {
@@ -1192,7 +1136,7 @@ function App() {
     setShowTitle(false);
     setEnableBounce(false);
     setIsTitleExiting(false);
-
+    setTitlePhase("normal");
     setIsInputLocked(true);
     setTimeout(() => {
       setShowTitle(true);
@@ -1206,7 +1150,7 @@ function App() {
   //シェア機能
   const getShareUrl = () => {
     const text = encodeURIComponent(
-      `CRITICAL TYPINGでスコア:${score.toLocaleString()} ランク:${rank} を獲得しました！`
+      `CRITICAL TYPINGでスコア:${score.toLocaleString()} ランク:${rank} を獲得しました！`,
     );
     const hashtags = encodeURIComponent("CRITICALTYPING,タイピング");
     const url = encodeURIComponent(window.location.origin);
@@ -1250,75 +1194,40 @@ function App() {
   ];
   const targetBgSrc = getCurrentBgSrc();
 
+  // ★重要：ここで「リザルト画面に渡すデータ」を1つに絞ります！
+  // 苦手単語リスト計算
   const sortedWeakWords = [...missedWordsRecord]
     .sort((a, b) => b.misses - a.misses)
     .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
-  const sortedWeakKeys = Object.entries(missedCharsRecord)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
 
-  const hasPunctuation = jpText.endsWith("。") || jpText.endsWith("、"); // 句読点末尾にあると中央ずれてるように見えるのでインデントを調整
-
-  let targetResultData: GameResultStats;
-  // 過去の記録
+  let displayData: GameResultStats;
   if (gameState === "hiscore_review" && reviewData) {
-    targetResultData = {
-      score: reviewData.score,
+    displayData = {
+      ...reviewData,
       words: reviewData.words || 0,
-      correct: reviewData.correct,
-      miss: reviewData.miss,
-      backspace: reviewData.backspace,
-      speed: reviewData.speed,
-      combo: reviewData.combo,
-      rank: reviewData.rank,
       weakWords: reviewData.weakWords || [],
       weakKeys: reviewData.weakKeys || {},
     };
-    // ゲーム終了地点の記録
   } else if (gameState === "result" && lastGameStats) {
-    targetResultData = {
-      score: lastGameStats.score,
-      words: lastGameStats.words,
-      correct: lastGameStats.correct,
-      miss: lastGameStats.miss,
-      backspace: lastGameStats.backspace,
-      speed: lastGameStats.speed,
-      combo: lastGameStats.combo,
-      rank: lastGameStats.rank,
-      weakWords: lastGameStats.weakWords,
-      weakKeys: lastGameStats.weakKeys,
-    };
-    // 万が一のデータ(テストや万が一の保険)
+    displayData = lastGameStats;
   } else {
-    targetResultData = {
-      score: score,
+    displayData = {
+      score,
       words: completedWords,
       correct: correctCount,
       miss: missCount,
       backspace: backspaceCount,
       speed: Number(currentSpeed),
       combo: maxCombo,
-      rank: rank,
+      rank,
       weakWords: sortedWeakWords,
       weakKeys: missedCharsRecord,
     };
   }
 
-  const displayWeakWords =
-    gameState === "hiscore_review"
-      ? targetResultData.weakWords
-      : gameState === "result" && lastGameStats
-        ? lastGameStats.weakWords
-        : sortedWeakWords;
-  const displayWeakKeys =
-    gameState === "hiscore_review" || (gameState === "result" && lastGameStats)
-      ? Object.entries(targetResultData.weakKeys)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT)
-      : sortedWeakKeys;
-
   return (
     <div className="App">
+      {/* ゲーム本体（スケーリングされる部分） */}
       <div id="scaler">
         <div id="game-wrapper">
           {/* 背景レイヤー */}
@@ -1350,21 +1259,21 @@ function App() {
           ></div>
           <div id="fade-overlay" style={{ opacity: isWhiteFade ? 1 : 0 }}></div>
 
-          {/* Canvas (CSSで表示制御) */}
+          {/* Canvas */}
           <canvas
             ref={canvasRef}
             id="myCanvas"
             className={gameState === "playing" ? "" : "hidden"}
             style={{
               zIndex: 15,
-              position: "relative", // 必要に応じて absolute に変更
+              position: "relative",
               pointerEvents: "none",
             }}
           />
+
           {/* LOADING SCREEN */}
           {gameState === "loading" && (
             <div id="loading-screen">
-              {/* キーボード風のローディングアニメーション */}
               <div className="keyboard-loader">
                 <span className="key cat">L</span>
                 <span className="key cat">O</span>
@@ -1374,8 +1283,6 @@ function App() {
                 <span className="key cat">N</span>
                 <span className="key cat">G</span>
               </div>
-
-              {/* 下部のテキストと肉球 */}
               <div className="loading-text">
                 <span className="paw">🐾</span> Loading...{" "}
                 <span className="paw">🐾</span>
@@ -1422,1165 +1329,90 @@ function App() {
             />
           )}
 
-          {/* GAME HUD */}
-          {(gameState === "playing" || gameState === "finishing") &&
-            playPhase !== "ready" && (
-              <div id="game-hud" style={{ zIndex: 10 }}>
-                {playPhase === "game" && gameState !== "finishing" && (
-                  <div
-                    className="blink-guide"
-                    style={{
-                      position: "absolute",
-                      top: "740px",
-                      width: "100%",
-                      textAlign: "center",
-                      zIndex: 100,
-                    }}
-                  >
-                    — Escキーで最初からやり直す —
-                  </div>
-                )}
-                <div
-                  id="finish-banner"
-                  className={`${gameState === "finishing" ? "show" : ""} ${
-                    isFinishExit ? "exit" : ""
-                  }`}
-                >
-                  FINISH!
-                </div>
-
-                <div id="score-container">
-                  SCORE: <span id="score">{displayScore}</span>
-                  <div id="score-popups">
-                    {scorePopups.map((p) => (
-                      <div key={p.id} className={`score-popup ${p.type}`}>
-                        {p.text}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div id="perfect-container">
-                  {perfectPopups.map((p) => (
-                    <div key={p.id} className="perfect-item">
-                      PERFECT!!
-                    </div>
-                  ))}
-                </div>
-
-                <div
-                  id="center-area"
-                  style={{
-                    opacity:
-                      playPhase === "game" && gameState !== "finishing" ? 1 : 0,
-                    transition: "opacity 0.2s",
-                  }}
-                >
-                  <div id="text-word-wrapper">
-                    <div
-                      id="text-word"
-                      className={
-                        shakeStatus === "light"
-                          ? "light-shake"
-                          : shakeStatus === "error"
-                            ? "error-shake"
-                            : ""
-                      }
-                      style={{
-                        padding: showRomaji ? "20px 65px" : "20px 30px",
-                        transition: "padding 0.3s ease",
-                      }}
-                    >
-                      <div id="romaji-line">
-                        {romaState.typedLog.map((log, i) => (
-                          <span key={i} style={{ color: log.color }}>
-                            {log.char}
-                          </span>
-                        ))}
-                        <span
-                          className="text-yellow"
-                          style={{ textDecoration: "underline" }}
-                        >
-                          {romaState.current}
-                        </span>
-                        <span style={{ color: "white" }}>
-                          {romaState.remaining}
-                        </span>
-                      </div>
-
-                      <div
-                        id="jp-line"
-                        className={hasPunctuation ? "has-punctuation" : ""}
-                      >
-                        {jpText}
-                      </div>
-
-                      <div
-                        id="full-roma"
-                        className={hasPunctuation ? "has-punctuation" : ""}
-                        style={{ display: showRomaji ? "block" : "none" }}
-                      >
-                        {allSegments.map((seg, i) => (
-                          <span key={i} className="segment-group">
-                            {seg.display.split("").map((char, charIdx) => (
-                              <span
-                                key={charIdx}
-                                style={{
-                                  opacity:
-                                    charIdx < seg.inputBuffer.length ? 0.3 : 1,
-                                }}
-                              >
-                                {char}
-                              </span>
-                            ))}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    {bonusPopups.map((p) => (
-                      <div key={p.id} className={`bonus-pop ${p.type}`}>
-                        {p.text}
-                      </div>
-                    ))}
-                    <div id="rank-monitor" style={{ whiteSpace: "nowrap" }}>
-                      RANK{" "}
-                      <span
-                        id="rank-value"
-                        className={`rank-${rank.toLowerCase()}`}
-                      >
-                        {rank}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div id="combo-box">
-                  <div
-                    id="combo-count"
-                    className={comboClass}
-                    data-text={combo}
-                  >
-                    {combo}
-                  </div>
-                  <div
-                    id="combo-label"
-                    className={comboClass}
-                    data-text="COMBO"
-                  >
-                    COMBO
-                  </div>
-                </div>
-
-                <div id="tmr-box">
-                  <img src="/images/cloud.png" id="tmr-img" alt="雲" />
-                  <span
-                    id="tmr-text"
-                    className={
-                      isTimeAdded
-                        ? "time-plus"
-                        : timeLeft <= 10
-                          ? "timer-pinch"
-                          : "timer-normal"
-                    }
-                  >
-                    {Math.ceil(timeLeft)}
-                  </span>
-                </div>
-
-                <div
-                  id="combo-meter"
-                  className={`theme-${difficulty.toLowerCase()}`}
-                >
-                  <div className="meter-header">
-                    <span>連打メーター</span>
-                    <span>+10秒</span>
-                  </div>
-                  <div id="meter-bar">
-                    <div
-                      id="meter-fill"
-                      style={{
-                        width: `${Math.min(
-                          100,
-                          (gaugeValue / gaugeMax) * 100
-                        )}%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-
-                <div id="word-counter">
-                  <fieldset style={{ border: "none", padding: 0, margin: 0 }}>
-                    <legend>WORDS</legend>
-                    <span id="stat-words">{completedWords}</span>
-                  </fieldset>
-                </div>
-
-                <div id="hud-stats">
-                  <span className="speed-label">Speed: </span>
-                  <span id="stat-speed">
-                    {currentSpeed} <span className="stat-unit">key/s</span>
-                  </span>
-                </div>
-              </div>
-            )}
-
-          {/* RESULT SCREEN */}
-          {(gameState === "result" || gameState === "hiscore_review") && (
-            <div
-              id="result-screen"
-              className={`res-theme-${difficulty.toLowerCase()}`}
-              onClick={handleResultClick}
-              style={{ opacity: 1, zIndex: 20 }}
-            >
-              <h2 className="result-title">RESULT</h2>
-
-              <div className="result-grid">
-                <div className="result-left-col">
-                  {/* アニメーション1: スコア */}
-                  <div
-                    className={`score-big-container fade-target ${
-                      resultAnimStep >= 1 ? "visible" : ""
-                    }`}
-                    id="res-anim-1"
-                  >
-                    <div className="score-header-row">
-                      <div className="score-label-main">SCORE</div>
-                      <div className="hiscore-block">
-                        <div
-                          id="new-record-badge"
-                          className={
-                            isNewRecord && gameState === "result"
-                              ? ""
-                              : "hidden"
-                          }
-                        >
-                          NEW RECORD!
-                        </div>
-                        <div className="hiscore-row">
-                          <span className="hiscore-label">HI-SCORE</span>
-                          <span className="hiscore-value" id="res-hi-score">
-                            {highScore.toLocaleString()}
-                          </span>
-                        </div>
-                        {gameState === "result" && (
-                          <div
-                            className={`score-diff ${
-                              scoreDiff > 0
-                                ? "diff-plus"
-                                : scoreDiff < 0
-                                  ? "diff-minus"
-                                  : "diff-zero"
-                            }`}
-                            id="score-diff"
-                          >
-                            {scoreDiff > 0 ? "+" : ""}
-                            {scoreDiff.toLocaleString()}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div
-                      className="score-main-row"
-                      style={{
-                        width: "100%",
-                        display: "flex",
-                        justifyContent: "flex-end",
-                        marginTop: "5px",
-                      }}
-                    >
-                      <div
-                        className="score-val-huge"
-                        id="res-score"
-                        style={{ textAlign: "right" }}
-                      >
-                        {targetResultData.score.toLocaleString()}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* アニメーション2: 判定 */}
-                  <div
-                    className={`stats-compact-container fade-target ${
-                      resultAnimStep >= 2 ? "visible" : ""
-                    }`}
-                    id="res-anim-2"
-                  >
-                    <div className="stat-row">
-                      <span className="stat-label c-green">Correct</span>
-                      <div className="stat-right-stacked">
-                        <span className="sub-val-upper">
-                          ({targetResultData.words} words)
-                        </span>
-                        <span className="stat-val c-green" id="res-correct">
-                          {targetResultData.correct}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="stat-row">
-                      <span className="stat-label c-red">Miss</span>
-                      <div className="stat-right">
-                        <span className="stat-val c-red" id="res-miss">
-                          {targetResultData.miss}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="stat-row">
-                      <span className="stat-label c-blue">BackSpace</span>
-                      <div className="stat-right">
-                        <span className="stat-val c-blue" id="res-bs">
-                          {targetResultData.backspace}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="stat-row">
-                      <span className="stat-label c-cyan">Speed</span>
-                      <div
-                        className="stat-val-group"
-                        style={{ textAlign: "right" }}
-                      >
-                        <span className="stat-val c-cyan" id="res-speed">
-                          {targetResultData.speed}
-                        </span>
-                        <span className="stat-unit">key/s</span>
-                      </div>
-                    </div>
-                    <hr
-                      className="stat-divider"
-                      style={{
-                        border: 0,
-                        borderTop: "1px dashed rgba(255,255,255,0.3)",
-                        margin: "5px 0",
-                      }}
-                    />
-                    <div className="stat-row combo-row">
-                      <span className="stat-label c-orange">MAX COMBO</span>
-                      <span className="stat-val c-orange" id="res-max-combo">
-                        {targetResultData.combo}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-right">
-                  {/* アニメーション3: 苦手単語 */}
-                  <div
-                    className={`result-box weak-box fade-target ${
-                      resultAnimStep >= 3 ? "visible" : ""
-                    }`}
-                    id="res-anim-3"
-                  >
-                    <div className="label-small">苦手な単語</div>
-                    <ul id="weak-words-list" className="weak-list">
-                      {displayWeakWords.map((item: WeakWord, idx: number) => (
-                        <li key={idx}>
-                          <span>{item.word}</span>{" "}
-                          <span className="miss-count">{item.misses}ミス</span>
-                        </li>
-                      ))}
-                      {displayWeakWords.length === 0 && (
-                        <li
-                          style={{
-                            listStyle: "none",
-                            color: "#ccc",
-                            textAlign: "center",
-                            marginTop: "10px",
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          None
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-
-                  {/* アニメーション4: 苦手キー */}
-                  <div
-                    className={`result-box weak-box fade-target ${
-                      resultAnimStep >= 3 ? "visible" : ""
-                    }`}
-                    id="res-anim-4"
-                  >
-                    <div className="label-small">苦手なキー</div>
-                    <ul
-                      id="weak-keys-list"
-                      className="weak-list horizontal-list"
-                      style={{ display: "flex", flexDirection: "column" }}
-                    >
-                      {displayWeakKeys.map(
-                        ([char, count]: [string, number], idx: number) => (
-                          <li
-                            key={idx}
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              width: "100%",
-                            }}
-                          >
-                            <span>{char.toUpperCase()}</span>{" "}
-                            <span className="miss-count">{count}回</span>
-                          </li>
-                        )
-                      )}
-                      {displayWeakKeys.length === 0 && (
-                        <li
-                          style={{
-                            listStyle: "none",
-                            color: "#ccc",
-                            textAlign: "center",
-                            marginTop: "10px",
-                            fontSize: "0.8rem",
-                          }}
-                        >
-                          None
-                        </li>
-                      )}
-                    </ul>
-                  </div>
-
-                  {/* アニメーション5: ランク */}
-                  <div
-                    className={`rank-area fade-target ${
-                      resultAnimStep >= 4 ? "visible" : ""
-                    }`}
-                    id="res-anim-5"
-                  >
-                    <div className="rank-circle">
-                      <div className="rank-label">RANK</div>
-                      <div
-                        id="res-rank"
-                        className={`rank-char res-rank-${targetResultData.rank.toLowerCase()}`}
-                      >
-                        {targetResultData.rank}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* アニメーション6: フッターボタン */}
-              <div
-                className={`result-footer-area fade-target ${
-                  resultAnimStep >= 5 ? "visible" : ""
-                }`}
-                id="res-anim-6"
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  position: "relative",
-                  marginTop: "10px",
-                }}
-              >
-                {gameState === "result" ? (
-                  <>
-                    <div className="result-buttons">
-                      <button
-                        id="btn-retry"
-                        className="res-btn primary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          retryGame();
-                        }}
-                      >
-                        もう一度 (Enter)
-                      </button>
-                      <button
-                        id="btn-Esc-to-difficulty"
-                        className="res-btn secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          backToDifficulty();
-                        }}
-                      >
-                        難易度選択へ (Esc)
-                      </button>
-                      <button
-                        id="btn-back-to-title"
-                        className="res-btn secondary"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          backToTitle();
-                        }}
-                      >
-                        タイトルへ
-                      </button>
-                    </div>
-                    <div
-                      className="result-share-group"
-                      style={{
-                        position: "absolute",
-                        right: "10px",
-                        display: "flex",
-                        gap: "10px",
-                      }}
-                    >
-                      <div
-                        className="share-icon-box crown-box"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          fetchRanking();
-                        }}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <img
-                          src="/images/ranking.png"
-                          alt="Ranking"
-                          style={{
-                            width: "30px",
-                            height: "30px",
-                            objectFit: "contain",
-                          }}
-                        />
-                      </div>
-                      <a
-                        href={getShareUrl()}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        id="btn-share-x"
-                        className="share-icon-box x-box"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <img
-                          src="/images/X.jpg"
-                          alt="Share on X"
-                          style={{
-                            width: "30px",
-                            height: "30px",
-                            objectFit: "contain",
-                          }}
-                        />
-                      </a>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="result-buttons"></div>
-                    <div
-                      className="result-share-group"
-                      style={{ position: "absolute", right: "10px" }}
-                    >
-                      <button
-                        className="share-icon-box"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          backToDifficulty();
-                        }}
-                        style={{
-                          cursor: "pointer",
-                          background: "rgba(255,255,255,0.2)",
-                          border: "2px solid #fff",
-                          color: "#fff",
-                          borderRadius: "50%",
-                          width: "50px",
-                          height: "50px",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                          fontSize: "1.6rem",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        ↩
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
+          {/* GAME HUD (プレイ画面) */}
+          {(gameState === "playing" || gameState === "finishing") && (
+            <GameScreen
+              gameState={gameState}
+              playPhase={playPhase}
+              difficulty={difficulty}
+              score={score}
+              displayScore={displayScore}
+              combo={combo}
+              comboClass={comboClass}
+              timeLeft={timeLeft}
+              isTimeAdded={isTimeAdded}
+              gaugeValue={gaugeValue}
+              gaugeMax={gaugeMax}
+              completedWords={completedWords}
+              currentSpeed={currentSpeed}
+              jpText={jpText}
+              romaState={romaState}
+              showRomaji={showRomaji}
+              allSegments={allSegments}
+              shakeStatus={shakeStatus}
+              rank={rank}
+              bonusPopups={bonusPopups}
+              perfectPopups={perfectPopups}
+              scorePopups={scorePopups}
+              isRainbowMode={isRainbowMode}
+              isFinishExit={isFinishExit}
+            />
           )}
 
-          {/* RANKING MODAL */}
-          {showRanking && (
-            <div className="ranking-overlay" onClick={closeRanking}>
-              <div
-                className={`ranking-modal rank-theme-${difficulty.toLowerCase()}`}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="ranking-header">
-                  <h2 className="ranking-title">
-                    {difficulty}{" "}
-                    <span style={{ fontSize: "0.4em", opacity: 0.8 }}>
-                      {isDevRankingMode ? "- 作成者のスコア -" : ""}
-                    </span>
-                  </h2>
-                  <div className="ranking-header-buttons">
-                    {!isDevRankingMode && (
-                      <button
-                        className="close-btn dev-btn"
-                        onClick={handleShowDevScore}
-                        title="製作者スコアを見る"
-                      >
-                        👑
-                      </button>
-                    )}
-                    {isDevRankingMode && (
-                      <button
-                        className="close-btn global-btn"
-                        onClick={() => fetchRanking(difficulty)}
-                        title="全国ランキングに戻る"
-                      >
-                        🌏
-                      </button>
-                    )}
-                    <button
-                      className="close-btn"
-                      onClick={closeRanking}
-                      title="閉じる"
-                    >
-                      ↩
-                    </button>
-                  </div>
-                </div>
-
-                <div className="ranking-list">
-                  {isDevRankingMode ? (
-                    // === 製作者スコア ===
-                    rankingData.length > 0 ? (
-                      rankingData.map((item) => (
-                        <div key={item.id} className="dev-score-pop-container">
-                          <div
-                            className="dev-score-card"
-                            style={{ color: "inherit" }}
-                          >
-                            <button
-                              className="dev-pop-back-btn"
-                              onClick={() => {
-                                setIsDevRankingMode(false);
-                                fetchRanking(difficulty);
-                              }}
-                              title="ランキングに戻る"
-                              style={{
-                                position: "absolute",
-                                top: "15px",
-                                right: "15px",
-                                width: "30px",
-                                height: "30px",
-                                borderRadius: "50%",
-                                border: "2px solid rgba(255,255,255,0.5)",
-                                background: "rgba(0,0,0,0.3)",
-                                color: "#fff",
-                                fontSize: "1.2rem",
-                                cursor: "pointer",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                              }}
-                            >
-                              ↩
-                            </button>
-                            <div className="dev-label">CREATOR'S RECORD</div>
-                            <div
-                              className="rank-name-row"
-                              style={{
-                                justifyContent: "center",
-                                gap: "10px",
-                                marginBottom: "5px",
-                              }}
-                            >
-                              <span style={{ fontSize: "1.2rem" }}>
-                                👑 {item.name}
-                              </span>
-                              <span
-                                style={{ fontSize: "0.8rem", opacity: 0.7 }}
-                              >
-                                {(() => {
-                                  const d = new Date(item.created_at);
-                                  return d.toLocaleString("ja-JP", {
-                                    timeZone: "Asia/Tokyo",
-                                    year: "numeric",
-                                    month: "numeric",
-                                    day: "numeric",
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  });
-                                })()}
-                              </span>
-                            </div>
-                            <div className="dev-main-score">
-                              {item.score.toLocaleString()}
-                            </div>
-                            <div className="dev-stats-grid">
-                              <div className="dev-stat-item">
-                                <span style={{ color: "#4ade80" }}>
-                                  Correct
-                                </span>
-                                <span className="dev-stat-val">
-                                  {item.correct}
-                                </span>
-                              </div>
-                              <div className="dev-stat-item">
-                                <span style={{ color: "#f87171" }}>Miss</span>
-                                <span className="dev-stat-val">
-                                  {item.miss}
-                                </span>
-                              </div>
-                              <div className="dev-stat-item">
-                                <span style={{ color: "#3498db" }}>
-                                  BackSpace
-                                </span>
-                                <span className="dev-stat-val">
-                                  {item.backspace}
-                                </span>
-                              </div>
-                              <div className="dev-stat-item">
-                                <span style={{ color: "#22d3ee" }}>Speed</span>
-                                <span className="dev-stat-val">
-                                  {item.speed} <span>key/s</span>
-                                </span>
-                              </div>
-                              <div className="dev-stat-item">
-                                <span style={{ color: "#fbbf24" }}>
-                                  MaxCombo
-                                </span>
-                                <span className="dev-stat-val">
-                                  {item.combo}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="dev-score-pop-container">
-                        <p>Dev data not found...</p>
-                      </div>
-                    )
-                  ) : (
-                    // === 通常ランキング ===
-                    <>
-                      {rankingData.map((item, index) => {
-                        const rank = index + 1;
-                        const isMe = item.user_id === userId;
-                        const d = new Date(item.created_at);
-                        const dateStr = d.toLocaleString("ja-JP", {
-                          timeZone: "Asia/Tokyo",
-                          year: "numeric",
-                          month: "numeric",
-                          day: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        });
-
-                        return (
-                          <div
-                            key={item.id}
-                            className={`ranking-card rank-${rank} ${
-                              isMe ? "my-rank" : ""
-                            }`}
-                            style={{ position: "relative" }}
-                          >
-                            {isMe && <div className="you-badge">YOU</div>}
-                            <div className="rank-badge">
-                              <span className="rank-num">{rank}</span>
-                            </div>
-                            <div className="rank-info">
-                              <div className="rank-name-row">
-                                <span className="rank-name">{item.name}</span>
-                                <span className="rank-date">{dateStr}</span>
-                              </div>
-                              <div className="rank-score">
-                                {item.score.toLocaleString()}
-                              </div>
-                              <div className="rank-stats-grid">
-                                <div className="stat-box c-green">
-                                  Correct: {item.correct}
-                                </div>
-                                <div className="stat-box c-red">
-                                  Miss: {item.miss}
-                                </div>
-                                <div className="stat-box c-blue">
-                                  BS: {item.backspace}
-                                </div>
-                                <div className="stat-box c-cyan">
-                                  Speed: {item.speed}
-                                </div>
-                                <div className="stat-box c-orange">
-                                  Combo: {item.combo}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {rankingData.length === 0 && (
-                        <div
-                          style={{
-                            fontSize: "2.5em",
-                            textAlign: "center",
-                            padding: "150px",
-                            color: "gray",
-                          }}
-                        >
-                          No scores registered yet.
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+          {/* RESULT SCREEN (結果画面) */}
+          {(gameState === "result" || gameState === "hiscore_review") && (
+            <ResultScreen
+              gameState={gameState}
+              difficulty={difficulty}
+              resultData={displayData}
+              highScore={highScore}
+              scoreDiff={scoreDiff}
+              isNewRecord={isNewRecord}
+              resultAnimStep={resultAnimStep}
+              onRetry={retryGame}
+              onBackToDifficulty={backToDifficulty}
+              onBackToTitle={backToTitle}
+              onShowRanking={fetchRanking}
+              onTweet={getShareUrl}
+              onClickScreen={handleResultClick}
+            />
           )}
         </div>
       </div>
 
-      {/* 遊び方 */}
-      {showHowToPlay && (
-        <div className="config-overlay" onClick={handleCloseHowToPlay}>
-          <div
-            className="config-modal howto-modal"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="config-title">遊び方</h2>
+      {/* ▼▼▼ 修正: モーダルたちを scaler の外に出しました！ ▼▼▼ */}
+      {/* これで画面サイズやズームに関係なく、常に画面中央に正しく表示されます */}
 
-            <div className="howto-grid-container">
-              <div className="howto-col left-col">
-                <h3 className="howto-heading">ルール</h3>
-                <ul className="howto-list">
-                  <li>
-                    <span className="icon">⏰</span>
-                    <span>
-                      難易度ごとに
-                      <span className="highlight-gold">制限時間</span>
-                      があります。
-                    </span>
-                  </li>
-                  <li>
-                    <span className="icon">🌟</span>
-                    <span>
-                      ミスタイプなく単語入力すると
-                      <span className="highlight-gold">ボーナス得点</span>GET！
-                      <br />
-                      <span className="note">
-                        ※1回でもミスタイプすると加算されません
-                      </span>
-                    </span>
-                  </li>
-                  <li>
-                    <span className="icon">↩️</span>
-                    <span>
-                      ミスタイプは
-                      <span className="highlight-blue">BackSpace</span>
-                      で消す必要があります。
-                      <br />
-                      正しく打てた場合は
-                      <span className="highlight-green">緑</span>
-                      に、ミスタイプした場合は
-                      <span className="highlight-red">赤</span>で表示されます。
-                      <br />
-                      <span className="note red-note">
-                        ※赤くなってもキー入力は進みますが次の単語には進めません！修正はめんどくさいですよ！
-                      </span>
-                    </span>
-                  </li>
-                  <li>
-                    <span className="icon">🔋</span>
-                    <span>
-                      <span className="highlight-green">連打ゲージ</span>
-                      ：正解で増加！ミスで減少...！満タンになるとタイム加算！
-                    </span>
-                  </li>
-                  <li>
-                    <span className="icon">🌈</span>
-                    <span>
-                      正確に打ち続けると
-                      <span className="highlight-gold">COMBO</span>
-                      増加！コンボ数に応じてタイムも増加！
-                    </span>
-                  </li>
-                  <li>
-                    <span className="icon">🔥</span>
-                    <span>
-                      ミスタイプでコンボ終了。スコアを伸ばして
-                      <span className="highlight-gold">全国ランキング</span>
-                      を目指そう！
-                    </span>
-                  </li>
-                </ul>
-              </div>
-
-              <div className="howto-col right-col">
-                <h3 className="howto-heading">操作方法</h3>
-                <div className="howto-section">
-                  <p className="howto-text">
-                    中央に表示されている単語をタイピング！
-                    <br />
-                    <span className="highlight-green">EASY</span>・
-                    <span className="highlight-blue">NORMAL</span>・
-                    <span className="highlight-red">HARD</span>
-                    <br />
-                    3つの難易度があり、出題傾向が変わります。
-                    <br />
-                    お好きな難易度で挑戦してください！
-                  </p>
-                </div>
-                <div
-                  className="howto-section"
-                  style={{ display: "flex", flexDirection: "column" }}
-                >
-                  <h3 className="howto-heading_sub">ローマ字対応</h3>
-                  <p className="howto-text note">
-                    様々な入力分岐に対応しています。
-                  </p>
-                  <div className="key-example-box">
-                    <div className="key-row">
-                      <span className="key-char">し</span>
-                      <span className="key-val">si / shi</span>
-                    </div>
-                    <div className="key-row">
-                      <span className="key-char">つ</span>
-                      <span className="key-val">tu / tsu</span>
-                    </div>
-                    <div className="key-row">
-                      <span className="key-char">ち</span>
-                      <span className="key-val">ti / chi</span>
-                    </div>
-                    <div className="key-row">
-                      <span className="key-char">ん</span>
-                      <span className="key-val">n / nn</span>
-                    </div>
-                    <p
-                      className="note"
-                      style={{ textAlign: "right", marginTop: "0.5cqh" }}
-                    >
-                      ※母音の前や末尾は{" "}
-                      <span className="highlight-gold">nn</span> 必須
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="config-buttons">
-              <button
-                className="pop-btn primary"
-                onClick={handleCloseHowToPlay}
-              >
-                閉じる
-              </button>
-            </div>
-          </div>
-        </div>
+      {showRanking && (
+        <Ranking
+          difficulty={difficulty}
+          rankingData={rankingData}
+          userId={userId}
+          isDevRankingMode={isDevRankingMode}
+          onClose={closeRanking}
+          onShowDevScore={handleShowDevScore}
+          onFetchRanking={fetchRanking}
+        />
       )}
 
-      {/* 設定 */}
+      {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
+
       {showConfig && (
-        <div className="config-overlay" onClick={handleCloseConfig}>
-          <div className="config-modal" onClick={(e) => e.stopPropagation()}>
-            <h2
-              className="config-title"
-              style={{ marginBottom: "10px", flexShrink: 0 }}
-            >
-              SETTING
-            </h2>
-
-            <div className="config-scroll-area">
-              {/* 名前変更エリア */}
-              <div
-                className="config-item"
-                style={{
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: "5px",
-                  marginBottom: "20px",
-                  width: "100%",
-                  padding: "0 20px",
-                }}
-              >
-                <div
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    alignItems: "flex-end",
-                  }}
-                >
-                  <label
-                    style={{
-                      fontSize: "0.9rem",
-                      color: "#ccc",
-                      marginLeft: "5px",
-                    }}
-                  >
-                    Player Name
-                  </label>
-                  {nameError && (
-                    <span
-                      className="error-fade-in"
-                      style={{
-                        fontSize: "0.9rem",
-                        marginLeft: "auto",
-                        marginRight: "5px",
-                      }}
-                    >
-                      ⚠ ERROR
-                    </span>
-                  )}
-                </div>
-
-                <div
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    gap: "10px",
-                    alignItems: "center",
-                  }}
-                >
-                  <input
-                    type="text"
-                    className={`pop-input-field ${
-                      nameError ? "input-error-shake" : ""
-                    }`}
-                    value={tempPlayerName}
-                    maxLength={PLAYER_NAME_CHARS.MAX}
-                    onChange={(e) => {
-                      setTempPlayerName(e.target.value);
-                      if (nameError) setNameError("");
-                    }}
-                    placeholder="Guest"
-                    style={{
-                      flex: 1,
-                      margin: 0,
-                      fontSize: "1.1rem",
-                      padding: "8px 20px",
-                      textAlign: "left",
-                      transition: "all 0.3s",
-                    }}
-                  />
-                  <button
-                    className="btn-change-name"
-                    onClick={handleConfigNameSubmit}
-                    style={{
-                      whiteSpace: "nowrap",
-                      padding: "10px 20px",
-                      fontSize: "0.9rem",
-                      height: "46px",
-                    }}
-                  >
-                    変更
-                  </button>
-                </div>
-                <div
-                  style={{
-                    height: "20px",
-                    marginTop: "5px",
-                    marginLeft: "5px",
-                    display: "flex", // 必要に応じて追加
-                    alignItems: "center", // 上下中央揃え
-                  }}
-                >
-                  {nameError ? (
-                    // 【優先度1】 エラーがある時
-                    <p
-                      className="error-fade-in"
-                      style={{
-                        fontSize: "0.85rem",
-                        margin: 0,
-                        color: "#ff4d4d",
-                      }}
-                    >
-                      {nameError}
-                    </p>
-                  ) : isNameChange ? (
-                    // 【優先度2】 エラーがなく、保存成功メッセージがある時
-                    <p
-                      className="fade-in"
-                      style={{
-                        fontSize: "0.85rem",
-                        margin: 0,
-                        color: "#4dff88",
-                      }} // 緑色で強調
-                    >
-                      ✓ {isNameChange}
-                    </p>
-                  ) : (
-                    // 【優先度3】 何もない時（デフォルトの補足）
-                    <p
-                      style={{
-                        fontSize: "0.8rem",
-                        color: "rgba(255,255,255,0.5)",
-                        margin: 0,
-                      }}
-                    >
-                      ※変更可能、名前はランキングに反映されます
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* その他設定項目 */}
-              <div className="config-item">
-                <label className="config-label">
-                  <input
-                    type="checkbox"
-                    checked={isMuted}
-                    onChange={(e) => setIsMuted(e.target.checked)}
-                  />
-                  <span className="checkbox-text">音量をミュートにする</span>
-                </label>
-              </div>
-
-              <div className="config-item">
-                <label className="config-label">
-                  <input
-                    type="checkbox"
-                    checked={showRomaji}
-                    onChange={(e) => setShowRomaji(e.target.checked)}
-                  />
-                  <span className="checkbox-text">
-                    ローマ字ガイドを表示する
-                  </span>
-                </label>
-              </div>
-
-              <hr
-                style={{
-                  borderColor: "rgba(255,255,255,0.2)",
-                  margin: "20px 0",
-                }}
-              />
-
-              <div className={`config-item ${isMuted ? "disabled" : ""}`}>
-                <div className="slider-label-row">
-                  <span>BGM音量</span>
-                  <span>{Math.round(bgmVol * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={bgmVol}
-                  onChange={(e) => setBgmVol(parseFloat(e.target.value))}
-                  disabled={isMuted}
-                  className="volume-slider"
-                />
-              </div>
-
-              <div className={`config-item ${isMuted ? "disabled" : ""}`}>
-                <div className="slider-label-row">
-                  <span>効果音(SE)音量</span>
-                  <span>{Math.round(seVol * 100)}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.05"
-                  value={seVol}
-                  onChange={(e) => setSeVol(parseFloat(e.target.value))}
-                  disabled={isMuted}
-                  className="volume-slider"
-                />
-              </div>
-
-              <div className="config-buttons" style={{ marginTop: "30px" }}>
-                <button className="pop-btn primary" onClick={handleCloseConfig}>
-                  閉じる
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+        <Setting
+          playerName={playerName}
+          isMuted={isMuted}
+          bgmVol={bgmVol}
+          seVol={seVol}
+          showRomaji={showRomaji}
+          ngWordsList={ngWordsList}
+          setIsMuted={setIsMuted}
+          setBgmVol={setBgmVol}
+          setSeVol={setSeVol}
+          setShowRomaji={setShowRomaji}
+          onSaveName={handleSaveName}
+          onClose={handleCloseConfig}
+          playDecisionSound={playDecisionSound}
+        />
       )}
     </div>
   );
