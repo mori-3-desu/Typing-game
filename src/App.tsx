@@ -1,5 +1,3 @@
-// src/App.tsx
-
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabase";
 import "./App.css";
@@ -9,12 +7,9 @@ import { TitleScreen } from "./components/screens/TitleScreen";
 import { DifficultySelectScreen } from "./components/screens/Difficulty";
 import { GameScreen } from "./components/screens/GameScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
-
-// ▼▼▼ 修正: 正しいファイル名とコンポーネント名でインポート ▼▼▼
 import { Ranking } from "./components/modals/Ranking";
 import { HowToPlay } from "./components/modals/HowToPlay";
 import { Setting } from "./components/modals/Setting";
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
 
 // --- Utils & Hooks ---
 import {
@@ -1379,9 +1374,7 @@ function App() {
               onClickScreen={handleResultClick}
             />
           )}
-          {/* ▼▼▼ 修正: モーダルたちを scaler の外に出しました！ ▼▼▼ */}
-          {/* これで画面サイズやズームに関係なく、常に画面中央に正しく表示されます */}
-
+          
           {showRanking && (
             <Ranking
               difficulty={difficulty}

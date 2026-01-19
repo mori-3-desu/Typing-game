@@ -185,12 +185,15 @@ export const GameScreen = ({
         </div>
       </div>
 
+      {/* コンボ表示エリア */}
       <div id="combo-box">
-        <div id="combo-count" className={comboClass} data-text={combo}>
-          {combo}
-        </div>
-        <div id="combo-label" className={comboClass} data-text="COMBO">
-          COMBO
+        <div key={combo} className={combo > 0 ? "combo-pop-anim" : ""}>
+          <div id="combo-count" className={comboClass} data-text={combo}>
+            {combo}
+            <div id="combo-label" className={comboClass} data-text="COMBO">
+              COMBO
+            </div>
+          </div>
         </div>
       </div>
 

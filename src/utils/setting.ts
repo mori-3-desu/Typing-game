@@ -51,7 +51,7 @@ export const READY_GO_ANIMATION = {
   GO_INIT:    0, // GO初期の大きさ
   GO_HIG:   0.1, // 0.1ずつ拡大
   GO_MAX:   1.0  // 最大値
-}
+} as const;
 
 // アニメーションや待機時間の定数管理
 export const UI_TIMINGS = {
@@ -95,7 +95,7 @@ export const UI_TIMINGS = {
 export const LIMIT_DATA = {
   RANKING_LIMIT:   10, // ランキング表示制限
   WAKE_DATA_LIMIT:  5  // 苦手単語/キー表示制限
-}
+} as const;
 
 // localStorage保存データ
 export const STORAGE_KEYS = {
