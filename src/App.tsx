@@ -57,7 +57,7 @@ const preloadImages = () => {
     "/images/level.png",
     "/images/cloud.png",
     "/images/Ready.jpg",
-    "/images/icon_x.jpg",
+    "/images/X.jpg",
     "/images/ranking.png",
     "/images/X.jpg",
     ...Object.values(DIFFICULTY_SETTINGS).map((s) => s.bg),
@@ -1374,7 +1374,7 @@ function App() {
               onClickScreen={handleResultClick}
             />
           )}
-          
+
           {showRanking && (
             <Ranking
               difficulty={difficulty}
