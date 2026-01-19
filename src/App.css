@@ -1069,6 +1069,32 @@ body {
   transition: transform 0.2s ease, color 0.2s;
 }
 
+/* コンボ更新時の「縮んで戻る」アニメーション */
+@keyframes combo-shrink-pop {
+  0% {
+    transform: scale(0.8);  /* 打った瞬間、衝撃で縮む */
+  }
+  60% {
+    transform: scale(1.03); /* 反動でちょっとだけ膨らむ（弾力感） */
+  }
+  100% {
+    transform: scale(1);    /* 元に戻る */
+  }
+}
+
+/* ラッパークラス */
+.combo-pop-anim {
+  display: block; /* inline-blockよりblockの方が安定します */
+  margin: 0 auto;
+  width: fit-content; /* 中身のサイズに合わせる */
+  
+  /* アニメーション適用 */
+  animation: combo-shrink-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  
+  /* 重要: これがないと中心からズレて縮むことがあります */
+  transform-origin: center center;
+}
+
 /* コンボ表示 */
 #combo-box {
   position: absolute;
@@ -1081,9 +1107,13 @@ body {
 
 #combo-count,
 #combo-label {
-  transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1),
-    color 0.4s ease-out, text-shadow 0.4s ease-out;
+  /* ▼ 修正: transform を削除し、colorとtext-shadowだけ残す */
+  transition: color 0.1s ease-out, text-shadow 0.1s ease-out;
+  
   font-family: "M PLUS Rounded 1c", sans-serif !important;
+  
+  /* ▼ 追加: 高速レンダリングのヒント（チラつき防止） */
+  will-change: transform;
 }
 
 #combo-count {
