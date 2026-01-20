@@ -1072,10 +1072,10 @@ body {
 /* コンボ更新時の「縮んで戻る」アニメーション */
 @keyframes combo-shrink-pop {
   0% {
-    transform: scale(0.8);  /* 打った瞬間、衝撃で縮む */
+    transform: scale(0.75);  /* 打った瞬間、衝撃で縮む */
   }
-  60% {
-    transform: scale(1.03); /* 反動でちょっとだけ膨らむ（弾力感） */
+  70% {
+    transform: scale(1.05); /* 反動でちょっとだけ膨らむ（弾力感） */
   }
   100% {
     transform: scale(1);    /* 元に戻る */

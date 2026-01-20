@@ -1,4 +1,3 @@
-// TODO: ポップの丸め誤差修正する。(ランダムかけたけどエラー出た)
 import { useState, useRef, useCallback, useEffect } from "react";
 import { TypingEngine, Segment } from "./useTypingEngine";
 import {
@@ -35,7 +34,7 @@ import {
 // ランク計算
 export const calculateRank = (
   difficulty: DifficultyLevel,
-  currentScore: number
+  currentScore: number,
 ) => {
   const th = RANK_THRESHOLDS[difficulty] || RANK_THRESHOLDS.NORMAL;
   if (currentScore >= th.S) return "S";
@@ -65,13 +64,13 @@ const getScoreMultiplier = (currentCombo: number) => {
 
 export const useTypingGame = (
   difficulty: DifficultyLevel,
-  wordData: WordDataMap | null
+  wordData: WordDataMap | null,
 ) => {
   // ゲーム進行ステート
   const [score, setScore] = useState(0);
   const [displayScore, setDisplayScore] = useState(0); // 表示用アニメーションスコア
   const [timeLeft, setTimeLeft] = useState(
-    DIFFICULTY_SETTINGS[difficulty].time
+    DIFFICULTY_SETTINGS[difficulty].time,
   );
   const [elapsedTime, setElapsedTime] = useState(0); // 経過時間(速度計算用)
   const [isTimeAdded, setIsTimeAdded] = useState(false); // 時計アイコンの演出用
@@ -108,11 +107,12 @@ export const useTypingGame = (
 
   // 演出・UIステート
   const [shakeStatus, setShakeStatus] = useState<"none" | "light" | "error">(
-    "none"
+    "none",
   );
   const [bonusPopups, setBonusPopups] = useState<BonusPopup[]>([]);
   const [scorePopups, setScorePopups] = useState<ScorePopup[]>([]);
   const [perfectPopups, setPerfectPopups] = useState<PerfectPopup[]>([]);
+  const popupIdRef = useRef(0);
 
   // ランクはスコアから自動計算
   const rank = calculateRank(difficulty, score);
@@ -130,8 +130,11 @@ export const useTypingGame = (
   // 汎用のポップアップ追加関数
   const addPopup = useCallback(
     (text: string, type: "normal" | "large" | "miss") => {
+      popupIdRef.current += 1; // カウントアップ
+      const newId = popupIdRef.current; // 確実にユニークなID
+
       const newPopup: BonusPopup = {
-        id: Date.now() + Math.random(),
+        id: newId, // プラスされていくので演出は被ることが無い
         text: text,
         type: type,
       };
@@ -142,7 +145,7 @@ export const useTypingGame = (
         setBonusPopups((prev) => prev.filter((p) => p.id !== newPopup.id));
       }, UI_ANIMATION_CONFIG.POPUP_DURATION_MS);
     },
-    []
+    [],
   );
 
   // 時間追加 (addPopup を再利用して短縮！)
@@ -153,13 +156,13 @@ export const useTypingGame = (
       setIsTimeAdded(true);
       setTimeout(
         () => setIsTimeAdded(false),
-        UI_ANIMATION_CONFIG.TIME_DURATION_MS
+        UI_ANIMATION_CONFIG.TIME_DURATION_MS,
       );
 
       // 表示部分 (addPopupに丸投げ！)
       addPopup(`+${sec}秒`, isLarge ? "large" : "normal");
     },
-    [addPopup]
+    [addPopup],
   ); // 依存配列に addPopup を追加
 
   // スコア追加 (操作する配列が違うので独立のまま)
@@ -179,7 +182,7 @@ export const useTypingGame = (
     // todo:ここ読みづらいので削除関数を作る
     setTimeout(
       () => setScorePopups((prev) => prev.filter((p) => p.id !== newP.id)),
-      UI_ANIMATION_CONFIG.POPUP_DURATION_MS
+      UI_ANIMATION_CONFIG.POPUP_DURATION_MS,
     );
   }, []);
 
@@ -189,7 +192,7 @@ export const useTypingGame = (
     setPerfectPopups((prev) => [...prev, newP]);
     setTimeout(
       () => setPerfectPopups((prev) => prev.filter((p) => p.id !== newP.id)),
-      UI_ANIMATION_CONFIG.POPUP_DURATION_MS
+      UI_ANIMATION_CONFIG.POPUP_DURATION_MS,
     );
   }, []);
 
@@ -206,7 +209,7 @@ export const useTypingGame = (
 
     const currentSegIndex = Math.min(
       engine.segIndex,
-      engine.segments.length - 1
+      engine.segments.length - 1,
     ); // 一個前の要素を取得
     const currentSeg = engine.segments[currentSegIndex];
     const isActuallyFinished = engine.segIndex >= engine.segments.length; // 指定以上の入力を受け付けないようにする
@@ -298,34 +301,177 @@ export const useTypingGame = (
     setShakeStatus("none");
   }, [updateDisplay, addScorePopup]);
 
+  // --- 1. ミス処理（分岐機能付き） ---
+  const processMiss = useCallback(
+    (missType: "INPUT" | "COMPLETION", charStr?: string) => {
+      playMissSound();
+
+      // ▼▼▼ 修正ポイント: 揺れの強さと時間を分岐 ▼▼▼
+      if (missType === "INPUT") {
+        // 通常の入力ミス：軽く揺らす
+        setShakeStatus("light");
+        setTimeout(
+          () => setShakeStatus("none"),
+          UI_ANIMATION_CONFIG.MISS_DURATION_MS,
+        );
+      } else {
+        // 完了時の不正解（ミスが含まれている）：激しく揺らす
+        setShakeStatus("error");
+        setTimeout(
+          () => setShakeStatus("none"),
+          UI_ANIMATION_CONFIG.NO_ALLGREEN_DURATION_MS,
+        );
+      }
+
+      // --- 共通ペナルティ ---
+      setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
+      addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
+      setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
+      setCombo(0);
+
+      // --- 記録（入力ミスの時だけカウントを増やす） ---
+      // ※完了時のミスは「すでに打ったミスの集計結果」なので、ここで改めてカウントは増やさない
+      if (missType === "INPUT") {
+        setMissCount((c) => c + 1);
+        setCurrentWordMiss((c) => c + 1);
+
+        // 苦手キー記録
+        if (charStr) {
+          setMissedCharsRecord((prev) => ({
+            ...prev,
+            [charStr]: (prev[charStr] || 0) + 1,
+          }));
+        }
+      }
+    },
+    [addScorePopup],
+  );
+
+  // 正解処理（コンボ・タイムボーナス計算）
+  const processCorrectHit = useCallback(
+    (currentCombo: number) => {
+      setShakeStatus("none");
+      playTypeSound();
+      setCorrectCount((c) => c + 1);
+
+      const nextCombo = currentCombo + 1;
+      setCombo(nextCombo);
+      if (nextCombo > maxCombo) setMaxCombo(nextCombo);
+
+      // タイムボーナス計算ロジック
+      let timeBonus = COMBO_TIME_BONUS.INIT_BONUS_SEC;
+      let isLarge = false; // 大ボーナス演出用
+
+      // レベル1帯（例: 100コンボ以下）
+      if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) {
+        if (
+          nextCombo > 0 &&
+          nextCombo % COMBO_TIME_BONUS.INTERVAL_LEVEL_1 === 0
+        ) {
+          timeBonus = COMBO_TIME_BONUS.BONUS_BASE_SEC;
+        }
+      }
+      // レベル2帯（例: 101〜200コンボ）
+      else if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_2) {
+        if (nextCombo % COMBO_TIME_BONUS.INTERVAL_LEVEL_2 === 0) {
+          timeBonus = COMBO_TIME_BONUS.BONUS_MID_SEC;
+        }
+      } else {
+        if (nextCombo % COMBO_TIME_BONUS.INTERVAL_LEVEL_3 === 0) {
+          timeBonus = COMBO_TIME_BONUS.BONUS_MAX_SEC;
+          isLarge = true; // ここでフラグを立てる！
+        }
+      }
+
+      // ボーナスが発生していたら付与
+      if (timeBonus > 0) {
+        playComboSound();
+        addTime(timeBonus, isLarge);
+      }
+
+      // スコア加算
+      const multiplier = getScoreMultiplier(nextCombo);
+      const addScore = SCORE_CONFIG.BASE_POINT * multiplier;
+      setScore((s) => s + addScore);
+      addScorePopup(addScore);
+      setGaugeValue((prev) => prev + GAUGE_CONFIG.GAIN);
+    },
+    [maxCombo, addTime, addScorePopup],
+  );
+
+  // 単語完了処理
+  const processWordCompletion = useCallback(() => {
+    const engine = engineRef.current;
+    if (!engine) return;
+
+    // 全て緑色（正解）かチェック
+    const allGreen = engine.segments.every((s) =>
+      s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT),
+    );
+
+    if (allGreen) {
+      playCorrectSound();
+      setCompletedWords((c) => c + 1);
+
+      if (currentWordMiss === 0) {
+        // 単語の文字数を計算
+        const wordLength = engine.segments.reduce(
+          (acc, s) => acc + s.display.length,
+          0,
+        );
+
+        // 文字数 × 設定値 でボーナス計算
+        const bonus = wordLength * SCORE_CONFIG.PERFECT_BONUS_CHAR_REN;
+
+        // スコア加算
+        setScore((s) => s + bonus);
+        addScorePopup(bonus);
+
+        // パーフェクト演出
+        triggerPerfect();
+      }
+
+      // ミスがあった場合の記録
+      if (currentWordMiss > 0) {
+        setMissedWordsRecord((prev) => [
+          ...prev,
+          { word: jpText, misses: currentWordMiss },
+        ]);
+      }
+      // 次の単語へ
+      loadRandomWord();
+    } else {
+      // 最後まで打ったけどミスが含まれている場合（強制ミス）
+      processMiss("COMPLETION");
+    }
+  }, [
+    currentWordMiss,
+    jpText,
+    loadRandomWord,
+    processMiss,
+    addScorePopup,
+    triggerPerfect,
+  ]);
+
+  // メイン関数
   const handleKeyInput = useCallback(
     (key: string) => {
       if (!engineRef.current) return;
       const engine = engineRef.current;
 
-      const isFinished = engine.segIndex >= engine.segments.length;
-      if (isFinished) {
+      // 完了済みチェック
+      if (engine.segIndex >= engine.segments.length) {
         const allGreen = engine.segments.every((s) =>
-          s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT)
+          s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT),
         );
         if (!allGreen) {
-          // ミスが含まれてたら次に進ませない
-          playMissSound();
-          setShakeStatus("error");
-          setTimeout(
-            () => setShakeStatus("none"),
-            UI_ANIMATION_CONFIG.NO_ALLGREEN_DURATION_MS
-          );
-
-          setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
-          addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
-          setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
-          setMissCount((c) => c + 1);
-          setCombo(0);
+          // ここも完了状態での操作なので "COMPLETION"
+          processMiss("COMPLETION");
           return;
         }
       }
 
+      // 入力対象の文字
       let targetChar = "";
       if (engine.segments[engine.segIndex]) {
         targetChar = engine.segments[engine.segIndex].getCurrentChar();
@@ -333,149 +479,27 @@ export const useTypingGame = (
 
       const result = engine.input(key);
 
-      // ミスした場合の処理
-      if (
-        result.status === "MISS" ||
-        result.status === "MISS_ADVANCE" ||
-        result.status === "MISS_NEXT"
-      ) {
-        playMissSound();
-        setMissCount((c) => c + 1);
-        setCurrentWordMiss((c) => c + 1);
-        setCombo(0); // コンボリセット→自動的にRainbowも解除
-
-        setShakeStatus("light");
-        setTimeout(
-          () => setShakeStatus("none"),
-          UI_ANIMATION_CONFIG.MISS_DURATION_MS
-        );
-
-        setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
-        setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
-        addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
-
-        if (targetChar) {
-          setMissedCharsRecord((prev) => ({
-            ...prev,
-            [targetChar]: (prev[targetChar] || 0) + 1,
-          }));
-        }
-      }
-
-      // 正解時の処理
-      if (
-        result.status === "OK" ||
-        result.status === "NEXT" ||
-        result.status === "EXPANDED"
-      ) {
-        setShakeStatus("none");
-        playTypeSound();
-        setCorrectCount((c) => c + 1);
-
-        const nextCombo = combo + 1;
-        setCombo(nextCombo);
-        if (nextCombo > maxCombo) setMaxCombo(nextCombo);
-
-        let timeBonus = COMBO_TIME_BONUS.INIT_BONUS_SEC;
-        let isLarge = false;
-        if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) {
-          if (
-            nextCombo > 0 &&
-            nextCombo % COMBO_TIME_BONUS.INTERVAL_LEVEL_1 === 0
-          )
-            timeBonus = COMBO_TIME_BONUS.BONUS_BASE_SEC;
-        } else if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_2) {
-          if (
-            (nextCombo - COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) %
-              COMBO_TIME_BONUS.INTERVAL_LEVEL_2 ===
-            0
-          ) {
-            timeBonus = COMBO_TIME_BONUS.BONUS_MID_SEC;
-            isLarge = false;
-          }
-        } else {
-          if (
-            (nextCombo - COMBO_TIME_BONUS.THRESHOLDS_LEVEL_2) %
-              COMBO_TIME_BONUS.INTERVAL_LEVEL_3 ===
-            0
-          ) {
-            timeBonus = COMBO_TIME_BONUS.BONUS_MAX_SEC;
-            isLarge = true;
-          }
-        }
-
-        if (timeBonus > 0) {
-          playComboSound(); //Comboだとわかりづらいから変更します
-          addTime(timeBonus, isLarge);
-        }
-
-        const basePoint = SCORE_CONFIG.BASE_POINT;
-        const multiplier = getScoreMultiplier(nextCombo);
-        const addScore = basePoint * multiplier;
-
-        setScore((s) => s + addScore);
-        addScorePopup(addScore);
-
-        setGaugeValue((prev) => prev + GAUGE_CONFIG.GAIN);
+      // 結果による分岐
+      if (result.status.startsWith("MISS")) {
+        // 入力ミスなので "INPUT" を渡し、キーも渡す
+        processMiss("INPUT", targetChar);
+      } else if (["OK", "NEXT", "EXPANDED"].includes(result.status)) {
+        processCorrectHit(combo);
       }
 
       updateDisplay();
 
-      const currentIsFinished = engine.segIndex >= engine.segments.length;
-      if (currentIsFinished) {
-        const allGreen = engine.segments.every((s) =>
-          s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT)
-        );
-
-        if (allGreen) {
-          playCorrectSound();
-          setCompletedWords((c) => c + 1);
-
-          if (currentWordMiss === 0) {
-            // ミスなく単語を打てたら文字列ボーナス付与
-            const wordLength = engine.segments.reduce(
-              (acc, s) => acc + s.display.length,
-              0
-            );
-            const bonus = wordLength * SCORE_CONFIG.PERFECT_BONUS_CHAR_REN;
-            setScore((s) => s + bonus);
-            addScorePopup(bonus);
-            triggerPerfect();
-          }
-
-          if (currentWordMiss > 0) {
-            setMissedWordsRecord((prev) => [
-              ...prev,
-              { word: jpText, misses: currentWordMiss },
-            ]);
-          }
-          loadRandomWord();
-        } else {
-          playMissSound();
-          setShakeStatus("error");
-          setTimeout(
-            () => setShakeStatus("none"),
-            UI_ANIMATION_CONFIG.NO_ALLGREEN_DURATION_MS
-          );
-
-          setScore((s) => Math.max(0, s - SCORE_CONFIG.MISS_PENALTY));
-          addScorePopup(-SCORE_CONFIG.MISS_PENALTY);
-          setGaugeValue((g) => Math.max(0, g - GAUGE_CONFIG.PENALTY));
-          setCombo(0);
-        }
+      if (engine.segIndex >= engine.segments.length) {
+        processWordCompletion();
       }
     },
     [
       combo,
-      maxCombo,
-      jpText,
-      currentWordMiss,
-      loadRandomWord,
+      processMiss,
+      processCorrectHit,
+      processWordCompletion,
       updateDisplay,
-      addTime,
-      addScorePopup,
-      triggerPerfect,
-    ]
+    ],
   );
 
   // 連打ゲージ
@@ -485,7 +509,7 @@ export const useTypingGame = (
       addTime(GAUGE_CONFIG.RECOVER_SEC, true);
       setGaugeValue(0);
       setGaugeMax((prev) =>
-        Math.min(GAUGE_CONFIG.CEILING, prev + GAUGE_CONFIG.INCREMENT)
+        Math.min(GAUGE_CONFIG.CEILING, prev + GAUGE_CONFIG.INCREMENT),
       );
     }
   }, [gaugeValue, gaugeMax, addTime]);

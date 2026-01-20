@@ -45,7 +45,7 @@ let bgmAudio: HTMLAudioElement | null = null;
 // 音量管理用変数 (初期値)
 let isSystemMuted = false;
 let bgmVolume = 0.5;
-let seVolume = 0.8;
+let seVolume = 0.5;
 
 // 外部から音量を変更する関数
 export const setVolumes = (bgm: number, se: number) => {
@@ -95,7 +95,7 @@ const playSE = (key: SoundKey) => {
 
   // 再生設定
   audio.currentTime = 0; //強制的に最初から音声を鳴らす
-  audio.volume = seVolume; // ★追加: SE音量を適用
+  audio.volume = seVolume; // SE音量を適用
   audio.play().catch((e) => console.warn(`Sound error: ${key}`, e));
 };
 

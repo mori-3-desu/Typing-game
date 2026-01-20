@@ -36,16 +36,16 @@ export const drawReadyAnimation = (
 
     // Enterで開始
     ctx.font = "800 55px 'M PLUS Rounded 1c', sans-serif";
-    ctx.lineWidth = 12;
+    ctx.lineWidth = 10;
     ctx.strokeStyle = "white";
-    ctx.strokeText("Enter で開始", width / 2, readyY + 625);
+    ctx.strokeText("Enter or Space で開始", width / 2, readyY + 625);
 
     // グラデーション
     let grad = ctx.createLinearGradient(0, readyY + 590, 0, readyY + 635);
     grad.addColorStop(0, "#ffc2ffff");
     grad.addColorStop(1, "#dfbdffff");
     ctx.fillStyle = grad;
-    ctx.fillText("Enter で開始", width / 2, readyY + 625);
+    ctx.fillText("Enter or Space で開始", width / 2, readyY + 625);
 
     // Escで戻る
     ctx.font = "800 32px 'M PLUS Rounded 1c', sans-serif";

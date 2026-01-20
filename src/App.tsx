@@ -369,7 +369,7 @@ function App() {
   const animationState = useRef({
     readyY: -READY_GO_ANIMATION.INIT,
     isReadyAnimating: false,
-    showEnterText: false,
+    showEnterSpaceText: false,
     showGoText: false,
     goScale: READY_GO_ANIMATION.GO_INIT,
     phase: "idle",
@@ -886,7 +886,7 @@ function App() {
           if (state.readyY >= 0) {
             state.readyY = 0;
             state.isReadyAnimating = false;
-            state.showEnterText = true;
+            state.showEnterSpaceText = true;
           }
         }
         drawReadyAnimation(
@@ -895,7 +895,7 @@ function App() {
           canvas.height,
           state.readyY,
           readyImageRef.current,
-          state.showEnterText,
+          state.showEnterSpaceText,
         );
       } else if (playPhase === "go") {
         if (hasSaved.current !== false) {
@@ -928,7 +928,7 @@ function App() {
     animationState.current = {
       readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
-      showEnterText: false,
+      showEnterSpaceText: false,
       showGoText: false,
       goScale: READY_GO_ANIMATION.GO_INIT,
       phase: "ready",
@@ -962,7 +962,7 @@ function App() {
     animationState.current = {
       readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
-      showEnterText: false,
+      showEnterSpaceText: false,
       showGoText: false,
       goScale: READY_GO_ANIMATION.GO_INIT,
       phase: "ready",
@@ -1046,7 +1046,7 @@ function App() {
         playPhase === "ready" &&
         !state.isReadyAnimating
       ) {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" || e.key === " ") {
           playStartSound();
           setPlayPhase("go");
           state.goScale = READY_GO_ANIMATION.GO_INIT;
@@ -1107,7 +1107,7 @@ function App() {
     animationState.current = {
       readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
-      showEnterText: false,
+      showEnterSpaceText: false,
       showGoText: false,
       goScale: READY_GO_ANIMATION.GO_INIT,
       phase: "ready",
@@ -1243,9 +1243,12 @@ function App() {
           {/* 演出用スクリーン & フェード */}
           <div
             id="game-screen"
-            className={`${isRainbowMode ? "rainbow-glow" : ""} ${
-              gameState === "finishing" ? "bg-blur" : ""
-            }`}
+            className={`${
+              isRainbowMode &&
+              (gameState === "playing" || gameState === "finishing")
+                ? "rainbow-glow"
+                : ""
+            } ${gameState === "finishing" ? "bg-blur" : ""}`}
             style={{
               position: "absolute",
               width: "100%",
