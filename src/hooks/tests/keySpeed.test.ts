@@ -47,7 +47,7 @@ describe("入力速度(Speed)の計算テスト", () => {
 
     // 経過時間を 1.0秒 に強制設定
     act(() => {
-      result.current.setElapsedTime(1.0);
+      result.current.tick(1.0);
     });
 
     // 1. 正解打鍵 (t) -> correctCount: 1
