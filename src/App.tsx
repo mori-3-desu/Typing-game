@@ -236,9 +236,8 @@ function App() {
     bonusPopups,
     perfectPopups,
     scorePopups,
-    setElapsedTime,
+    tick,
     currentSpeed,
-    setTimeLeft,
   } = useTypingGame(difficulty, dbWordData);
 
   // 現在入力中の単語のミス数を追跡
@@ -499,18 +498,16 @@ function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    let interval: number;
-    if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
-      interval = window.setInterval(() => {
-        setTimeLeft((prev) =>
-          Math.max(0, prev - UI_TIMINGS.GAME.TIMER_DECREMENT),
-        );
-        setElapsedTime((prev) => prev + UI_TIMINGS.GAME.TIMER_DECREMENT);
-      }, 100);
-    }
-    return () => clearInterval(interval);
-  }, [gameState, playPhase, timeLeft, setTimeLeft, setElapsedTime]);
+// タイマーの useEffect を修正
+useEffect(() => {
+  let interval: number;
+  if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
+    interval = window.setInterval(() => {
+      tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
+    }, 100);
+  }
+  return () => clearInterval(interval);
+}, [gameState, playPhase, timeLeft, tick]);
 
   useEffect(() => {
     if (gameState === "playing" && playPhase === "game" && timeLeft <= 0) {
@@ -957,7 +954,6 @@ function App() {
     resetGame();
     setIsFinishExit(false);
     setIsWhiteFade(false);
-    setTimeLeft(DIFFICULTY_SETTINGS[difficulty].time);
     stopSelectBgm();
     animationState.current = {
       readyY: -READY_GO_ANIMATION.INIT,
@@ -1101,8 +1097,6 @@ function App() {
     setSaveStatus("idle");
     setIsFinishExit(false);
     setIsWhiteFade(false);
-
-    setTimeLeft(DIFFICULTY_SETTINGS[diff].time);
     stopSelectBgm();
     animationState.current = {
       readyY: -READY_GO_ANIMATION.INIT,
