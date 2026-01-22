@@ -280,6 +280,14 @@ export const Setting = ({
               step="0.05"
               value={seVol}
               onChange={(e) => setSeVol(parseFloat(e.target.value))}
+              // ★ここを追加！指（マウス）を離した瞬間に音を鳴らす
+              onMouseUp={() => {
+                if (!isMuted) playDecisionSound();
+              }}
+              // ★スマホ（タッチ操作）対応もするならこれも追加
+              onTouchEnd={() => {
+                if (!isMuted) playDecisionSound();
+              }}
               disabled={isMuted}
               className="volume-slider"
             />
