@@ -104,7 +104,16 @@ export const STORAGE_KEYS = {
   HISCORE_DATA_REGISTER: "typing_hiscore_data_",
   VOLUME_BGM:            "typing_bgm_vol",
   VOLUME_SE:             "typing_se_vol",
+  VOLUME_MUTE:           "typing_is_muted",
+  SHOW_ROMAJI:           "typing_show_romaji"
 };
+
+// 初期値（デフォルト値）は別のオブジェクトにまとめると分かりやすいです
+export const DEFAULT_CONFIG = {
+  VOLUME_BGM_SE: 0.5,
+  IS_MUTED: false,
+  SHOW_ROMAJI: true,
+} as const;
 
 // useTypingEngine
 // 判定の色

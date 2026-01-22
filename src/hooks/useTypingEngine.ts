@@ -1,5 +1,18 @@
+/**
+ * @file useTypingGame.ts
+ * @description タイピングゲームのコアロジックを管理するカスタムフック
+ * * NOTE: 本プロジェクトは、AIをメンターとして活用しながら開発を行わせていただきました。
+ * コードの意図や技術選定の理由を明確にするため、また未来の自分への備忘録として、
+ * あえて詳細にコメントを残しています。
+ */
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
 import { JUDGE_COLOR } from "../utils/setting";
+
+// ★ クラスの外（または static プロパティ）で一度だけソートを済ませておく
+// これにより、loadRandomWord が呼ばれるたびに実行されていた計算を 1回 に削減できます。
+const SORTED_ROMA_KEYS = Object.keys(ROMA_VARIATIONS).sort(
+  (a, b) => b.length - a.length
+);
 
 // Segment クラス
 export class Segment {
@@ -56,8 +69,8 @@ export class Segment {
       this.inputBuffer = nextBuffer;
       this.typedLog.push({ char: inputChar, color: JUDGE_COLOR.CORRECT }); // 緑
 
-      const exactMatch = possibleRoutes.find((p) => p === this.inputBuffer);
-      if (exactMatch) return "NEXT";
+      // 真偽値だけを知りたいならfindよりもincldesやsomeを使うほうが明確になる
+      if (possibleRoutes.includes(this.inputBuffer)) return "NEXT";
       return "OK";
     }
 
@@ -114,14 +127,15 @@ export class TypingEngine {
   segmentize(roma: string): Segment[] {
     const out: Segment[] = [];
     let i = 0;
-    const keys = Object.keys(ROMA_VARIATIONS).sort(
-      (a, b) => b.length - a.length,
-    ); //romajiMapの文字数を長い順に(バラバラに分解されるのを防ぐ)
-
     // ここで入力分岐を判定
+
+    // 前はここでオブジェクトを生成していて毎回新しい配列にしていたため計算量O(NlogN)になっていた。
+    // アプリ起動時にソートを済ませ、結果を見るだけにしたことで単語数が増えても切り替え速度が落ちない。
+    // ガベージコレクションの負担が減った。(古いメモリを捨てて領域を解放すること)
+    // 分解の機能を持つ関数が、キーの並び替えという別の責任を負わなくて済むため、読みやすくなった。
     while (i < roma.length) {
       // startsWithでマッチするキーを探す(今はfindが優先らしい)
-      const hitKey = keys.find((key) => roma.startsWith(key, i));
+      const hitKey = SORTED_ROMA_KEYS.find((key) => roma.startsWith(key, i));
 
       if (hitKey) {
         out.push(new Segment(hitKey));

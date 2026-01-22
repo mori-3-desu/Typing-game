@@ -1,39 +1,45 @@
+/**
+ * localStorageから安全に値を取得し、型を復元する
+ * @param key 保存キー
+ * @param defaultValue 値がなかった場合の初期値
+ */
 import { useState, useEffect } from "react";
-import { setSystemMute, setVolumes } from "../utils/audio"; 
+import { setSystemMute, setVolumes } from "../utils/audio";
+import { STORAGE_KEYS, DEFAULT_CONFIG } from "../utils/setting";
+
+// localStorageから安全に値を取得するヘルパー関数(似たような関数をひとまとめにしました。JSON.parse使うならnull判定とtry-catchは必要)
+const getSafeStorage = <T>(key: string, defaultValue: T): T => {
+  if (typeof window === "undefined") return defaultValue;
+  const saved = localStorage.getItem(key);
+  if (saved === null) return defaultValue;
+  try {
+    return JSON.parse(saved) as T;
+  } catch {
+    return defaultValue;
+  }
+};
 
 export const useConfig = () => {
-  // --- 1. Stateの定義 ---
-  const [isMuted, setIsMuted] = useState(() => {
-    return localStorage.getItem("typing_is_muted") === "true";
-  });
+  const [isMuted, setIsMuted] = useState<boolean>(() => getSafeStorage(STORAGE_KEYS.VOLUME_MUTE, DEFAULT_CONFIG.IS_MUTED
+  ));
+  // BGMがうるさくなるSEの初期値だと小さい等の可能性があるため定数を分けることを検討してください
+  const [bgmVol, setBgmVol] = useState<number>(() => getSafeStorage(STORAGE_KEYS.VOLUME_BGM, DEFAULT_CONFIG.VOLUME_BGM_SE));
+  const [seVol, setSeVol] = useState<number>(() => getSafeStorage(STORAGE_KEYS.VOLUME_SE, DEFAULT_CONFIG.VOLUME_BGM_SE));
+  const [showRomaji, setShowRomaji] = useState<boolean>(() => getSafeStorage(STORAGE_KEYS.SHOW_ROMAJI, DEFAULT_CONFIG.SHOW_ROMAJI));
 
-  const [bgmVol, setBgmVol] = useState(() =>
-    parseFloat(localStorage.getItem("typing_bgm_vol") || "0.5")
-  );
-
-  const [seVol, setSeVol] = useState(() =>
-    parseFloat(localStorage.getItem("typing_se_vol") || "0.8")
-  );
-
-  const [showRomaji, setShowRomaji] = useState(() => {
-    const saved = localStorage.getItem("typing_show_romaji");
-    return saved === null ? true : saved === "true";
-  });
-
-  // --- 2. 副作用の定義 (useEffectも移動) ---
   useEffect(() => {
-    // 音量やミュートをシステムに反映
     setSystemMute(isMuted);
     setVolumes(bgmVol, seVol);
 
-    // localStorageに保存
-    localStorage.setItem("typing_is_muted", isMuted.toString());
-    localStorage.setItem("typing_bgm_vol", bgmVol.toString());
-    localStorage.setItem("typing_se_vol", seVol.toString());
-    localStorage.setItem("typing_show_romaji", showRomaji.toString());
+    // .toString() ではなく JSON.stringify() を使うと、JSON.parse との相性が完璧になります
+    // (将来配列やオブジェクトとして保存したくなった時にtostringだと[object Object]という文字になって壊れる)
+    localStorage.setItem(STORAGE_KEYS.VOLUME_MUTE, JSON.stringify(isMuted));
+    localStorage.setItem(STORAGE_KEYS.VOLUME_BGM, JSON.stringify(bgmVol));
+    localStorage.setItem(STORAGE_KEYS.VOLUME_SE, JSON.stringify(seVol));
+    localStorage.setItem(STORAGE_KEYS.SHOW_ROMAJI, JSON.stringify(showRomaji));
   }, [isMuted, bgmVol, seVol, showRomaji]);
 
-  // --- 3. App.tsxで使うものだけをまとめて返す ---
+  // App.tsxで使うものだけをまとめて返す 
   return {
     isMuted,
     setIsMuted,
