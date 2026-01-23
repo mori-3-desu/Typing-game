@@ -1,7 +1,28 @@
 import { 
   type DifficultyConfig,
-  type DifficultyLevel
+  type DifficultyLevel,
+  type SoundKey
  } from "../types"
+
+export const AUDIO_PATHS: Record<SoundKey, string> = {
+  decision: "/bgm/決定.mp3",
+  start: "/bgm/start.mp3",
+  diff: "/bgm/303PM.wav",
+  type: "/bgm/key.mp3",
+  bs: "/bgm/BackSpace.mp3",
+  combo: "/bgm/決定ボタンを押す26.mp3",
+  gauge: "/bgm/キラッ2.mp3",
+  correct: "/bgm/correct077.mp3",
+  miss: "/bgm/小キック.mp3",
+  finish: "/bgm/finish.mp3",
+  result: "/bgm/result.mp3",
+  rankS: "/bgm/rankS.mp3",
+  rankA: "/bgm/rankA.mp3",
+  rankB: "/bgm/rankB.mp3",
+  rankC: "/bgm/rankC.mp3",
+  rankD: "/bgm/rankD.mp3",
+  cancel: "/bgm/決定.mp3",
+} as const;
 
 // 難易度ごとの設定データ
 export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {

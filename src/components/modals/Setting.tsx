@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/setting";
+import { playSE } from "../../utils/audio";
 
 type Props = {
   playerName: string;
@@ -19,7 +20,6 @@ type Props = {
   onSaveName: (newName: string) => Promise<void>;
 
   onClose: () => void;
-  playDecisionSound: () => void;
 };
 
 export const Setting = ({
@@ -35,7 +35,6 @@ export const Setting = ({
   setShowRomaji,
   onSaveName,
   onClose,
-  playDecisionSound,
 }: Props) => {
   // ★ App.tsx にあった入力用Stateをここに移動！
   const [tempPlayerName, setTempPlayerName] = useState(playerName);
@@ -78,7 +77,7 @@ export const Setting = ({
       setIsNameChange("");
     }, UI_TIMINGS.MESSAGE_AUTO_CLOSE);
 
-    playDecisionSound();
+    playSE("decision");
   };
 
   return (
@@ -282,11 +281,11 @@ export const Setting = ({
               onChange={(e) => setSeVol(parseFloat(e.target.value))}
               // ★ここを追加！指（マウス）を離した瞬間に音を鳴らす
               onMouseUp={() => {
-                if (!isMuted) playDecisionSound();
+                if (!isMuted) playSE("decision");
               }}
               // ★スマホ（タッチ操作）対応もするならこれも追加
               onTouchEnd={() => {
-                if (!isMuted) playDecisionSound();
+                if (!isMuted) playSE("decision");
               }}
               disabled={isMuted}
               className="volume-slider"
