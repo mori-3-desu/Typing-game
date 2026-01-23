@@ -1,148 +1,85 @@
-// それぞれの効果音
-type SoundKey =
-  | "type"
-  | "miss"
-  | "correct"
-  | "gauge"
-  | "combo"
-  | "result"
-  | "decision"
-  | "cancel"
-  | "start"
-  | "finish"
-  | "bs"
-  | "diff"
-  | "rankS"
-  | "rankA"
-  | "rankB"
-  | "rankC"
-  | "rankD";
+import { AUDIO_PATHS } from "./setting";
+import { type SoundKey } from "../types";
 
-// 音声ファイルのパス定義
-const AUDIO_PATHS: Record<SoundKey, string> = {
-  decision: "/bgm/決定.mp3",
-  start: "/bgm/start.mp3",
-  diff: "/bgm/303PM.wav",
-  type: "/bgm/key.mp3",
-  bs: "/bgm/BackSpace.mp3",
-  combo: "/bgm/決定ボタンを押す26.mp3",
-  gauge: "/bgm/キラッ2.mp3",
-  correct: "/bgm/correct077.mp3",
-  miss: "/bgm/小キック.mp3",
-  finish: "/bgm/finish.mp3",
-  result: "/bgm/result.mp3",
-  rankS: "/bgm/rankS.mp3",
-  rankA: "/bgm/rankA.mp3",
-  rankB: "/bgm/rankB.mp3",
-  rankC: "/bgm/rankC.mp3",
-  rankD: "/bgm/rankD.mp3",
-  cancel: "/bgm/決定.mp3",
-};
+// BGM管理用の定数（マジックストリング対策）
+const BGM_PATHS = {
+  SELECT: "/bgm/303PM.wav",
+  // 他にゲーム中のBGMなどがあればここに追加
+} as const;
 
 const soundCache: Partial<Record<SoundKey, HTMLAudioElement>> = {};
 let bgmAudio: HTMLAudioElement | null = null;
 
-// 音量管理用変数 (初期値)
 let isSystemMuted = false;
 let bgmVolume = 0.5;
 let seVolume = 0.5;
 
-// 外部から音量を変更する関数
 export const setVolumes = (bgm: number, se: number) => {
   bgmVolume = bgm;
   seVolume = se;
-
-  // 再生中のBGMがあればリアルタイムで音量を反映
   if (bgmAudio) {
     bgmAudio.volume = isSystemMuted ? 0 : bgmVolume;
   }
 };
 
-// ミュート切り替え関数
 export const setSystemMute = (mute: boolean) => {
   isSystemMuted = mute;
-
-  // BGM再生中なら、ミュート時は音量0、解除時は設定音量に戻す
   if (bgmAudio) {
     bgmAudio.volume = mute ? 0 : bgmVolume;
   }
 };
 
-// 音声を事前読み込み
 export const initAudio = () => {
   Object.entries(AUDIO_PATHS).forEach(([key, path]) => {
     const audio = new Audio(path);
-    audio.preload = "auto"; //音声をすぐに使えるように読み込んでおく
+    audio.preload = "auto";
     soundCache[key as SoundKey] = audio;
   });
 };
 
-// 効果音を再生
-const playSE = (key: SoundKey) => {
-  // ミュート時は再生しない
+/**
+ * 効果音を再生する（汎用関数）
+ */
+export const playSE = (key: SoundKey) => {
   if (isSystemMuted) return;
 
-  let audio = soundCache[key];
-  if (!audio) {
-    // キャッシュになければ都度生成
-    const path = AUDIO_PATHS[key];
-    if (path) {
-      audio = new Audio(path);
-    } else {
-      return;
-    }
-  }
+  const audio = soundCache[key] || new Audio(AUDIO_PATHS[key]);
+  if (!soundCache[key]) soundCache[key] = audio; // キャッシュになければ保存
 
-  // 再生設定
-  audio.currentTime = 0; //強制的に最初から音声を鳴らす
-  audio.volume = seVolume; // SE音量を適用
+  audio.currentTime = 0;
+  audio.volume = seVolume;
   audio.play().catch((e) => console.warn(`Sound error: ${key}`, e));
 };
 
-// 個別の音声関数
-export const playDecisionSound = () => playSE("decision");
-export const playStartSound = () => playSE("start");
-export const playTypeSound = () => playSE("type");
-export const playDiffSound = () => playSE("diff")
-export const playBsSound = () => playSE("bs");
-export const playCorrectSound = () => playSE("correct");
-export const playComboSound = () => playSE("combo");
-export const playGaugeSound = () => playSE("gauge");
-export const playMissSound = () => playSE("miss");
-export const playFinishSound = () => playSE("finish");
-export const playResultSound = () => playSE("result");
-export const playRankSSound = () => playSE("rankS");
-export const playRankASound = () => playSE("rankA");
-export const playRankBSound = () => playSE("rankB");
-export const playRankCSound = () => playSE("rankC");
-export const playRankDSound = () => playSE("rankD");
-
-// BGM停止
-export const stopSelectBgm = () => {
+/**
+ * BGMを停止する（一元化）
+ */
+export const stopBGM = () => {
   if (bgmAudio) {
     bgmAudio.pause();
     bgmAudio = null;
   }
 };
 
-export const stopGameBGM = stopSelectBgm;
+/**
+ * BGMを再生する（汎用化）
+ */
+export const playBGM = (path: string) => {
+  // 「BGMが存在し」かつ「再生中で」かつ「リクエストされた曲と同じ」なら、
+  // 何もせず帰る（＝曲を流しっぱなしにする）
+  if (bgmAudio && !bgmAudio.paused && bgmAudio.src.includes(path)) {
+    return;
+  }
 
-// BGM再生
-export const playGameBGM = (path: string) => {
-  // 既に鳴っているBGMがあれば止める
-  stopGameBGM();
-
+  stopBGM(); //まずは、前の曲を止める
   bgmAudio = new Audio(path);
   bgmAudio.loop = true;
-  bgmAudio.volume = isSystemMuted ? 0 : bgmVolume; // 設定音量か0かを判定
+  // ミュート中なら音量を0にしておく
+  bgmAudio.volume = isSystemMuted ? 0 : bgmVolume;
   bgmAudio.play().catch(() => {});
 };
 
-// 難易度選択用音声関数
+// 特定のシーン用のBGM関数
 export const startSelectBgm = () => {
-  // 既に同じ曲が流れているなら何もしない（重複防止）
-  if (bgmAudio && !bgmAudio.paused && bgmAudio.src.includes("303PM.wav"))
-    return;
-
-  playGameBGM("/bgm/303PM.wav");
+  playBGM(BGM_PATHS.SELECT);
 };

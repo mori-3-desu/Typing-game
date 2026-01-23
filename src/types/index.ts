@@ -1,3 +1,8 @@
+ export type SoundKey =
+  | "type" | "miss" | "correct" | "gauge" | "combo"
+  | "result" | "decision" | "cancel" | "start" | "finish"
+  | "bs" | "diff" | "rankS" | "rankA" | "rankB" | "rankC" | "rankD";
+
 // タイトルの画面状態
 export type TitlePhase = "normal" | "input" | "confirm";
 
@@ -38,11 +43,6 @@ export type WeakWord = {
   word: string;
   misses: number;
 };
-
-export type WeakKey = {
-  word: string;
-  misses: number;
-}
 
 // ■ ゲーム結果・履歴データ
 export type GameResultStats = {

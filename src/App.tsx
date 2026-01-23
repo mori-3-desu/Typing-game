@@ -21,26 +21,19 @@ import {
   READY_GO_ANIMATION,
   LIMIT_DATA,
 } from "./utils/setting";
+// --- utils & hooks ---
 import {
   initAudio,
-  playDecisionSound,
+  playSE, // ← これに統一
+  playBGM, // ← これに統一
+  stopBGM, // ← これに統一
   startSelectBgm,
-  stopSelectBgm,
-  playGameBGM,
-  stopGameBGM,
-  playStartSound,
-  playFinishSound,
-  playResultSound,
-  playRankSSound,
-  playRankASound,
-  playRankBSound,
-  playRankCSound,
-  playRankDSound,
+  setVolumes,
 } from "./utils/audio";
-import { setVolumes } from "./utils/audio";
 import { useConfig } from "./hooks/useConfig";
 import { drawReadyAnimation, drawGoAnimation } from "./utils/transitions";
 import { useTypingGame } from "./hooks/useTypingGame";
+import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 import {
   type DifficultyLevel,
   type WordDataMap,
@@ -66,28 +59,6 @@ const preloadImages = () => {
     const img = new Image();
     img.src = src;
   });
-};
-
-// スコア数値のみ取得（後方互換）
-const getSavedHighScore = (level: DifficultyLevel): number => {
-  const key = `${STORAGE_KEYS.HISCORE_REGISTER}${level.toLowerCase()}`;
-  const saved = localStorage.getItem(key);
-  return saved ? parseInt(saved, 10) : 0; // 10進数で保存
-};
-
-// 詳細データも取得
-const getSavedHighScoreResult = (level: DifficultyLevel) => {
-  const key = `${STORAGE_KEYS.HISCORE_DATA_REGISTER}_${level.toLowerCase()}`;
-  const saved = localStorage.getItem(key);
-  if (saved) {
-    try {
-      return JSON.parse(saved) as GameResultStats; // 元のオブジェクトに変換
-    } catch (e) {
-      console.error("Save data parse error", e);
-      return null;
-    }
-  }
-  return null;
 };
 
 type GameState =
@@ -312,12 +283,12 @@ function App() {
   const [showConfig, setShowConfig] = useState(false);
 
   const handleOpenConfig = () => {
-    playDecisionSound();
+    playSE("decision");
     setShowConfig(true);
   };
 
   const handleCloseConfig = () => {
-    playDecisionSound();
+    playSE("decision");
     setShowConfig(false);
   };
 
@@ -343,12 +314,12 @@ function App() {
   const [showHowToPlay, setShowHowToPlay] = useState(false);
 
   const handleOpenHowToPlay = () => {
-    playDecisionSound();
+    playSE("decision");
     setShowHowToPlay(true);
   };
 
   const handleCloseHowToPlay = () => {
-    playDecisionSound();
+    playSE("decision");
     setShowHowToPlay(false);
   };
 
@@ -423,7 +394,7 @@ function App() {
       return;
     }
 
-    playDecisionSound();
+    playSE("decision");
     setIsInputLocked(true);
     setIsTitleExiting(true);
 
@@ -437,7 +408,7 @@ function App() {
 
   // タイトル画面：入力キャンセル（タイトルロゴへ戻る）
   const handleCancelInput = () => {
-    playDecisionSound();
+    playSE("decision");
     setTitlePhase("normal");
   };
 
@@ -463,13 +434,13 @@ function App() {
 
     // 入力が空なら"Guest"に、文字があればそれをセット
     setPlayerName(trimmedName || "Guest");
-    playDecisionSound();
+    playSE("decision");
     setTitlePhase("confirm");
   };
 
   const handleFinalConfirm = () => {
     localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, playerName);
-    playDecisionSound();
+    playSE("decision");
     startSelectBgm();
     setIsNameConfirmed(true);
     setGameState("difficulty");
@@ -477,7 +448,7 @@ function App() {
   };
 
   const handleBackToInput = () => {
-    playDecisionSound();
+    playSE("decision");
     setTitlePhase("input");
   };
 
@@ -498,21 +469,21 @@ function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-// タイマーの useEffect を修正
-useEffect(() => {
-  let interval: number;
-  if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
-    interval = window.setInterval(() => {
-      tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
-    }, 100);
-  }
-  return () => clearInterval(interval);
-}, [gameState, playPhase, timeLeft, tick]);
+  // タイマーの useEffect を修正
+  useEffect(() => {
+    let interval: number;
+    if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
+      interval = window.setInterval(() => {
+        tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
+      }, 100);
+    }
+    return () => clearInterval(interval);
+  }, [gameState, playPhase, timeLeft, tick]);
 
   useEffect(() => {
     if (gameState === "playing" && playPhase === "game" && timeLeft <= 0) {
-      stopGameBGM();
-      playFinishSound();
+      stopBGM();
+      playSE("finish");
 
       let finalWeakWords = [...missedWordsRecord];
       if (currentWordMissRef.current > 0) {
@@ -665,7 +636,7 @@ useEffect(() => {
 
   // 全国ランキング取得
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
-    playDecisionSound();
+    playSE("decision");
     const searchDiff = targetDiff || difficulty;
 
     if (targetDiff) {
@@ -693,7 +664,7 @@ useEffect(() => {
 
   // 作成者のスコア
   const handleShowDevScore = async () => {
-    playDecisionSound();
+    playSE("decision");
     if (isDevRankingMode) return;
 
     try {
@@ -716,7 +687,7 @@ useEffect(() => {
 
   const closeRanking = () => {
     setShowRanking(false);
-    playDecisionSound();
+    playSE("decision");
   };
 
   useEffect(() => {
@@ -775,20 +746,32 @@ useEffect(() => {
       setResultAnimStep(0); // リザルト演出効果音
       resultTimersRef.current = [];
 
+      // --- 修正後 ---
       const schedule = [
-        { step: 1, delay: UI_TIMINGS.RESULT.STEP_1, sound: playResultSound },
-        { step: 2, delay: UI_TIMINGS.RESULT.STEP_2, sound: playResultSound },
-        { step: 3, delay: UI_TIMINGS.RESULT.STEP_3, sound: playResultSound },
+        {
+          step: 1,
+          delay: UI_TIMINGS.RESULT.STEP_1,
+          sound: () => playSE("result"),
+        },
+        {
+          step: 2,
+          delay: UI_TIMINGS.RESULT.STEP_2,
+          sound: () => playSE("result"),
+        },
+        {
+          step: 3,
+          delay: UI_TIMINGS.RESULT.STEP_3,
+          sound: () => playSE("result"),
+        },
         {
           step: 4,
           delay: UI_TIMINGS.RESULT.STEP_4,
           sound: () => {
-            // ランクによって変動
-            if (currentStats.rank === "S") playRankSSound();
-            else if (currentStats.rank === "A") playRankASound();
-            else if (currentStats.rank === "B") playRankBSound();
-            else if (currentStats.rank === "C") playRankCSound();
-            else playRankDSound();
+            if (currentStats.rank === "S") playSE("rankS");
+            else if (currentStats.rank === "A") playSE("rankA");
+            else if (currentStats.rank === "B") playSE("rankB");
+            else if (currentStats.rank === "C") playSE("rankC");
+            else playSE("rankD");
           },
         },
         { step: 5, delay: UI_TIMINGS.RESULT.STEP_5, sound: null },
@@ -836,11 +819,12 @@ useEffect(() => {
 
       const targetRank = lastGameStats ? lastGameStats.rank : rank;
 
-      if (targetRank === "S") playRankSSound();
-      else if (targetRank === "A") playRankASound();
-      else if (targetRank === "B") playRankBSound();
-      else if (targetRank === "C") playRankCSound();
-      else playRankDSound();
+      // --- 修正後 ---
+      if (targetRank === "S") playSE("rankS");
+      else if (targetRank === "A") playSE("rankA");
+      else if (targetRank === "B") playSE("rankB");
+      else if (targetRank === "C") playSE("rankC");
+      else playSE("rankD");
     }
   };
 
@@ -916,8 +900,8 @@ useEffect(() => {
 
   // ゲーム中のリセット処理
   const resetToReady = () => {
-    playDecisionSound();
-    stopGameBGM();
+    playSE("decision");
+    stopBGM();
     resetGame();
     hasSaved.current = false;
     setSaveStatus("idle");
@@ -934,10 +918,10 @@ useEffect(() => {
 
   // 難易度選択に戻る
   const backToDifficulty = () => {
-    playDecisionSound();
+    playSE("decision");
 
     if (gameState !== "hiscore_review") {
-      stopGameBGM();
+      stopBGM();
       startSelectBgm();
     }
 
@@ -950,11 +934,11 @@ useEffect(() => {
     if (isTransitioning) return;
     setSaveStatus("idle");
     setIsTransitioning(true);
-    playDecisionSound();
+    playSE("decision");
     resetGame();
     setIsFinishExit(false);
     setIsWhiteFade(false);
-    stopSelectBgm();
+    stopBGM();
     animationState.current = {
       readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
@@ -987,7 +971,7 @@ useEffect(() => {
   const goToDifficulty = () => {
     if (isTitleExiting || isInputLocked) return;
 
-    playDecisionSound();
+    playSE("decision");
     setIsInputLocked(true);
     setIsTitleExiting(true);
 
@@ -1043,13 +1027,13 @@ useEffect(() => {
         !state.isReadyAnimating
       ) {
         if (e.key === "Enter" || e.key === " ") {
-          playStartSound();
+          playSE("start");
           setPlayPhase("go");
           state.goScale = READY_GO_ANIMATION.GO_INIT;
           setTimeout(() => {
             setPlayPhase("game");
             startGame();
-            playGameBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
+            playBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
           }, 1000);
         } else if (e.key === "Escape") {
           backToDifficulty();
@@ -1091,13 +1075,13 @@ useEffect(() => {
     setIsTransitioning(true);
     setIsInputLocked(true);
 
-    playDecisionSound();
+    playSE("decision");
     setDifficulty(diff);
     resetGame();
     setSaveStatus("idle");
     setIsFinishExit(false);
     setIsWhiteFade(false);
-    stopSelectBgm();
+    stopBGM();
     animationState.current = {
       readyY: -READY_GO_ANIMATION.INIT,
       isReadyAnimating: true,
@@ -1117,9 +1101,9 @@ useEffect(() => {
   };
 
   const backToTitle = () => {
-    playDecisionSound();
-    stopSelectBgm();
-    stopGameBGM();
+    playSE("decision");
+    stopBGM();
+    stopBGM();
     hasSaved.current = false;
     setSaveStatus("idle");
 
@@ -1319,7 +1303,7 @@ useEffect(() => {
               backToTitle={backToTitle}
               fetchRanking={fetchRanking}
               handleShowHighScoreDetail={handleShowHighScoreDetail}
-              playDecisionSound={playDecisionSound}
+              playDecisionSound={() => playSE("decision")}
             />
           )}
 
@@ -1402,7 +1386,6 @@ useEffect(() => {
           setShowRomaji={setShowRomaji}
           onSaveName={handleSaveName}
           onClose={handleCloseConfig}
-          playDecisionSound={playDecisionSound}
         />
       )}
     </div>

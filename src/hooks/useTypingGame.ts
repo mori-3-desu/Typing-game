@@ -20,12 +20,7 @@ import {
   COMBO_TIME_BONUS,
 } from "../utils/setting";
 import {
-  playTypeSound,
-  playMissSound,
-  playCorrectSound,
-  playGaugeSound,
-  playComboSound,
-  playBsSound,
+playSE 
 } from "../utils/audio";
 
 import {
@@ -492,7 +487,7 @@ export const useTypingGame = (
 
   const handleBackspace = useCallback(() => {
     if (!engineRef.current) return;
-    playBsSound();
+    playSE('bs');
     engineRef.current.backspace();
     dispatch({ type: "BACKSPACE", penalty: SCORE_CONFIG.BACKSPACE_PENALTY });
     addScorePopup(-SCORE_CONFIG.BACKSPACE_PENALTY);
@@ -501,7 +496,7 @@ export const useTypingGame = (
 
   const processMiss = useCallback(
     (missType: "INPUT" | "COMPLETION", charStr?: string) => {
-      playMissSound();
+      playSE('miss');
       setTimeout(
         () => dispatch({ type: "SET_SHAKE", status: "none" }),
         missType === "INPUT"
@@ -522,7 +517,7 @@ export const useTypingGame = (
 
   const processCorrectHit = useCallback(
     (currentCombo: number) => {
-      playTypeSound();
+      playSE('type');
       const nextCombo = currentCombo + 1;
       let timeBonus = COMBO_TIME_BONUS.INIT_BONUS_SEC;
       let isLarge = false;
@@ -544,7 +539,7 @@ export const useTypingGame = (
       }
 
       if (timeBonus > 0) {
-        playComboSound();
+        playSE('combo');
         addTime(timeBonus, isLarge);
       }
       const multiplier = getScoreMultiplier(nextCombo);
@@ -564,7 +559,7 @@ export const useTypingGame = (
     );
 
     if (allGreen) {
-      playCorrectSound();
+      playSE('correct');
       if (currentWordMiss === 0) {
         const wordLength = engine.segments.reduce(
           (acc, s) => acc + s.display.length,
@@ -634,7 +629,7 @@ export const useTypingGame = (
 
   useEffect(() => {
     if (gaugeValue >= gaugeMax) {
-      playGaugeSound();
+      playSE('gauge');
       addTime(GAUGE_CONFIG.RECOVER_SEC, true);
       dispatch({ type: "GAUGE_MAX_REACHED" });
     }
