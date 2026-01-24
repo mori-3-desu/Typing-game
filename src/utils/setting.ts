@@ -62,7 +62,7 @@ export const PLAYER_NAME_CHARS = {
 export const DISPLAY_SCALE = {
   WIDTH:  1200,
   HEIGHT:  780
-}
+} as const;
 
 // Ready?画面の座標管理、GOのスケール
 export const READY_GO_ANIMATION = {
@@ -105,11 +105,12 @@ export const UI_TIMINGS = {
   
   // リザルト演出（スコアからランクまで遅らせて表示）
   RESULT: {
-    STEP_1:  600, // スコア
-    STEP_2: 1300, // 判定詳細
-    STEP_3: 2000, // 苦手キー
-    STEP_4: 3500, // ランク
-    STEP_5: 4500, // ボタンとランキング、シェアアイコンを表示
+    STEP_1:       600, // スコア
+    STEP_2:      1300, // 判定詳細
+    STEP_3:      2000, // 苦手キー
+    STEP_4:      3500, // ランク
+    STEP_5:      4500, // ボタンとランキング、シェアアイコンを表示
+    FINISH_STEP:    5, // クリックorEnterで演出スキップ
   }
 } as const;
 
@@ -127,7 +128,7 @@ export const STORAGE_KEYS = {
   VOLUME_SE:             "typing_se_vol",
   VOLUME_MUTE:           "typing_is_muted",
   SHOW_ROMAJI:           "typing_show_romaji"
-};
+} as const;
 
 // 初期値（デフォルト値）は別のオブジェクトにまとめると分かりやすいです
 export const DEFAULT_CONFIG = {
@@ -162,7 +163,7 @@ export const GAUGE_CONFIG = {
   RECOVER_SEC:  10, // 連打メーターMAX時のタイムボーナス上昇値
   INCREMENT:    50, // ゲージMAXした際の連打メーター上昇値
   CEILING:     300, // 連打メーター上限値
-};
+} as const;
 
 // スコア計算の設定値
 export const SCORE_CONFIG = {
@@ -217,7 +218,7 @@ export const COMBO_TIME_BONUS = {
   BONUS_BASE_SEC: 1,
   BONUS_MID_SEC:  3,
   BONUS_MAX_SEC:  5,
-};
+} as const;
 
 // ランク基準
 export const RANK_THRESHOLDS = {
