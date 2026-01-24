@@ -10,7 +10,7 @@ export const getSavedHighScore = (level: DifficultyLevel): number => {
 
 // 詳細データも取得
 export const getSavedHighScoreResult = (level: DifficultyLevel) => {
-  const key = `${STORAGE_KEYS.HISCORE_DATA_REGISTER}_${level.toLowerCase()}`;
+  const key = `${STORAGE_KEYS.HISCORE_DATA_REGISTER}${level.toLowerCase()}`;
   const saved = localStorage.getItem(key);
   if (saved) {
     try {

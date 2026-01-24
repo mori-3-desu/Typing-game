@@ -519,7 +519,7 @@ export const useTypingGame = (
     (currentCombo: number) => {
       playSE('type');
       const nextCombo = currentCombo + 1;
-      let timeBonus = COMBO_TIME_BONUS.INIT_BONUS_SEC;
+      let timeBonus: number = COMBO_TIME_BONUS.INIT_BONUS_SEC;
       let isLarge = false;
 
       if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) {

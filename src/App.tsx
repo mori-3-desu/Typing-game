@@ -31,7 +31,7 @@ import {
   setVolumes,
 } from "./utils/audio";
 import { useConfig } from "./hooks/useConfig";
-import { drawReadyAnimation, drawGoAnimation } from "./utils/transitions";
+import { drawReadyAnimation, drawGoAnimation } from "./utils/canvas";
 import { useTypingGame } from "./hooks/useTypingGame";
 import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 import {
@@ -815,7 +815,7 @@ function App() {
       resultTimersRef.current.forEach(clearTimeout);
       resultTimersRef.current = [];
 
-      setResultAnimStep(5);
+      setResultAnimStep(UI_TIMINGS.RESULT.FINISH_STEP);
 
       const targetRank = lastGameStats ? lastGameStats.rank : rank;
 
@@ -1155,7 +1155,7 @@ function App() {
       });
     }
 
-    setResultAnimStep(5);
+    setResultAnimStep(UI_TIMINGS.RESULT.FINISH_STEP);
     setGameState("hiscore_review");
   };
 
