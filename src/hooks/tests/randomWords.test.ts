@@ -3,14 +3,12 @@ import { renderHook, act } from "@testing-library/react";
 import { useTypingGame } from "../useTypingGame";
 import { type WordDataMap } from "../../types";
 
-// 音声モック
+// 1. 新しい audio.ts の仕様に合わせてモックも更新！
 vi.mock("../../utils/audio", () => ({
-  playTypeSound: vi.fn(),
-  playMissSound: vi.fn(),
-  playCorrectSound: vi.fn(),
-  playGaugeSound: vi.fn(),
-  playComboSound: vi.fn(),
-  playBsSound: vi.fn(),
+  // 初期化
+  initAudio: vi.fn(),
+  // 統合された再生関数
+  playSE: vi.fn(),
 }));
 
 vi.mock("../../utils/setting", async (importOriginal) => {
