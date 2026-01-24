@@ -703,7 +703,7 @@ function App() {
       }${difficulty.toLowerCase()}`;
       const dataKey = `${
         STORAGE_KEYS.HISCORE_DATA_REGISTER
-      }_${difficulty.toLowerCase()}`;
+      }${difficulty.toLowerCase()}`;
 
       // 終わった地点のデータを取得
       const currentStats = lastGameStats || {
@@ -1180,6 +1180,7 @@ function App() {
     displayData = {
       ...reviewData,
       words: reviewData.words || 0,
+      combo: reviewData.combo || 0,
       weakWords: reviewData.weakWords || [],
       weakKeys: reviewData.weakKeys || {},
     };
