@@ -3,14 +3,12 @@ import { renderHook, act } from "@testing-library/react";
 import { useTypingGame } from "../useTypingGame";
 import { type WordDataMap } from "../../types";
 
-// 1. 音声を無効化
+// utils/audio.ts の中身に合わせてモック化
 vi.mock("../../utils/audio", () => ({
-  playTypeSound: vi.fn(),
-  playMissSound: vi.fn(),
-  playCorrectSound: vi.fn(),
-  playGaugeSound: vi.fn(),
-  playComboSound: vi.fn(),
-  playBsSound: vi.fn(),
+  // 初期化・設定系
+  initAudio: vi.fn(),
+  // 再生系（統合されたもの）
+  playSE: vi.fn(),
 }));
 
 vi.mock("../../utils/setting", async (importOriginal) => {
