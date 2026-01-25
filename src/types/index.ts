@@ -1,7 +1,21 @@
- export type SoundKey =
-  | "type" | "miss" | "correct" | "gauge" | "combo"
-  | "result" | "decision" | "cancel" | "start" | "finish"
-  | "bs" | "diff" | "rankS" | "rankA" | "rankB" | "rankC" | "rankD";
+export type SoundKey =
+  | "type"
+  | "miss"
+  | "correct"
+  | "gauge"
+  | "combo"
+  | "result"
+  | "decision"
+  | "cancel"
+  | "start"
+  | "finish"
+  | "bs"
+  | "diff"
+  | "rankS"
+  | "rankA"
+  | "rankB"
+  | "rankC"
+  | "rankD";
 
 // タイトルの画面状態
 export type TitlePhase = "normal" | "input" | "confirm";
@@ -9,12 +23,25 @@ export type TitlePhase = "normal" | "input" | "confirm";
 export type DifficultyLevel = "EASY" | "NORMAL" | "HARD";
 
 export type DifficultyConfig = {
-  bg:    string; // 難易度ごとの画像パス
-  time:  number; // 制限時間
+  bg: string; // 難易度ごとの画像パス
+  time: number; // 制限時間
   chars: string; // "1 ~ 7 文字" など
-  text:  string; // 難易度毎の説明文
-  bgm:   string; // 曲
+  text: string; // 難易度毎の説明文
+  bgm: string; // 曲
   color: string; // 難易度ごとのテーマカラー
+};
+
+export type UpdateHighscoreParams = {
+  p_difficulty: DifficultyLevel; // "EASY" | "NORMAL" | "HARD" しか許さない！
+  p_score: number;
+  p_data: {
+    name: string;
+    correct: number;
+    miss: number;
+    backspace: number;
+    combo: number;
+    speed: number;
+  };
 };
 
 // ■ ランキングのデータ
@@ -36,7 +63,7 @@ export type WordRow = {
   difficulty: string;
   jp: string;
   roma: string;
-}
+};
 
 // ■ 苦手な単語（MissedWord と同じなのでこれを使います）
 export type WeakWord = {
