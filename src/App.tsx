@@ -575,49 +575,24 @@ function App() {
     setSaveStatus("saving");
 
     try {
-      // 1. まずサーバー上の最新スコアを確認（低い点数で上書きしないため）
-      const { data: existingData, error: fetchError } = await supabase
-        .from("scores")
-        .select("score") // スコアだけ分かればOK
-        .eq("user_id", userId)
-        .eq("difficulty", difficulty)
-        .maybeSingle();
-
-      // エラーが「データなし」以外の場合は中断
-      if (fetchError && fetchError.code !== "PGRST116") {
-        throw fetchError;
-      }
-
-      // 2. 既に高いスコアがサーバーにある場合は、保存せずに終了
-      if (existingData && targetStats.score <= existingData.score) {
-        console.log("ハイスコアではないため保存しません");
-        setSaveStatus("success");
-        return;
-      }
-
-      // 3. upsertを実行（これ1つで 新規登録 or 上書き を自動判断！）
-      const { error: upsertError } = await supabase.from("scores").upsert(
-        {
-          user_id: userId,
-          difficulty: difficulty,
-          name: playerName, // 名前も常に最新に更新
-          score: targetStats.score,
+      const { error } = await supabase.rpc("update_highscore", {
+        p_difficulty: difficulty,
+        p_score: targetStats.score,
+        p_data: {
+          name: playerName,
           correct: targetStats.correct,
           miss: targetStats.miss,
           backspace: targetStats.backspace,
           combo: targetStats.combo,
           speed: targetStats.speed,
-          created_at: new Date().toISOString(),
         },
-        { onConflict: "user_id, difficulty" }, // この組み合わせが被ったら上書きせよ、という合図
-      );
+      });
 
-      if (upsertError) throw upsertError;
+      if (error) throw error;
 
+      // dataが true なら更新、false なら更新なし
       setSaveStatus("success");
     } catch (error) {
-      const err = error as { message: string };
-      console.error("❌ 保存エラー:", err.message);
       setSaveStatus("error");
     }
   }, [
@@ -631,7 +606,6 @@ function App() {
     currentSpeed,
     saveStatus,
     playerName,
-    userId,
   ]);
 
   // 全国ランキング取得
