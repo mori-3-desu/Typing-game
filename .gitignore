@@ -14,6 +14,7 @@ dist-ssr
 
 # Editor directories and files
 node_modules
+supabase/.temp/
 .vscode/*
 !.vscode/extensions.json
 .idea
