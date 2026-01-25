@@ -36,6 +36,7 @@ import { useTypingGame } from "./hooks/useTypingGame";
 import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 import {
   type DifficultyLevel,
+  type UpdateHighscoreParams,
   type WordDataMap,
   type GameResultStats,
   type RankingScore,
@@ -555,9 +556,9 @@ function App() {
   ]);
 
   const saveScore = useCallback(async () => {
-    if (saveStatus === "saving" || saveStatus === "success") return;
+    if (["saving", "success"].includes(saveStatus)) return;
 
-    const targetStats = lastGameStats || {
+    const stats = lastGameStats ?? {
       score,
       words: completedWords,
       correct: correctCount,
@@ -567,7 +568,8 @@ function App() {
       speed: Number(currentSpeed),
     };
 
-    if (targetStats.score <= 0) {
+    // スコア0以下は保存しない（成功扱いにして抜ける）
+    if (stats.score <= 0) {
       setSaveStatus("success");
       return;
     }
@@ -575,36 +577,42 @@ function App() {
     setSaveStatus("saving");
 
     try {
-      const { error } = await supabase.rpc("update_highscore", {
+      // パラメータを先に作って、型チェックを通す
+      const rpcParams: UpdateHighscoreParams = {
         p_difficulty: difficulty,
-        p_score: targetStats.score,
+        p_score: stats.score,
         p_data: {
           name: playerName,
-          correct: targetStats.correct,
-          miss: targetStats.miss,
-          backspace: targetStats.backspace,
-          combo: targetStats.combo,
-          speed: targetStats.speed,
+          correct: stats.correct,
+          miss: stats.miss,
+          backspace: stats.backspace,
+          combo: stats.combo,
+          speed: stats.speed,
         },
-      });
+      };
+
+      // 型チェック済みの params を渡す
+      const { error } = await supabase.rpc("update_highscore", rpcParams);
 
       if (error) throw error;
 
-      // dataが true なら更新、false なら更新なし
       setSaveStatus("success");
     } catch (error) {
+      // エラーログはあえて残してもOK（デバッグ用）、消してもOK
+      // console.error("Failed to save score:", error);
       setSaveStatus("error");
     }
   }, [
-    difficulty,
+    saveStatus,
     lastGameStats,
     score,
+    completedWords,
     correctCount,
     missCount,
     backspaceCount,
     maxCombo,
     currentSpeed,
-    saveStatus,
+    difficulty,
     playerName,
   ]);
 
