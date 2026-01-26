@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./supabase";
+import { DatabaseService } from "./services/database";
 import "./App.css";
 
 // --- Components ---
@@ -21,6 +22,9 @@ import {
   READY_GO_ANIMATION,
   LIMIT_DATA,
 } from "./utils/setting";
+
+import { createGameStats } from "./utils/gameUtils";
+
 // --- utils & hooks ---
 import {
   initAudio,
@@ -40,7 +44,6 @@ import {
   type WordDataMap,
   type GameResultStats,
   type RankingScore,
-  type WordRow,
   type TitlePhase,
 } from "./types";
 
@@ -233,51 +236,17 @@ function App() {
 
   // アプリ起動時に Supabase から単語リストとNGワードを取得
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchInitialData = async () => {
       try {
-        // ゲーム用単語データの取得 (wordsテーブル)
-        const { data: wordsData, error: wordsError } = await supabase
-          .from("words")
-          .select("jp, roma, difficulty");
-
-        if (wordsError) throw wordsError;
-
-        if (wordsData) {
-          const formattedData: WordDataMap = {
-            EASY: [],
-            NORMAL: [],
-            HARD: [],
-          };
-
-          wordsData.forEach((row: WordRow) => {
-            const level = row.difficulty as DifficultyLevel;
-            if (formattedData[level]) {
-              formattedData[row.difficulty].push({
-                jp: row.jp,
-                roma: row.roma,
-              });
-            }
-          });
-
-          setDbWordData(formattedData);
-        }
-
-        // NGワードの取得 (ng_wordsテーブル)
-        const { data: ngData, error: ngError } = await supabase
-          .from("ng_words")
-          .select("word"); // 'word'カラムだけ取得
-
-        if (ngError) throw ngError;
-
-        if (ngData) {
-          const list = ngData.map((item: { word: string }) => item.word);
-          setNgWordsList(list); // Stateに保存
-        }
+        const { formattedData, ngList } =
+          await DatabaseService.fetchAllGameData();
+        setDbWordData(formattedData);
+        setNgWordsList(ngList);
       } catch (err) {
-        console.error("データ取得に失敗:", err);
+        console.error("初期データ取得失敗", err);
       }
     };
-    fetchAllData();
+    fetchInitialData();
   }, []);
 
   // --- Modal Handlers ---
@@ -293,20 +262,13 @@ function App() {
     setShowConfig(false);
   };
 
-  // ConfigModalに渡す、名前保存処理だけをここに残す
   const handleSaveName = async (newName: string) => {
     const finalName = newName || "Guest";
     setPlayerName(finalName);
     localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, finalName);
 
-    // DB更新
     try {
-      const { error } = await supabase
-        .from("scores")
-        .update({ name: newName })
-        .eq("user_id", userId);
-
-      if (error) throw error;
+      await DatabaseService.updateUserName(userId, finalName);
     } catch (err) {
       console.error("名前更新エラー:", err);
     }
@@ -504,7 +466,7 @@ function App() {
         .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
 
       // 別枠で終了時のデータを保存
-      setLastGameStats({
+      setLastGameStats(createGameStats({
         score,
         words: completedWords,
         correct: correctCount,
@@ -515,7 +477,7 @@ function App() {
         rank: rank,
         weakWords: sortedWeakWordsRecord,
         weakKeys: missedCharsRecord,
-      });
+      }));
 
       setGameState("finishing");
 
@@ -558,7 +520,7 @@ function App() {
   const saveScore = useCallback(async () => {
     if (["saving", "success"].includes(saveStatus)) return;
 
-    const stats = lastGameStats ?? {
+    const stats = lastGameStats ?? createGameStats({
       score,
       words: completedWords,
       correct: correctCount,
@@ -566,7 +528,7 @@ function App() {
       backspace: backspaceCount,
       combo: maxCombo,
       speed: Number(currentSpeed),
-    };
+    });
 
     // スコア0以下は保存しない（成功扱いにして抜ける）
     if (stats.score <= 0) {
@@ -591,10 +553,7 @@ function App() {
         },
       };
 
-      // 型チェック済みの params を渡す
-      const { error } = await supabase.rpc("update_highscore", rpcParams);
-
-      if (error) throw error;
+      await DatabaseService.updateHighscore(rpcParams);
 
       setSaveStatus("success");
     } catch (error) {
@@ -616,31 +575,22 @@ function App() {
     playerName,
   ]);
 
-  // 全国ランキング取得
+  // App.tsx内
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
     playSE("decision");
     const searchDiff = targetDiff || difficulty;
-
-    if (targetDiff) {
-      setDifficulty(targetDiff);
-    }
+    if (targetDiff) setDifficulty(targetDiff);
 
     setIsDevRankingMode(false);
     setRankingData([]);
 
-    const { data, error } = await supabase
-      .from("scores")
-      .select("*")
-      .eq("difficulty", searchDiff)
-      .eq("is_creator", false) // 作成者フラグが「OFF」の人だけ集める
-      .order("score", { ascending: false })
-      .limit(LIMIT_DATA.RANKING_LIMIT);
-
-    if (error) {
-      console.error("ランキング取得エラー:", error);
-    } else {
-      setRankingData(data || []);
+    try {
+      // ★ サービスを呼ぶだけ！
+      const data = await DatabaseService.getRanking(searchDiff);
+      setRankingData(data);
       setShowRanking(true);
+    } catch (error) {
+      console.error("ランキング取得エラー:", error);
     }
   };
 
@@ -650,20 +600,11 @@ function App() {
     if (isDevRankingMode) return;
 
     try {
-      const { data, error } = await supabase
-        .from("scores")
-        .select("*")
-        .eq("difficulty", difficulty)
-        .eq("is_creator", true)
-        .order("score", { ascending: false })
-        .limit(1);
-
-      if (error) throw error;
-
-      setRankingData(data || []);
+      const data = await DatabaseService.getDevScore(difficulty);
+      setRankingData(data);
       setIsDevRankingMode(true);
     } catch (err) {
-      console.error("Dev score fetch error:", err);
+      console.error("Dev Score fetch error", err);
     }
   };
 
@@ -1117,25 +1058,11 @@ function App() {
   // ハイスコア時のリザルトを難易度選択でも見れるように
   const handleShowHighScoreDetail = () => {
     const displayDiff = hoverDifficulty || difficulty;
-    const data = getSavedHighScoreResult(displayDiff);
+    const data = getSavedHighScoreResult(displayDiff) ?? createGameStats({
+      score: getSavedHighScore(displayDiff),
+    });
 
-    if (data) {
-      setReviewData(data);
-    } else {
-      const savedScore = getSavedHighScore(displayDiff);
-      setReviewData({
-        score: savedScore,
-        correct: 0,
-        words: 0,
-        miss: 0,
-        backspace: 0,
-        speed: 0,
-        combo: 0,
-        rank: "-",
-        weakWords: [],
-        weakKeys: {},
-      });
-    }
+    setReviewData(data);
 
     setResultAnimStep(UI_TIMINGS.RESULT.FINISH_STEP);
     setGameState("hiscore_review");
@@ -1159,17 +1086,11 @@ function App() {
 
   let displayData: GameResultStats;
   if (gameState === "hiscore_review" && reviewData) {
-    displayData = {
-      ...reviewData,
-      words: reviewData.words || 0,
-      combo: reviewData.combo || 0,
-      weakWords: reviewData.weakWords || [],
-      weakKeys: reviewData.weakKeys || {},
-    };
+    displayData = createGameStats(reviewData);
   } else if (gameState === "result" && lastGameStats) {
     displayData = lastGameStats;
   } else {
-    displayData = {
+    displayData = createGameStats({
       score,
       words: completedWords,
       correct: correctCount,
@@ -1180,7 +1101,7 @@ function App() {
       rank,
       weakWords: sortedWeakWords,
       weakKeys: missedCharsRecord,
-    };
+    });
   }
 
   return (

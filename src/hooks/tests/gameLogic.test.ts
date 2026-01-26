@@ -19,6 +19,7 @@ vi.mock("../../utils/setting", async (importOriginal) => {
     // 2. 本物の定数（GAUGE_CONFIG, SCORE_CONFIGなど全部）をここに展開！
     // 書かなくていいんです。ここに全部入ってます。
     ...actual,
+    
 
     // 3. 上書きしたい「難易度設定」だけ手動で書く
     DIFFICULTY_SETTINGS: {
