@@ -113,7 +113,7 @@ export const GameScreen = ({
           transition: "opacity 0.2s",
         }}
       >
-        <div id="text-word-wrapper">
+        <div id="text-word-wrapper" key={jpText}>
           <div
             id="text-word"
             className={
@@ -124,8 +124,7 @@ export const GameScreen = ({
                   : ""
             }
             style={{
-              padding: showRomaji ? "20px 65px" : "20px 30px",
-              transition: "padding 0.3s ease",
+              padding: "20px 45px",
             }}
           >
             <div id="romaji-line">
