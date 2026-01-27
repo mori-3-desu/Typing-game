@@ -35,9 +35,19 @@ const getSafeStorage = <T>(key: string, defaultValue: T): T => {
 
 export const useConfig = () => {
   // 初期化は初回レンダリング時のみ行う (Lazy Initialization)
-  const [isMuted, setIsMuted] = useState<boolean>(() => 
-    getSafeStorage(STORAGE_KEYS.VOLUME_MUTE, DEFAULT_CONFIG.IS_MUTED)
-  );
+  // --- 1. ミュートの初期化 (URLパラメータ最優先ロジックを追加) ---
+  const [isMuted, setIsMuted] = useState<boolean>(() => {
+    // サーバーサイドレンダリング対策
+    if (typeof window !== "undefined") {
+      // ★ここが追加ポイント: URLパラメータをチェック
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("muted") === "true") {
+        return true; // URLで指定があれば強制的にミュート開始
+      }
+    }
+    // URL指定がなければ、今まで通り localStorage か デフォルト値 を使う
+    return getSafeStorage(STORAGE_KEYS.VOLUME_MUTE, DEFAULT_CONFIG.IS_MUTED);
+  });
   
   const [bgmVol, setBgmVol] = useState<number>(() => 
     getSafeStorage(STORAGE_KEYS.VOLUME_BGM, DEFAULT_CONFIG.VOLUME_BGM_SE)
