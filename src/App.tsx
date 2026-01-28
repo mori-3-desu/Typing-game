@@ -994,7 +994,7 @@ function App() {
               gameState={gameState}
               difficulty={difficulty}
               resultData={displayData}
-              highScore={gameState === "result" ? highScore : undefined }
+              highScore={gameState === "result" ? highScore : undefined}
               scoreDiff={scoreDiff}
               isNewRecord={gameState === "result" ? isNewRecord : false}
               resultAnimStep={resultAnimStep}
@@ -1004,14 +1004,14 @@ function App() {
               onShowRanking={fetchRanking}
               onTweet={getShareUrl}
               onClickScreen={() => {
-                // クリック時もEnterと同じ扱い
-                const currentRank = lastGameStats ? lastGameStats.rank : rank;
-                handleResultKeyAction(
-                  "Enter",
-                  currentRank,
-                  retryGame,
-                  backToDifficulty,
-                );
+                if (gameState === "hiscore_review") {
+                  // 閲覧モードの場合: 難易度選択へ戻る
+                  backToDifficulty();
+                } else {
+                  // 通常リザルトの場合: そのランクに合わせてアニメをスキップ
+                  // (displayData.rank には "S", "A", "B" などが入っています)
+                  skipAnimation(displayData.rank);
+                }
               }}
             />
           )}
