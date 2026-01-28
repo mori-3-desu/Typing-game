@@ -8,15 +8,15 @@ import { LIMIT_DATA } from "../../utils/setting";
 type Props = {
   gameState: "result" | "hiscore_review";
   difficulty: DifficultyLevel;
-  
+
   // ★重要: 親(App.tsx)が決めた「表示すべきデータ」を1つだけ受け取る
   resultData: GameResultStats;
 
-  highScore: number;
+  highScore?: number;
   scoreDiff: number;
   isNewRecord: boolean;
   resultAnimStep: number;
-  
+
   // アクション（ボタン押下時の処理）
   onRetry: () => void;
   onBackToDifficulty: () => void;
@@ -41,7 +41,6 @@ export const ResultScreen = ({
   onTweet,
   onClickScreen,
 }: Props) => {
-  
   // App.tsx から渡されたデータをそのままターゲットにする
   const targetResultData = resultData;
 
@@ -73,38 +72,49 @@ export const ResultScreen = ({
           >
             <div className="score-header-row">
               <div className="score-label-main">SCORE</div>
-              <div className="hiscore-block">
-                <div
-                  id="new-record-badge"
-                  className={
-                    isNewRecord && gameState === "result" ? "" : "hidden"
-                  }
-                >
-                  NEW RECORD!
-                </div>
-                <div className="hiscore-row">
-                  <span className="hiscore-label">HI-SCORE</span>
-                  <span className="hiscore-value" id="res-hi-score">
-                    {highScore.toLocaleString()}
-                  </span>
-                </div>
-                {gameState === "result" && (
+
+              {/* ▼ 修正: highScore がある時（通常リザルト）だけ、このブロックごと表示する */}
+              {highScore !== undefined && (
+                <div className="hiscore-block">
+                  {/* NEW RECORDバッジ */}
                   <div
-                    className={`score-diff ${
-                      scoreDiff > 0
-                        ? "diff-plus"
-                        : scoreDiff < 0
-                        ? "diff-minus"
-                        : "diff-zero"
-                    }`}
-                    id="score-diff"
+                    id="new-record-badge"
+                    className={
+                      isNewRecord && gameState === "result" ? "" : "hidden"
+                    }
                   >
-                    {scoreDiff > 0 ? "+" : ""}
-                    {scoreDiff.toLocaleString()}
+                    NEW RECORD!
                   </div>
-                )}
-              </div>
+
+                  {/* ハイスコア行 */}
+                  <div className="hiscore-row">
+                    <span className="hiscore-label">HI-SCORE</span>
+                    <span className="hiscore-value" id="res-hi-score">
+                      {highScore.toLocaleString()}
+                    </span>
+                  </div>
+
+                  {/* スコア差分 */}
+                  {gameState === "result" && (
+                    <div
+                      className={`score-diff ${
+                        scoreDiff > 0
+                          ? "diff-plus"
+                          : scoreDiff < 0
+                            ? "diff-minus"
+                            : "diff-zero"
+                      }`}
+                      id="score-diff"
+                    >
+                      {scoreDiff > 0 ? "+" : ""}
+                      {scoreDiff.toLocaleString()}
+                    </div>
+                  )}
+                </div>
+              )}
+              {/* ▲ 条件分岐ここまで */}
             </div>
+
             <div
               className="score-main-row"
               style={{

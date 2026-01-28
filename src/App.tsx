@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "./supabase";
 import { DatabaseService } from "./services/database";
 import "./App.css";
@@ -28,19 +28,19 @@ import { createGameStats } from "./utils/gameUtils";
 // --- utils & hooks ---
 import {
   initAudio,
-  playSE, // ← これに統一
-  playBGM, // ← これに統一
-  stopBGM, // ← これに統一
+  playSE,
+  playBGM,
+  stopBGM,
   startSelectBgm,
   setVolumes,
 } from "./utils/audio";
 import { useConfig } from "./hooks/useConfig";
 import { drawReadyAnimation, drawGoAnimation } from "./utils/canvas";
 import { useTypingGame } from "./hooks/useTypingGame";
+import { useGameResult } from "./hooks/useGameResult"; // ★追加
 import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 import {
   type DifficultyLevel,
-  type UpdateHighscoreParams,
   type WordDataMap,
   type GameResultStats,
   type RankingScore,
@@ -87,7 +87,6 @@ function App() {
     setShowRomaji,
   } = useConfig();
 
-  // ★名前: nameError は TitleScreen でも使うので残します
   const [nameError, setNameError] = useState("");
 
   const [gameState, setGameState] = useState<GameState>("loading");
@@ -99,39 +98,45 @@ function App() {
     useState<DifficultyLevel | null>(null);
   const [isWhiteFade, setIsWhiteFade] = useState(false);
 
-  // プレイヤー名（保存されたものを読み込む）
+  // ★ Hook呼び出し (リザルト・スコア管理)
+  const {
+    highScore,
+    isNewRecord,
+    scoreDiff,
+    resultAnimStep,
+    saveScore,
+    processResult,
+    playResultAnimation,
+    handleResultKeyAction,
+    skipAnimation,
+    resetResultState,
+  } = useGameResult(difficulty);
+
+  // プレイヤー名
   const [playerName, setPlayerName] = useState(() => {
     const savedName = localStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
     return savedName || "";
   });
 
-  // 名前決定済みフラグ（保存されていれば true）
   const [isNameConfirmed, setIsNameConfirmed] = useState(() => {
     const savedName = localStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
     return !!savedName;
   });
 
   const [ngWordsList, setNgWordsList] = useState<string[]>([]);
-
   const [titlePhase, setTitlePhase] = useState<TitlePhase>("normal");
-
-  // 1. setUserId を使えるようにして、初期値を空文字にします
   const [userId, setUserId] = useState("");
 
-  // 2. アプリ起動時に「Supabaseから正式なID」をもらう処理を追加
+  // Auth
   useEffect(() => {
     const initAuth = async () => {
-      // (A) すでにログイン状態が残っているか確認（リロード時など）
       const {
         data: { session },
       } = await supabase.auth.getSession();
-
       if (session) {
         setUserId(session.user.id);
       } else {
-        // (B) ログインしていなければ、匿名ログインを実行！
         const { data, error } = await supabase.auth.signInAnonymously();
-
         if (error) {
           console.error("❌ ログイン失敗:", error.message);
         } else if (data.user) {
@@ -139,49 +144,32 @@ function App() {
         }
       }
     };
-
     initAuth();
   }, []);
 
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [isInputLocked, setIsInputLocked] = useState(true); // 入力ロック
-
+  const [isInputLocked, setIsInputLocked] = useState(true);
   const [showTitle, setShowTitle] = useState(false);
   const [enableBounce, setEnableBounce] = useState(false);
   const [isTitleExiting, setIsTitleExiting] = useState(false);
 
-  const [saveStatus, setSaveStatus] = useState<
-    "idle" | "saving" | "success" | "error"
-  >("idle");
-
-  // ランキング機能
+  // ランキング
   const [rankingData, setRankingData] = useState<RankingScore[]>([]);
   const [showRanking, setShowRanking] = useState(false);
   const [isDevRankingMode, setIsDevRankingMode] = useState(false);
 
-  // 単語データ
+  // データ
   const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
 
-  // リザルト・スコア関連
-  const [highScore, setHighScore] = useState(0);
-  const [isNewRecord, setIsNewRecord] = useState(false);
-  const [scoreDiff, setScoreDiff] = useState(0);
-
-  // 閲覧モード用の詳細データ保持
+  // 閲覧モード用 & 直前の結果保持
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
-
-  // 直前のゲーム結果を固定保持するためのステート
   const [lastGameStats, setLastGameStats] = useState<GameResultStats | null>(
     null,
   );
 
-  const [resultAnimStep, setResultAnimStep] = useState(0);
-  const resultTimersRef = useRef<number[]>([]);
-  const hasSaved = useRef(false);
-
   const [isFinishExit, setIsFinishExit] = useState(false);
 
-  // useTypingGame
+  // useTypingGame Hook
   const {
     score,
     displayScore,
@@ -215,26 +203,23 @@ function App() {
     currentSpeed,
   } = useTypingGame(difficulty, dbWordData);
 
-  // 現在入力中の単語のミス数を追跡
+  // 単語ごとのミス追跡
   const currentWordMissRef = useRef(0);
   const prevMissCountRef = useRef(0);
   const prevWordRef = useRef("");
 
-  // 単語ごとの独立したミスカウント
   useEffect(() => {
     if (jpText !== prevWordRef.current) {
       currentWordMissRef.current = 0;
-      prevWordRef.current = jpText; // 今の単語を記録更新
+      prevWordRef.current = jpText;
     }
-
     if (missCount > prevMissCountRef.current) {
       currentWordMissRef.current += missCount - prevMissCountRef.current;
     }
-
-    prevMissCountRef.current = missCount; // 現在の総ミス数をカウント
+    prevMissCountRef.current = missCount;
   }, [missCount, jpText]);
 
-  // アプリ起動時に Supabase から単語リストとNGワードを取得
+  // 初期データロード
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -251,12 +236,10 @@ function App() {
 
   // --- Modal Handlers ---
   const [showConfig, setShowConfig] = useState(false);
-
   const handleOpenConfig = () => {
     playSE("decision");
     setShowConfig(true);
   };
-
   const handleCloseConfig = () => {
     playSE("decision");
     setShowConfig(false);
@@ -266,7 +249,6 @@ function App() {
     const finalName = newName || "Guest";
     setPlayerName(finalName);
     localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, finalName);
-
     try {
       await DatabaseService.updateUserName(userId, finalName);
     } catch (err) {
@@ -275,30 +257,27 @@ function App() {
   };
 
   const [showHowToPlay, setShowHowToPlay] = useState(false);
-
   const handleOpenHowToPlay = () => {
     playSE("decision");
     setShowHowToPlay(true);
   };
-
   const handleCloseHowToPlay = () => {
     playSE("decision");
     setShowHowToPlay(false);
   };
 
-  // ... (Ref更新、アニメーション、タイマー、キー操作などは変更なし) ...
+  // Ref更新
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
-
   useEffect(() => {
     handleKeyInputRef.current = handleKeyInput;
     handleBackspaceRef.current = handleBackspace;
   }, [handleKeyInput, handleBackspace]);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null); // キャンバス要素へのアクセス権
-  const requestRef = useRef<number>(0); // アニメーションの予約番号(キャンセル用)
-  const readyImageRef = useRef<HTMLImageElement | null>(null); // 画像データの保持
-
+  // Animation Refs
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const requestRef = useRef<number>(0);
+  const readyImageRef = useRef<HTMLImageElement | null>(null);
   const animationState = useRef({
     readyY: -READY_GO_ANIMATION.INIT,
     isReadyAnimating: false,
@@ -308,6 +287,7 @@ function App() {
     phase: "idle",
   });
 
+  // 初期化・ローディング
   useEffect(() => {
     preloadImages();
     initAudio();
@@ -317,85 +297,69 @@ function App() {
       readyImageRef.current = img;
     };
 
-    // 開始時刻を記録
     const startTime = Date.now();
-
     const checkLoad = setInterval(() => {
-      // 経過時間を計算
       const elapsedTime = Date.now() - startTime;
       if (dbWordData && elapsedTime > UI_TIMINGS.MIN_LOADING_TIME) {
         clearInterval(checkLoad);
         setIsLoaded(true);
         setGameState("title");
-
         setTimeout(() => {
           setShowTitle(true);
           setTimeout(() => {
             setEnableBounce(true);
-            setIsInputLocked(false); // 入力許可
+            setIsInputLocked(false);
           }, UI_TIMINGS.TITLE.BOUNCE_DELAY);
         }, UI_TIMINGS.TITLE.SHOW_DELAY);
       }
     }, 100);
-
     return () => clearInterval(checkLoad);
   }, [dbWordData]);
 
+  // 音量設定
   useEffect(() => {
     setVolumes(bgmVol, seVol);
     localStorage.setItem(STORAGE_KEYS.VOLUME_BGM, bgmVol.toString());
     localStorage.setItem(STORAGE_KEYS.VOLUME_SE, seVol.toString());
   }, [bgmVol, seVol]);
 
-  // タイトル画面で入力フォームを開く処理
+  // タイトル入力処理
   const handleStartSequence = () => {
     if (isTitleExiting || isInputLocked) return;
-
     if (isNameConfirmed) {
-      // 既に登録済みなら難易度選択画面へ
       goToDifficulty();
       return;
     }
-
     playSE("decision");
     setIsInputLocked(true);
     setIsTitleExiting(true);
-
     setTimeout(() => {
       setIsTitleExiting(false);
       setIsInputLocked(false);
-      setNameError(""); // エラーリセット
+      setNameError("");
       setTitlePhase("input");
     }, UI_TIMINGS.TITLE.BUTTON_FADE_OUT);
   };
 
-  // タイトル画面：入力キャンセル（タイトルロゴへ戻る）
   const handleCancelInput = () => {
     playSE("decision");
     setTitlePhase("normal");
   };
 
-  // タイトル画面：名前決定処理
   const handleNameSubmit = () => {
     const trimmedName = playerName.trim();
-
-    setNameError(""); // エラーリセット
-
+    setNameError("");
     if (trimmedName && trimmedName.length > PLAYER_NAME_CHARS.MAX) {
       setNameError(`名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`);
       return;
     }
-
     const isNg = ngWordsList.some((word) =>
       trimmedName.toLowerCase().includes(word.toLowerCase()),
     );
-
     if (isNg) {
       setNameError("不適切な文字が含まれています");
       return;
     }
-
-    // 入力が空なら"Guest"に、文字があればそれをセット
     setPlayerName(trimmedName || "Guest");
     playSE("decision");
     setTitlePhase("confirm");
@@ -415,7 +379,7 @@ function App() {
     setTitlePhase("input");
   };
 
-  // スケール調整
+  // リサイズ
   useEffect(() => {
     const handleResize = () => {
       const scaler = document.getElementById("scaler");
@@ -432,7 +396,7 @@ function App() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // タイマーの useEffect を修正
+  // タイマー
   useEffect(() => {
     let interval: number;
     if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
@@ -443,30 +407,43 @@ function App() {
     return () => clearInterval(interval);
   }, [gameState, playPhase, timeLeft, tick]);
 
+  // ★ ゲーム終了判定 & データ処理
   useEffect(() => {
     if (gameState === "playing" && playPhase === "game" && timeLeft <= 0) {
       stopBGM();
       playSE("finish");
 
-      let finalWeakWords = [...missedWordsRecord];
+      // --- 1. 集計用Mapの作成 ---
+      // 同じ単語が複数回出てきた場合にミス数を合算するため、Map（辞書）を使用
+      // 例: [{word: "apple", misses: 1}, {word: "apple", misses: 2}] -> {"apple" => 3}
+      const weakWordMap = new Map<string, number>();
+
+      // --- 2. 過去データの取り込み ---
+      // 確定済みのミス記録（missedWordsRecord）をMapに展開
+      missedWordsRecord.forEach(({ word, misses }) => {
+        // すでに登録済みなら加算、なければ新規登録 (|| 0 でundefined対策)
+        weakWordMap.set(word, (weakWordMap.get(word) || 0) + misses);
+      });
+
+      // --- 3. 現在データの救出 ---
+      // ★重要：タイムアップ瞬間に「今入力中の単語」はまだリストに入っていないため、
+      // ここで手動でMapに加算してあげる（最後の1秒のミスも無駄にしない）
       if (currentWordMissRef.current > 0) {
-        const existing = finalWeakWords.find((w) => w.word === jpText);
-        if (existing) {
-          existing.misses += currentWordMissRef.current;
-        } else {
-          finalWeakWords.push({
-            word: jpText,
-            misses: currentWordMissRef.current,
-          });
-        }
+        const currentTotal = weakWordMap.get(jpText) || 0;
+        weakWordMap.set(jpText, currentTotal + currentWordMissRef.current);
       }
 
-      const sortedWeakWordsRecord = finalWeakWords
+      // --- 4. 配列化・ソート・フィルタリング ---
+      // Mapを配列に戻し、「ミスが多い順」に並び替えて「上位N件」に絞る
+      const sortedWeakWordsRecord = Array.from(
+        weakWordMap,
+        ([word, misses]) => ({ word, misses }),
+      )
         .sort((a, b) => b.misses - a.misses)
         .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
 
-      // 別枠で終了時のデータを保存
-      setLastGameStats(createGameStats({
+      // 結果データ作成
+      const stats = createGameStats({
         score,
         words: completedWords,
         correct: correctCount,
@@ -477,19 +454,15 @@ function App() {
         rank: rank,
         weakWords: sortedWeakWordsRecord,
         weakKeys: missedCharsRecord,
-      }));
+      });
 
+      setLastGameStats(stats);
       setGameState("finishing");
-
       setIsFinishExit(false);
       setIsWhiteFade(false);
 
-      const currentSaved = getSavedHighScore(difficulty);
-      if (score > currentSaved) {
-        setIsNewRecord(true);
-      } else {
-        setIsNewRecord(false);
-      }
+      // ★ Hookに処理を委譲（ローカル保存計算など）
+      processResult(stats);
 
       setTimeout(() => setIsFinishExit(true), UI_TIMINGS.GAME.FINISH_ANIMATION);
       setTimeout(() => setIsWhiteFade(true), UI_TIMINGS.GAME.WHITE_FADE_OUT);
@@ -504,7 +477,6 @@ function App() {
     gameState,
     playPhase,
     score,
-    highScore,
     difficulty,
     correctCount,
     missCount,
@@ -515,77 +487,26 @@ function App() {
     missedWordsRecord,
     missedCharsRecord,
     jpText,
-  ]);
-
-  const saveScore = useCallback(async () => {
-    if (["saving", "success"].includes(saveStatus)) return;
-
-    const stats = lastGameStats ?? createGameStats({
-      score,
-      words: completedWords,
-      correct: correctCount,
-      miss: missCount,
-      backspace: backspaceCount,
-      combo: maxCombo,
-      speed: Number(currentSpeed),
-    });
-
-    // スコア0以下は保存しない（成功扱いにして抜ける）
-    if (stats.score <= 0) {
-      setSaveStatus("success");
-      return;
-    }
-
-    setSaveStatus("saving");
-
-    try {
-      // パラメータを先に作って、型チェックを通す
-      const rpcParams: UpdateHighscoreParams = {
-        p_difficulty: difficulty,
-        p_score: stats.score,
-        p_data: {
-          name: playerName,
-          correct: stats.correct,
-          miss: stats.miss,
-          backspace: stats.backspace,
-          combo: stats.combo,
-          speed: stats.speed,
-        },
-      };
-
-      await DatabaseService.updateHighscore(rpcParams);
-
-      setSaveStatus("success");
-    } catch (error) {
-      // エラーログはあえて残してもOK（デバッグ用）、消してもOK
-      // console.error("Failed to save score:", error);
-      setSaveStatus("error");
-    }
-  }, [
-    saveStatus,
-    lastGameStats,
-    score,
     completedWords,
-    correctCount,
-    missCount,
-    backspaceCount,
-    maxCombo,
-    currentSpeed,
-    difficulty,
-    playerName,
+    processResult, // ← hook関数
   ]);
 
-  // App.tsx内
+  // ★ リザルト画面開始（保存 & 演出）
+  useEffect(() => {
+    if (gameState === "result" && lastGameStats) {
+      saveScore(lastGameStats, playerName);
+      playResultAnimation(lastGameStats.rank);
+    }
+  }, [gameState, lastGameStats, saveScore, playResultAnimation, playerName]);
+
+  // ランキング
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
     playSE("decision");
     const searchDiff = targetDiff || difficulty;
     if (targetDiff) setDifficulty(targetDiff);
-
     setIsDevRankingMode(false);
     setRankingData([]);
-
     try {
-      // ★ サービスを呼ぶだけ！
       const data = await DatabaseService.getRanking(searchDiff);
       setRankingData(data);
       setShowRanking(true);
@@ -594,11 +515,9 @@ function App() {
     }
   };
 
-  // 作成者のスコア
   const handleShowDevScore = async () => {
     playSE("decision");
     if (isDevRankingMode) return;
-
     try {
       const data = await DatabaseService.getDevScore(difficulty);
       setRankingData(data);
@@ -613,149 +532,11 @@ function App() {
     playSE("decision");
   };
 
-  useEffect(() => {
-    if (gameState === "result") {
-      // ここでデータを保存
-      if (!hasSaved.current) {
-        saveScore();
-        hasSaved.current = true;
-      }
-
-      const storageKey = `${
-        STORAGE_KEYS.HISCORE_REGISTER
-      }${difficulty.toLowerCase()}`;
-      const dataKey = `${
-        STORAGE_KEYS.HISCORE_DATA_REGISTER
-      }${difficulty.toLowerCase()}`;
-
-      // 終わった地点のデータを取得
-      const currentStats = lastGameStats || {
-        score,
-        words: completedWords,
-        correct: correctCount,
-        miss: missCount,
-        backspace: backspaceCount,
-        combo: maxCombo,
-        speed: Number(currentSpeed), // speedは数字にしておく
-        rank,
-        weakWords: missedWordsRecord,
-        weakKeys: missedCharsRecord,
-      };
-
-      const savedScore = parseInt(localStorage.getItem(storageKey) || "0", 10); // データがない場合は0を使う、10進数で読み込む
-
-      // 先に差分を計算する（プラスになるかマイナスになるかは結果次第）
-      const diff = currentStats.score - savedScore;
-      setScoreDiff(diff); // Stateにも入れる
-
-      if (currentStats.score > savedScore) {
-        // 更新した場合
-        setIsNewRecord(true);
-        setHighScore(currentStats.score);
-
-        // 保存処理
-        localStorage.setItem(storageKey, currentStats.score.toString());
-
-        // 詳細データ保存
-        const highScoreData = { ...currentStats };
-        // ローカルストレージは文字しか入れられないから文字にしてから保存する
-        localStorage.setItem(dataKey, JSON.stringify(highScoreData));
-      } else {
-        // 更新ならず
-        setIsNewRecord(false);
-        setHighScore(savedScore);
-      }
-
-      setResultAnimStep(0); // リザルト演出効果音
-      resultTimersRef.current = [];
-
-      // --- 修正後 ---
-      const schedule = [
-        {
-          step: 1,
-          delay: UI_TIMINGS.RESULT.STEP_1,
-          sound: () => playSE("result"),
-        },
-        {
-          step: 2,
-          delay: UI_TIMINGS.RESULT.STEP_2,
-          sound: () => playSE("result"),
-        },
-        {
-          step: 3,
-          delay: UI_TIMINGS.RESULT.STEP_3,
-          sound: () => playSE("result"),
-        },
-        {
-          step: 4,
-          delay: UI_TIMINGS.RESULT.STEP_4,
-          sound: () => {
-            if (currentStats.rank === "S") playSE("rankS");
-            else if (currentStats.rank === "A") playSE("rankA");
-            else if (currentStats.rank === "B") playSE("rankB");
-            else if (currentStats.rank === "C") playSE("rankC");
-            else playSE("rankD");
-          },
-        },
-        { step: 5, delay: UI_TIMINGS.RESULT.STEP_5, sound: null },
-      ];
-
-      schedule.forEach(({ step, delay, sound }) => {
-        const timer = window.setTimeout(() => {
-          setResultAnimStep(step);
-          if (sound) sound();
-        }, delay);
-        resultTimersRef.current.push(timer);
-      });
-
-      return () => {
-        resultTimersRef.current.forEach(clearTimeout); // 再生したら、順番に停止していく
-      };
-    }
-  }, [
-    gameState,
-    score,
-    difficulty,
-    rank,
-    correctCount,
-    missCount,
-    backspaceCount,
-    maxCombo,
-    currentSpeed,
-    missedWordsRecord,
-    missedCharsRecord,
-    lastGameStats,
-  ]);
-
-  useEffect(() => {
-    const savedScore = getSavedHighScore(difficulty);
-    setHighScore(savedScore);
-  }, [difficulty]);
-
-  // クリックしたらランク演出まで飛ばす
-  const handleResultClick = () => {
-    if (gameState === "result" && resultAnimStep < 5) {
-      resultTimersRef.current.forEach(clearTimeout);
-      resultTimersRef.current = [];
-
-      setResultAnimStep(UI_TIMINGS.RESULT.FINISH_STEP);
-
-      const targetRank = lastGameStats ? lastGameStats.rank : rank;
-
-      // --- 修正後 ---
-      if (targetRank === "S") playSE("rankS");
-      else if (targetRank === "A") playSE("rankA");
-      else if (targetRank === "B") playSE("rankB");
-      else if (targetRank === "C") playSE("rankC");
-      else playSE("rankD");
-    }
-  };
-
-  // 難易度選択ホバー時の画像取得処理
+  // 背景画像
   const getCurrentBgSrc = () => {
     if (gameState === "title") return "/images/title.png";
     if (gameState === "difficulty") {
-      if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg; // カーソルを難易度に合わせたら難易度画像を取得
+      if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg;
       return hoverDifficulty
         ? DIFFICULTY_SETTINGS[hoverDifficulty].bg
         : "/images/level.png";
@@ -770,6 +551,7 @@ function App() {
     return "/images/title.png";
   };
 
+  // Canvasアニメーション
   const animate = () => {
     const canvas = canvasRef.current;
     const ctx = canvas?.getContext("2d");
@@ -783,7 +565,6 @@ function App() {
       canvas.width = DISPLAY_SCALE.WIDTH;
       canvas.height = DISPLAY_SCALE.HEIGHT;
 
-      // ready降下(まぁ別に降下しなくていいかも)
       if (playPhase === "ready") {
         if (state.isReadyAnimating) {
           state.readyY += READY_GO_ANIMATION.DROP;
@@ -802,18 +583,14 @@ function App() {
           state.showEnterSpaceText,
         );
       } else if (playPhase === "go") {
-        if (hasSaved.current !== false) {
-          hasSaved.current = false;
-        }
-
         if (state.goScale < READY_GO_ANIMATION.GO_MAX)
           state.goScale += READY_GO_ANIMATION.GO_HIG;
         drawGoAnimation(ctx, canvas.width, canvas.height, state.goScale);
       } else if (playPhase === "game") {
-        ctx.clearRect(0, 0, canvas.width, canvas.height); // まっさらにする(これがないと残像になり、残る)
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
-    requestRef.current = requestAnimationFrame(animate); // CanvasAPI 一コマずつ動かす
+    requestRef.current = requestAnimationFrame(animate);
   };
 
   useEffect(() => {
@@ -821,83 +598,59 @@ function App() {
     return () => cancelAnimationFrame(requestRef.current);
   }, [gameState, playPhase]);
 
-  // ゲーム中のリセット処理
+  const getInitialAnimationState = () => ({
+    readyY: -READY_GO_ANIMATION.INIT,
+    isReadyAnimating: true,
+    showEnterSpaceText: false,
+    showGoText: false,
+    goScale: READY_GO_ANIMATION.GO_INIT,
+    phase: "ready",
+  });
+
+  // ゲーム制御
   const resetToReady = () => {
     playSE("decision");
     stopBGM();
     resetGame();
-    hasSaved.current = false;
-    setSaveStatus("idle");
+    // hasSaved等のリセットはHook側でやってくれるなら呼び出す、
+    // あるいは単純に画面遷移すればHookがリセットされる設計ならOK
+    resetResultState();
     setPlayPhase("ready");
-    animationState.current = {
-      readyY: -READY_GO_ANIMATION.INIT,
-      isReadyAnimating: true,
-      showEnterSpaceText: false,
-      showGoText: false,
-      goScale: READY_GO_ANIMATION.GO_INIT,
-      phase: "ready",
-    };
+    animationState.current = getInitialAnimationState();
   };
 
-  // 難易度選択に戻る
   const backToDifficulty = () => {
     playSE("decision");
-
     if (gameState !== "hiscore_review") {
       stopBGM();
       startSelectBgm();
     }
-
     setGameState("difficulty");
     setIsTransitioning(false);
   };
 
-  //もう一度を選択
   const retryGame = () => {
     if (isTransitioning) return;
-    setSaveStatus("idle");
     setIsTransitioning(true);
     playSE("decision");
     resetGame();
     setIsFinishExit(false);
     setIsWhiteFade(false);
     stopBGM();
-    animationState.current = {
-      readyY: -READY_GO_ANIMATION.INIT,
-      isReadyAnimating: true,
-      showEnterSpaceText: false,
-      showGoText: false,
-      goScale: READY_GO_ANIMATION.GO_INIT,
-      phase: "ready",
-    };
+    animationState.current = getInitialAnimationState();
     setTimeout(() => {
       setPlayPhase("ready");
       setGameState("playing");
       setIsTransitioning(false);
       setIsInputLocked(false);
-      hasSaved.current = false;
     }, 50);
   };
 
-  // リザルト画面キー操作でも〇
-  const handleResultKeyAction = (key: string) => {
-    if (key === "Enter") {
-      if (resultAnimStep < 5) handleResultClick();
-      else retryGame();
-    } else if (key === "Escape") {
-      if (resultAnimStep < 5) handleResultClick();
-      else backToDifficulty();
-    }
-  };
-
-  // 名前を入力してたら難易度選択へ
   const goToDifficulty = () => {
     if (isTitleExiting || isInputLocked) return;
-
     playSE("decision");
     setIsInputLocked(true);
     setIsTitleExiting(true);
-
     setTimeout(() => {
       startSelectBgm();
       setGameState("difficulty");
@@ -906,10 +659,46 @@ function App() {
     }, UI_TIMINGS.DIFFICULTY.SELECT_START);
   };
 
+  const handleSelectDifficulty = (diff: DifficultyLevel) => {
+    if (isTransitioning || isInputLocked) return;
+    setIsTransitioning(true);
+    setIsInputLocked(true);
+    playSE("decision");
+    setDifficulty(diff);
+    resetGame();
+    setIsFinishExit(false);
+    setIsWhiteFade(false);
+    stopBGM();
+    animationState.current = getInitialAnimationState();
+    setTimeout(() => {
+      setPlayPhase("ready");
+      setGameState("playing");
+      setIsTransitioning(false);
+      setIsInputLocked(false);
+    }, 50);
+  };
+
+  const backToTitle = () => {
+    playSE("decision");
+    stopBGM();
+    setGameState("title");
+    setShowTitle(false);
+    setEnableBounce(false);
+    setIsTitleExiting(false);
+    setIsInputLocked(true);
+    setTimeout(() => {
+      setShowTitle(true);
+      setTimeout(() => {
+        setEnableBounce(true);
+        setIsInputLocked(false);
+      }, UI_TIMINGS.TITLE.BOUNCE_DELAY);
+    }, 100);
+  };
+
+  // キー監視
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") {
-        // 特殊キー無効化
         if (
           [
             "Shift",
@@ -933,8 +722,6 @@ function App() {
         )
           return;
       }
-
-      // 日本語入力(IME)関連の誤動作防止
       if (
         e.isComposing ||
         ["Process", "KanaMode", "Conversion", "NonConvert"].includes(e.code)
@@ -943,40 +730,58 @@ function App() {
 
       const state = animationState.current;
 
-      // Ready?画面時
-      if (
-        gameState === "playing" &&
-        playPhase === "ready" &&
-        !state.isReadyAnimating
-      ) {
-        if (e.key === "Enter" || e.key === " ") {
-          playSE("start");
-          setPlayPhase("go");
-          state.goScale = READY_GO_ANIMATION.GO_INIT;
-          setTimeout(() => {
-            setPlayPhase("game");
-            startGame();
-            playBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
-          }, 1000);
-        } else if (e.key === "Escape") {
-          backToDifficulty();
-        }
-      } else if (gameState === "playing" && playPhase === "game") {
-        if (e.key === "Escape") {
-          e.preventDefault();
-          resetToReady();
-          return;
-        }
-        if (e.key === "Backspace") {
-          e.preventDefault();
-          handleBackspaceRef.current();
-          return;
-        }
-        if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-          handleKeyInputRef.current(e.key.toLowerCase());
-        }
-      } else if (gameState === "result") {
-        handleResultKeyAction(e.key);
+      // 3. 【State Machine】ゲームの状態（画面）で分岐
+      switch (gameState) {
+        case "playing":
+          // プレイ画面の中でのさらに細かいフェーズ分岐
+          if (playPhase === "ready" && !state.isReadyAnimating) {
+            if (e.key === "Enter" || e.key === " ") {
+              playSE("start");
+              setPlayPhase("go");
+              state.goScale = READY_GO_ANIMATION.GO_INIT;
+              setTimeout(() => {
+                setPlayPhase("game");
+                startGame();
+                playBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
+              }, 1000);
+            } else if (e.key === "Escape") {
+              backToDifficulty();
+            }
+            return;
+          }
+
+          if (playPhase === "game") {
+            if (e.key === "Escape") {
+              e.preventDefault();
+              resetToReady();
+              return;
+            }
+            if (e.key === "Backspace") {
+              e.preventDefault();
+              handleBackspaceRef.current();
+              return;
+            }
+            if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
+              handleKeyInputRef.current(e.key.toLowerCase());
+            }
+            return;
+          }
+          break;
+
+        case "result":
+          // リザルト画面の処理
+          const currentRank = lastGameStats ? lastGameStats.rank : rank;
+          handleResultKeyAction(
+            e.key,
+            currentRank,
+            retryGame,
+            backToDifficulty,
+          );
+          break;
+
+        // 将来的に case "title": や case "difficulty": を追加しやすくなる
+        default:
+          break;
       }
     };
 
@@ -987,65 +792,13 @@ function App() {
     playPhase,
     startGame,
     difficulty,
-    resultAnimStep,
     handleStartSequence,
+    handleResultKeyAction,
+    lastGameStats,
+    rank,
   ]);
 
-  // 難易度を選択した時の処理
-  const handleSelectDifficulty = (diff: DifficultyLevel) => {
-    if (isTransitioning || isInputLocked) return;
-
-    setIsTransitioning(true);
-    setIsInputLocked(true);
-
-    playSE("decision");
-    setDifficulty(diff);
-    resetGame();
-    setSaveStatus("idle");
-    setIsFinishExit(false);
-    setIsWhiteFade(false);
-    stopBGM();
-    animationState.current = {
-      readyY: -READY_GO_ANIMATION.INIT,
-      isReadyAnimating: true,
-      showEnterSpaceText: false,
-      showGoText: false,
-      goScale: READY_GO_ANIMATION.GO_INIT,
-      phase: "ready",
-    };
-
-    setTimeout(() => {
-      setPlayPhase("ready");
-      setGameState("playing");
-      setIsTransitioning(false);
-      setIsInputLocked(false);
-      hasSaved.current = false;
-    }, 50);
-  };
-
-  const backToTitle = () => {
-    playSE("decision");
-    stopBGM();
-    stopBGM();
-    hasSaved.current = false;
-    setSaveStatus("idle");
-
-    setGameState("title");
-    setShowTitle(false);
-    setEnableBounce(false);
-    setIsTitleExiting(false);
-
-    setIsInputLocked(true);
-    setTimeout(() => {
-      setShowTitle(true);
-      setTimeout(() => {
-        setEnableBounce(true);
-        setIsInputLocked(false);
-      }, UI_TIMINGS.TITLE.BOUNCE_DELAY);
-    }, 100);
-  };
-
-  //シェア機能
+  // シェア
   const getShareUrl = () => {
     const text = encodeURIComponent(
       `CRITICAL TYPINGでスコア:${score.toLocaleString()} ランク:${rank} を獲得しました！`,
@@ -1055,16 +808,18 @@ function App() {
     return `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
   };
 
-  // ハイスコア時のリザルトを難易度選択でも見れるように
+  // ハイスコア詳細
   const handleShowHighScoreDetail = () => {
     const displayDiff = hoverDifficulty || difficulty;
-    const data = getSavedHighScoreResult(displayDiff) ?? createGameStats({
-      score: getSavedHighScore(displayDiff),
-    });
-
+    const data =
+      getSavedHighScoreResult(displayDiff) ??
+      createGameStats({
+        score: getSavedHighScore(displayDiff),
+      });
     setReviewData(data);
 
-    setResultAnimStep(UI_TIMINGS.RESULT.FINISH_STEP);
+    // ★ Hookのスキップ関数でアニメ完了状態にする
+    skipAnimation("S", false);
     setGameState("hiscore_review");
   };
 
@@ -1078,8 +833,7 @@ function App() {
   ];
   const targetBgSrc = getCurrentBgSrc();
 
-  // ★重要：ここで「リザルト画面に渡すデータ」を1つに絞ります！
-  // 苦手単語リスト計算
+  // 表示用データ選択
   const sortedWeakWords = [...missedWordsRecord]
     .sort((a, b) => b.misses - a.misses)
     .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
@@ -1106,10 +860,9 @@ function App() {
 
   return (
     <div className="App">
-      {/* ゲーム本体（スケーリングされる部分） */}
       <div id="scaler">
         <div id="game-wrapper">
-          {/* 背景レイヤー */}
+          {/* 背景 */}
           {allBackgrounds.map((bg) => (
             <div
               key={bg.key}
@@ -1122,7 +875,7 @@ function App() {
             />
           ))}
 
-          {/* 演出用スクリーン & フェード */}
+          {/* 演出オーバーレイ */}
           <div
             id="game-screen"
             className={`${
@@ -1146,24 +899,18 @@ function App() {
             ref={canvasRef}
             id="myCanvas"
             className={gameState === "playing" ? "" : "hidden"}
-            style={{
-              zIndex: 15,
-              position: "relative",
-              pointerEvents: "none",
-            }}
+            style={{ zIndex: 15, position: "relative", pointerEvents: "none" }}
           />
 
-          {/* LOADING SCREEN */}
+          {/* LOADING */}
           {gameState === "loading" && (
             <div id="loading-screen">
               <div className="keyboard-loader">
-                <span className="key cat">L</span>
-                <span className="key cat">O</span>
-                <span className="key cat">A</span>
-                <span className="key cat">D</span>
-                <span className="key cat">I</span>
-                <span className="key cat">N</span>
-                <span className="key cat">G</span>
+                {["L", "O", "A", "D", "I", "N", "G"].map((char, i) => (
+                  <span key={i} className="key cat">
+                    {char}
+                  </span>
+                ))}
               </div>
               <div className="loading-text">
                 <span className="paw">🐾</span> Loading...{" "}
@@ -1172,7 +919,7 @@ function App() {
             </div>
           )}
 
-          {/* TITLE SCREEN */}
+          {/* TITLE */}
           {gameState === "title" && (
             <TitleScreen
               showTitle={showTitle}
@@ -1194,7 +941,7 @@ function App() {
             />
           )}
 
-          {/* DIFFICULTY SCREEN */}
+          {/* DIFFICULTY */}
           {gameState === "difficulty" && (
             <DifficultySelectScreen
               difficulty={difficulty}
@@ -1211,7 +958,7 @@ function App() {
             />
           )}
 
-          {/* GAME HUD (プレイ画面) */}
+          {/* GAME */}
           {(gameState === "playing" || gameState === "finishing") && (
             <GameScreen
               gameState={gameState}
@@ -1241,22 +988,31 @@ function App() {
             />
           )}
 
-          {/* RESULT SCREEN (結果画面) */}
+          {/* RESULT */}
           {(gameState === "result" || gameState === "hiscore_review") && (
             <ResultScreen
               gameState={gameState}
               difficulty={difficulty}
               resultData={displayData}
-              highScore={highScore}
+              highScore={gameState === "result" ? highScore : undefined }
               scoreDiff={scoreDiff}
-              isNewRecord={isNewRecord}
+              isNewRecord={gameState === "result" ? isNewRecord : false}
               resultAnimStep={resultAnimStep}
               onRetry={retryGame}
               onBackToDifficulty={backToDifficulty}
               onBackToTitle={backToTitle}
               onShowRanking={fetchRanking}
               onTweet={getShareUrl}
-              onClickScreen={handleResultClick}
+              onClickScreen={() => {
+                // クリック時もEnterと同じ扱い
+                const currentRank = lastGameStats ? lastGameStats.rank : rank;
+                handleResultKeyAction(
+                  "Enter",
+                  currentRank,
+                  retryGame,
+                  backToDifficulty,
+                );
+              }}
             />
           )}
 
