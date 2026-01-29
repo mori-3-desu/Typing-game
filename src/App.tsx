@@ -29,7 +29,6 @@ import { createGameStats } from "./utils/gameUtils";
 import {
   initAudio,
   playSE,
-  playBGM,
   stopBGM,
   startSelectBgm,
   setVolumes,
@@ -37,7 +36,8 @@ import {
 import { useConfig } from "./hooks/useConfig";
 import { drawReadyAnimation, drawGoAnimation } from "./utils/canvas";
 import { useTypingGame } from "./hooks/useTypingGame";
-import { useGameResult } from "./hooks/useGameResult"; // ★追加
+import { useGameResult } from "./hooks/useGameResult";
+import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
 import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 import {
   type DifficultyLevel,
@@ -107,7 +107,6 @@ function App() {
     saveScore,
     processResult,
     playResultAnimation,
-    handleResultKeyAction,
     skipAnimation,
     resetResultState,
   } = useGameResult(difficulty);
@@ -695,108 +694,23 @@ function App() {
     }, 100);
   };
 
-  // キー監視
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") {
-        if (
-          [
-            "Shift",
-            "Alt",
-            "Meta",
-            "Control",
-            "Tab",
-            "CapsLock",
-            "Insert",
-            "Delete",
-            "Home",
-            "End",
-            "PageUp",
-            "PageDown",
-            "ArrowUp",
-            "ArrowDown",
-            "ArrowLeft",
-            "ArrowRight",
-          ].includes(e.key) ||
-          (e.key.startsWith("F") && e.key.length > 1)
-        )
-          return;
-      }
-      if (
-        e.isComposing ||
-        ["Process", "KanaMode", "Conversion", "NonConvert"].includes(e.code)
-      )
-        return;
-
-      const state = animationState.current;
-
-      // 3. 【State Machine】ゲームの状態（画面）で分岐
-      switch (gameState) {
-        case "playing":
-          // プレイ画面の中でのさらに細かいフェーズ分岐
-          if (playPhase === "ready" && !state.isReadyAnimating) {
-            if (e.key === "Enter" || e.key === " ") {
-              playSE("start");
-              setPlayPhase("go");
-              state.goScale = READY_GO_ANIMATION.GO_INIT;
-              setTimeout(() => {
-                setPlayPhase("game");
-                startGame();
-                playBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
-              }, 1000);
-            } else if (e.key === "Escape") {
-              backToDifficulty();
-            }
-            return;
-          }
-
-          if (playPhase === "game") {
-            if (e.key === "Escape") {
-              e.preventDefault();
-              resetToReady();
-              return;
-            }
-            if (e.key === "Backspace") {
-              e.preventDefault();
-              handleBackspaceRef.current();
-              return;
-            }
-            if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-              handleKeyInputRef.current(e.key.toLowerCase());
-            }
-            return;
-          }
-          break;
-
-        case "result":
-          // リザルト画面の処理
-          const currentRank = lastGameStats ? lastGameStats.rank : rank;
-          handleResultKeyAction(
-            e.key,
-            currentRank,
-            retryGame,
-            backToDifficulty,
-          );
-          break;
-
-        // 将来的に case "title": や case "difficulty": を追加しやすくなる
-        default:
-          break;
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown, true);
-    return () => window.removeEventListener("keydown", handleKeyDown, true);
-  }, [
+  useGameKeyHandler({
     gameState,
     playPhase,
-    startGame,
     difficulty,
-    handleStartSequence,
-    handleResultKeyAction,
+    animationState,
+    handleKeyInputRef,
+    handleBackspaceRef,
+    startGame,
+    setPlayPhase,
+    backToDifficulty,
+    resetToReady,
+    retryGame,
     lastGameStats,
     rank,
-  ]);
+    resultAnimStep,
+    skipAnimation,
+  });
 
   // シェア
   const getShareUrl = () => {

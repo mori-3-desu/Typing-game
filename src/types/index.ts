@@ -91,7 +91,33 @@ export type MissedWord = { word: string; misses: number };
 // ログ用
 export type TypedLog = { char: string; color: string };
 
-// ▼ ここが追加・修正された部分 ▼
+// types.ts の末尾に追記
+
+// ■ ゲーム全体の進行状態
+export type GameState =
+  | "loading"
+  | "title"
+  | "difficulty"
+  | "playing"
+  | "finishing"
+  | "result"
+  | "hiscore_review";
+
+// ■ プレイ中のフェーズ
+export type PlayPhase = "ready" | "go" | "game";
+
+// ■ アニメーション管理用の型 
+export type AnimationState = {
+  readyY: number;
+  isReadyAnimating: boolean;
+  showEnterSpaceText: boolean;
+  showGoText: boolean;
+  goScale: number;
+  phase: string;
+};
+
+// ■ GameStats は GameResultStats のエイリアス（別名）として定義しておくと便利
+export type GameStats = GameResultStats;
 
 // ローマ字入力の状態管理
 export type RomaState = {
