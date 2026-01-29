@@ -1,11 +1,5 @@
-import { AUDIO_PATHS } from "./setting";
+import { AUDIO_PATHS, BGM_PATHS } from "./setting";
 import { type SoundKey } from "../types";
-
-// BGM管理用の定数（マジックストリング対策）
-const BGM_PATHS = {
-  SELECT: "/bgm/303PM.wav",
-  // 他にゲーム中のBGMなどがあればここに追加
-} as const;
 
 const soundCache: Partial<Record<SoundKey, HTMLAudioElement>> = {};
 let bgmAudio: HTMLAudioElement | null = null;
@@ -41,7 +35,7 @@ export const initAudio = () => {
  * 効果音を再生する（汎用関数）
  */
 export const playSE = (key: SoundKey) => {
-  if (isSystemMuted) return;
+  if (isSystemMuted || seVolume <= 0) return;
 
   const audio = soundCache[key] || new Audio(AUDIO_PATHS[key]);
   if (!soundCache[key]) soundCache[key] = audio; // キャッシュになければ保存
@@ -65,18 +59,27 @@ export const stopBGM = () => {
  * BGMを再生する（汎用化）
  */
 export const playBGM = (path: string) => {
+  const targetVolume = isSystemMuted ? 0 : bgmVolume;
+
+  if (targetVolume <= 0) {
+    stopBGM(); // いったん曲を止めてから
+    return; // 処理を抜ける
+  }
+
   // 「BGMが存在し」かつ「再生中で」かつ「リクエストされた曲と同じ」なら、
   // 何もせず帰る（＝曲を流しっぱなしにする）
   if (bgmAudio && !bgmAudio.paused && bgmAudio.src.includes(path)) {
+    bgmAudio.volume = targetVolume;
     return;
   }
 
-  stopBGM(); //まずは、前の曲を止める
+  stopBGM(); //曲の切り替えもあるためここでも一度止めておく
   bgmAudio = new Audio(path);
   bgmAudio.loop = true;
-  // ミュート中なら音量を0にしておく
-  bgmAudio.volume = isSystemMuted ? 0 : bgmVolume;
-  bgmAudio.play().catch(() => {});
+  bgmAudio.volume = targetVolume;
+  bgmAudio.play().catch((e) => {
+    console.warn("BGM Play failed (Auto-play policy or low power mode):", e);
+  });
 };
 
 // 特定のシーン用のBGM関数
