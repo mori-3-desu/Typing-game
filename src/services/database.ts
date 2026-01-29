@@ -1,18 +1,20 @@
 import { supabase } from "../supabase";
 import { LIMIT_DATA } from "../utils/setting";
-import { 
-  type DifficultyLevel, 
-  type WordRow, 
-  type WordDataMap, 
+import {
+  type DifficultyLevel,
+  type WordRow,
+  type WordDataMap,
   type UpdateHighscoreParams,
-  type RankingScore 
+  type RankingScore,
 } from "../types";
 
 // 🛡️ 型ガード関数（Type Guard）
 // 文字列が本当に "EASY" | "NORMAL" | "HARD" のいずれかかチェックする守衛さん
 // これを通れば、TypeScriptは安心して DifficultyLevel 型として扱ってくれます
 function isDifficultyLevel(value: unknown): value is DifficultyLevel {
-  return typeof value === "string" && ["EASY", "NORMAL", "HARD"].includes(value);
+  return (
+    typeof value === "string" && ["EASY", "NORMAL", "HARD"].includes(value)
+  );
 }
 
 export const DatabaseService = {
@@ -27,6 +29,11 @@ export const DatabaseService = {
       .select("jp, roma, difficulty");
     if (wordsError) throw wordsError;
 
+    // データが空っぽだとゲームがクラッシュするので防衛
+    if (!wordsData || wordsData.length === 0) {
+      throw new Error("DBから単語データを取得できませんでした。");
+    }
+
     // 2. NGワードの取得
     const { data: ngData, error: ngError } = await supabase
       .from("ng_words")
@@ -37,23 +44,29 @@ export const DatabaseService = {
     const formattedData: WordDataMap = { EASY: [], NORMAL: [], HARD: [] };
 
     wordsData?.forEach((row: WordRow) => {
-      // ⚠️ ここで型ガードを使用！ DBに変な文字列が入っていてもアプリを落とさない
-      if (!isDifficultyLevel(row.difficulty)) {
-        console.warn(`[Data Skip] 不正な難易度データが見つかりました: ${row.difficulty}`);
-        return; // 無効なデータはスキップ
-      }
+      if (!row.difficulty) return;
 
-      // ここに来た時点で、row.difficulty は DifficultyLevel 型であることが保証されている
-      const level = row.difficulty;
-      
-      if (formattedData[level]) {
-        formattedData[level].push({ jp: row.jp, roma: row.roma });
+      // 1. まず掃除だけする（まだ型は string のまま！）
+      // ※ ここで 'as DifficultyLevel' は書かないのが作法です
+      const cleanLevel = row.difficulty.trim().toUpperCase();
+
+      // 2. 守衛さん（isDifficultyLevel）を呼び出す！
+      // 以前のコード: if (["EASY", "NORMAL", "HARD"].includes(cleanLevel)) {
+      if (isDifficultyLevel(cleanLevel)) {
+        // ★ ここに入った瞬間、TypeScriptは
+        // 「cleanLevel はただの string ではなく DifficultyLevel だ」と認識します。
+
+        if (formattedData[cleanLevel]) {
+          formattedData[cleanLevel].push({ jp: row.jp, roma: row.roma });
+        }
+      } else {
+        console.warn(`[Data Skip] 未知のデータ: ${row.difficulty}`);
       }
     });
 
-    return { 
-      formattedData, 
-      ngList: ngData?.map((item) => item.word) || [] 
+    return {
+      formattedData,
+      ngList: ngData?.map((item) => item.word) || [],
     };
   },
 
@@ -74,7 +87,11 @@ export const DatabaseService = {
    * @param isCreator 開発者フラグ（trueなら開発者のみ、falseなら一般ユーザーのみ）
    * @param limit 取得件数
    */
-  async getScores(difficulty: DifficultyLevel, isCreator: boolean, limit: number): Promise<RankingScore[]> {
+  async getScores(
+    difficulty: DifficultyLevel,
+    isCreator: boolean,
+    limit: number,
+  ): Promise<RankingScore[]> {
     const { data, error } = await supabase
       .from("scores")
       .select("*")
@@ -84,11 +101,13 @@ export const DatabaseService = {
       .limit(limit);
 
     if (error) throw error;
-    
+
     // 🛡️ 防衛的プログラミング：返ってきたデータが要求した難易度と一致するか念のため確認
-    const hasInvalidData = data?.some(row => row.difficulty !== difficulty);
+    const hasInvalidData = data?.some((row) => row.difficulty !== difficulty);
     if (hasInvalidData) {
-      throw new Error(`[Integrity Error] 要求した難易度(${difficulty})と異なるデータが含まれています。`);
+      throw new Error(
+        `[Integrity Error] 要求した難易度(${difficulty})と異なるデータが含まれています。`,
+      );
     }
 
     return data || [];
@@ -119,8 +138,8 @@ export const DatabaseService = {
       .from("scores")
       .update({ name: newName })
       .eq("user_id", userId);
-    
+
     if (error) throw error;
     return true;
-  }
+  },
 };
