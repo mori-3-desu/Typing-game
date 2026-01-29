@@ -24,6 +24,11 @@ export const AUDIO_PATHS: Record<SoundKey, string> = {
   cancel: "/bgm/決定.mp3",
 } as const;
 
+// 難易度選択用BGM
+export const BGM_PATHS = {
+  SELECT: "/bgm/303PM.wav",
+} as const;
+
 // 難易度ごとの設定データ
 export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   EASY: {
