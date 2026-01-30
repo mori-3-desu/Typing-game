@@ -1,5 +1,15 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { calculateRank } from "../useTypingGame";
+
+vi.mock("../../utils/audio", () => ({
+  // audio.ts の中身をすべて空っぽの関数(vi.fn)に置き換える
+  initAudio: vi.fn(),
+  playSE: vi.fn(),
+  playBGM: vi.fn(),
+  stopBGM: vi.fn(),
+  setVolumes: vi.fn(),
+  setSystemMute: vi.fn(),
+}));
 
 describe("ランク判定ロジック (calculateRank)", () => {
   // EASYモードのテスト

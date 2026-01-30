@@ -1,7 +1,6 @@
 import { useEffect, useRef, type MutableRefObject } from "react";
 import { 
   DIFFICULTY_SETTINGS, 
-  READY_GO_ANIMATION 
 } from "../utils/setting";
 import { playSE, playBGM } from "../utils/audio";
 import { 
@@ -9,7 +8,6 @@ import {
   type PlayPhase,
   type DifficultyLevel, 
   type GameResultStats,
-  type AnimationState 
 } from "../types";
 
 // ■ 無視するキーのリスト
@@ -28,7 +26,6 @@ type UseGameKeyHandlerProps = {
   gameState: GameState;
   playPhase: PlayPhase;
   difficulty: DifficultyLevel;
-  animationState: MutableRefObject<AnimationState>;
   handleKeyInputRef: MutableRefObject<(key: string) => void>;
   handleBackspaceRef: MutableRefObject<() => void>;
   startGame: () => void;
@@ -91,7 +88,6 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
         gameState, 
         playPhase, 
         difficulty, 
-        animationState,
         handleKeyInputRef, 
         handleBackspaceRef,
         startGame, 
@@ -129,15 +125,13 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
         return;
       }
 
-      const state = animationState.current;
-
       // -----------------------------------------------------------
       // State Machine: ゲームの状態ごとの分岐処理
       // -----------------------------------------------------------
       switch (gameState) {
         case "playing":
           // ■ Ready画面（ゲーム開始前）
-          if (playPhase === "ready" && !state.isReadyAnimating) {
+          if (playPhase === "ready") {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
               
@@ -147,7 +141,6 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
 
               playSE("start");
               setPlayPhase("go");
-              state.goScale = READY_GO_ANIMATION.GO_INIT;
               
               // 1秒後にゲーム開始
               startTimerId = window.setTimeout(() => {
