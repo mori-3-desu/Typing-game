@@ -121,7 +121,7 @@ export const UI_TIMINGS = {
 
 export const LIMIT_DATA = {
   RANKING_LIMIT:   10, // ランキング表示制限
-  WAKE_DATA_LIMIT:  5  // 苦手単語/キー表示制限
+  WEAK_DATA_LIMIT:  5  // 苦手単語/キー表示制限
 } as const;
 
 // localStorage保存データ
