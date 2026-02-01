@@ -11,7 +11,7 @@ import { JUDGE_COLOR } from "../utils/setting";
 // ★ クラスの外（または static プロパティ）で一度だけソートを済ませておく
 // これにより、loadRandomWord が呼ばれるたびに実行されていた計算を 1回 に削減できます。
 const SORTED_ROMA_KEYS = Object.keys(ROMA_VARIATIONS).sort(
-  (a, b) => b.length - a.length
+  (a, b) => b.length - a.length,
 );
 
 // Segment クラス
@@ -52,6 +52,7 @@ export class Segment {
   }
 
   handleKey(key: string): string {
+
     let inputChar = key;
     const nextExpected = this.getCurrentChar();
 
@@ -194,6 +195,14 @@ export class TypingEngine {
 
   // nn拡張際も含めたBackspace処理
   backspace(): { status: string } {
+    // 文字が打たれてないか先頭の場合で戻れないときは何もしない(状態EMPTYを付与)
+    if (
+      this.segIndex === 0 &&
+      this.segments[0].inputBuffer.length === 0
+    ) {
+      return { status: "EMPTY" };
+    }
+    
     if (this.segIndex >= this.segments.length) {
       this.segIndex = this.segments.length - 1;
     }

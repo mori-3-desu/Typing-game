@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "./supabase";
 import { DatabaseService } from "./services/database";
 import "./App.css";
 
@@ -24,18 +23,14 @@ import {
 } from "./utils/setting";
 
 // 計算ロジック (分離済み)
-import { createGameStats, calculateFinalStats } from "./utils/gameUtils";
+import { createGameStats } from "./utils/gameUtils";
 
 // ★ 画面遷移ロジック (今回導入！)
-import { useScreenRouter } from "./hooks/ScreenRouter";
+import { useScreenRouter } from "./hooks/useScreenRouter";
+import { useGameControl } from "./hooks/useGameControl";
+import { useAuth } from "./hooks/useAuth";
 
-import {
-  playSE,
-  stopBGM,
-  startSelectBgm,
-  setVolumes,
-  initAudio,
-} from "./utils/audio";
+import { playSE, startSelectBgm, setVolumes, initAudio } from "./utils/audio";
 
 import { useConfig } from "./hooks/useConfig";
 import { useTypingGame } from "./hooks/useTypingGame";
@@ -94,7 +89,6 @@ function App() {
   const [, setIsLoaded] = useState(false);
   const [hoverDifficulty, setHoverDifficulty] =
     useState<DifficultyLevel | null>(null);
-  const [isWhiteFade, setIsWhiteFade] = useState(false);
 
   // --- Hook 1: Game Result (リセット関数を取り出す) ---
   const {
@@ -119,27 +113,6 @@ function App() {
 
   const [ngWordsList, setNgWordsList] = useState<string[]>([]);
   const [titlePhase, setTitlePhase] = useState<TitlePhase>("normal");
-  const [userId, setUserId] = useState("");
-
-  // Auth (Inline)
-  useEffect(() => {
-    const initAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (session) {
-        setUserId(session.user.id);
-      } else {
-        const { data, error } = await supabase.auth.signInAnonymously();
-        if (error) {
-          console.error("Login failed:", error.message);
-        } else if (data.user) {
-          setUserId(data.user.id);
-        }
-      }
-    };
-    initAuth();
-  }, []);
 
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInputLocked, setIsInputLocked] = useState(true);
@@ -153,10 +126,6 @@ function App() {
 
   const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
-  const [lastGameStats, setLastGameStats] = useState<GameResultStats | null>(
-    null,
-  );
-  const [isFinishExit, setIsFinishExit] = useState(false);
 
   // --- Hook 2: Typing Game (リセット関数を取り出す) ---
   const {
@@ -170,7 +139,7 @@ function App() {
     handleKeyInput,
     handleBackspace,
     startGame,
-    resetGame, // ★ Routerに渡すため取得
+    resetGame,
     gaugeValue,
     gaugeMax,
     rank,
@@ -213,8 +182,6 @@ function App() {
     setPlayPhase,
     setDifficulty,
     setIsTransitioning,
-    setIsFinishExit,
-    setIsWhiteFade,
     setIsInputLocked,
     setIsTitleExiting,
     setShowTitle,
@@ -230,6 +197,33 @@ function App() {
   const prevWordRef = useRef("");
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
+
+  // --- ★ Hook: Game Control (タイマー & 終了ロジック) ---
+  const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
+    gameState,
+    playPhase,
+    difficulty,
+    timeLeft,
+    tick,
+    setGameState,
+    processResult,
+    // 統計データ (typingGame から取得したもの)
+    score,
+    completedWords,
+    correctCount,
+    missCount,
+    backspaceCount,
+    maxCombo,
+    currentSpeed,
+    rank,
+    missedWordsRecord,
+    missedCharsRecord,
+    jpText,
+    currentWordMiss: currentWordMissRef.current,
+  });
+
+  // --- Hook: Auth(認証)
+  const { userId } = useAuth();
 
   // --- Effects ---
   useEffect(() => {
@@ -300,61 +294,6 @@ function App() {
     return () => clearInterval(interval);
   }, [gameState, playPhase, timeLeft, tick]);
 
-  // ★ ゲーム終了判定 (calculateFinalStats使用)
-  useEffect(() => {
-    if (gameState === "playing" && playPhase === "game" && timeLeft <= 0) {
-      stopBGM();
-      playSE("finish");
-
-      const finalStats = calculateFinalStats({
-        score,
-        completedWords,
-        correctCount,
-        missCount,
-        backspaceCount,
-        maxCombo,
-        currentSpeed: Number(currentSpeed),
-        rank,
-        missedWordsRecord,
-        missedCharsRecord,
-        jpText,
-        currentWordMiss: currentWordMissRef.current,
-      });
-
-      setLastGameStats(finalStats);
-      setGameState("finishing");
-      setIsFinishExit(false);
-      setIsWhiteFade(false);
-
-      processResult(finalStats);
-
-      setTimeout(() => setIsFinishExit(true), UI_TIMINGS.GAME.FINISH_ANIMATION);
-      setTimeout(() => setIsWhiteFade(true), UI_TIMINGS.GAME.WHITE_FADE_OUT);
-      setTimeout(() => {
-        setGameState("result");
-        setIsWhiteFade(false);
-        setIsFinishExit(false);
-      }, UI_TIMINGS.GAME.GO_TO_RESULT);
-    }
-  }, [
-    timeLeft,
-    gameState,
-    playPhase,
-    score,
-    difficulty,
-    correctCount,
-    missCount,
-    backspaceCount,
-    maxCombo,
-    currentSpeed,
-    rank,
-    missedWordsRecord,
-    missedCharsRecord,
-    jpText,
-    completedWords,
-    processResult,
-  ]);
-
   useEffect(() => {
     if (gameState === "result" && lastGameStats) {
       saveScore(lastGameStats, playerName);
@@ -423,6 +362,11 @@ function App() {
     setShowConfig(false);
   };
   const handleSaveName = async (newName: string) => {
+    // userId がない（認証が終わっていない）場合は処理を中断
+    if (!userId) {
+      console.error("User is not authenticated yet.");
+      return;
+    }
     const finalName = newName || "Guest";
     setPlayerName(finalName);
     localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, finalName);
@@ -449,6 +393,7 @@ function App() {
     const url = encodeURIComponent(window.location.origin);
     return `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
   };
+
   const handleShowHighScoreDetail = () => {
     const displayDiff = hoverDifficulty || difficulty;
     const data =
@@ -458,6 +403,7 @@ function App() {
     skipAnimation("S", false);
     setGameState("hiscore_review");
   };
+
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
     playSE("decision");
     const searchDiff = targetDiff || difficulty;
@@ -472,6 +418,7 @@ function App() {
       console.error("Ranking fetch error:", error);
     }
   };
+
   const handleShowDevScore = async () => {
     playSE("decision");
     if (isDevRankingMode) return;
@@ -483,6 +430,7 @@ function App() {
       console.error("Dev Score error", err);
     }
   };
+
   const closeRanking = () => {
     setShowRanking(false);
     playSE("decision");

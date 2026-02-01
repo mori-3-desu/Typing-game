@@ -22,8 +22,6 @@ type UseScreenRouterProps = {
   setPlayPhase: (phase: PlayPhase) => void;
   setDifficulty: (diff: DifficultyLevel) => void;
   setIsTransitioning: (is: boolean) => void;
-  setIsFinishExit: (is: boolean) => void;
-  setIsWhiteFade: (is: boolean) => void;
   setIsInputLocked: (is: boolean) => void;
   setIsTitleExiting: (is: boolean) => void;
   setShowTitle: (show: boolean) => void;
@@ -46,8 +44,6 @@ export const useScreenRouter = ({
   setPlayPhase,
   setDifficulty,
   setIsTransitioning,
-  setIsFinishExit,
-  setIsWhiteFade,
   setIsInputLocked,
   setIsTitleExiting,
   setShowTitle,
@@ -61,8 +57,6 @@ export const useScreenRouter = ({
     setIsTransitioning(true);
     playSE("decision");
     resetGame();
-    setIsFinishExit(false);
-    setIsWhiteFade(false);
     stopBGM();
     setTimeout(() => {
       setPlayPhase("ready");
@@ -73,8 +67,6 @@ export const useScreenRouter = ({
   }, [
     isTransitioning,
     resetGame,
-    setIsFinishExit,
-    setIsWhiteFade,
     setPlayPhase,
     setGameState,
     setIsInputLocked,

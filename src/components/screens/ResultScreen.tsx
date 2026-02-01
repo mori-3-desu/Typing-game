@@ -50,7 +50,7 @@ export const ResultScreen = ({
   // 苦手キー (オブジェクト形式なので、配列に変換してソート)
   const displayWeakKeys = Object.entries(targetResultData.weakKeys)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, LIMIT_DATA.WAKE_DATA_LIMIT);
+    .slice(0, LIMIT_DATA.WEAK_DATA_LIMIT);
 
   return (
     <div
