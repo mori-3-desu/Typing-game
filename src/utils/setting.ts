@@ -101,7 +101,7 @@ export const UI_TIMINGS = {
   // ゲーム進行・リザルト系
   GAME: {
     TIMER_DECREMENT:   0.1, // 一回の処理で減らす回数(主にキースピードで)
-    TIMER_COUNT_DOWN:  100, // 一秒ずつ減らす
+    TIMER_COUNT_DOWN: 1000, // 一秒ずつ減らす
     READY_TO_GO:      1000, // Ready... から Go! になる間隔
     FINISH_ANIMATION: 1500, // "FINISH!" が出てからハケるまで
     WHITE_FADE_OUT:   2000, // ホワイトアウト開始

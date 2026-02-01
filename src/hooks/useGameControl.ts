@@ -34,6 +34,14 @@ type GameControlProps = {
   currentWordMiss: number; // ref.current の値を渡す
 };
 
+const {
+  TIMER_DECREMENT,
+  TIMER_COUNT_DOWN,
+  FINISH_ANIMATION,
+  WHITE_FADE_OUT,
+  GO_TO_RESULT
+} = UI_TIMINGS.GAME;
+
 export const useGameControl = (props: GameControlProps) => {
   const {
     gameState, playPhase, timeLeft, tick, setGameState, processResult,
@@ -49,13 +57,14 @@ export const useGameControl = (props: GameControlProps) => {
   // 1. タイマーのカウントダウン処理
   useEffect(() => {
     let interval: number;
-    if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
+    
+    if (gameState === "playing" && playPhase === "game") {
       interval = window.setInterval(() => {
-        tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
-      }, 100);
+        tick(TIMER_DECREMENT);
+      }, TIMER_COUNT_DOWN);
     }
     return () => clearInterval(interval);
-  }, [gameState, playPhase, timeLeft, tick]);
+  }, [gameState, playPhase, tick]);
 
   // 2. ゲーム終了判定と遷移処理
   useEffect(() => {
@@ -87,13 +96,13 @@ export const useGameControl = (props: GameControlProps) => {
       processResult(finalStats);
 
       // アニメーションシーケンス
-      setTimeout(() => setIsFinishExit(true), UI_TIMINGS.GAME.FINISH_ANIMATION);
-      setTimeout(() => setIsWhiteFade(true), UI_TIMINGS.GAME.WHITE_FADE_OUT);
+      setTimeout(() => setIsFinishExit(true), FINISH_ANIMATION);
+      setTimeout(() => setIsWhiteFade(true), WHITE_FADE_OUT);
       setTimeout(() => {
         setGameState("result");
         setIsWhiteFade(false);
         setIsFinishExit(false);
-      }, UI_TIMINGS.GAME.GO_TO_RESULT);
+      }, GO_TO_RESULT);
     }
   }, [
     timeLeft, gameState, playPhase, 
