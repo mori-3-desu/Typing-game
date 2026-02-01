@@ -90,4 +90,22 @@ describe("TypingEngine ロジックテスト", () => {
     expect(engine.input("y").status).toBe("OK");
     expect(engine.input("a").status).toBe("NEXT");
   });
+  
+  it("セグメント下限ガード: インデックス0かつ空の状態でBSを連打しても、indexは0を維持しペナルティを返し続ける", () => {
+    const engine = new TypingEngine("ringo");
+
+    // 3回空振り
+    engine.backspace();
+    engine.backspace();
+    const thirdResult = engine.backspace();
+
+    // 1. ステータスは常にペナルティ
+    expect(thirdResult.status).toBe("EMPTY");
+    // 2. インデックスがマイナス（-1など）に突き抜けていないか
+    expect(engine.segIndex).toBe(0); 
+    // 3. 最初のセグメントが消滅していないか
+    expect(engine.segments.length).toBeGreaterThan(0);
+    // 4. 中身が空文字であること(変な文字やundefinedが入っていないか)
+    expect(engine.segments[0].inputBuffer).toBe("");
+  });
 });

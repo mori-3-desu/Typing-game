@@ -6,7 +6,7 @@ import {
   type GameResultStats,
 } from "../types";
 import { STORAGE_KEYS, UI_TIMINGS } from "../utils/setting";
-import { playSE } from "../utils/audio"; // 音もここで管理しちゃうと楽です
+import { playSE } from "../utils/audio";
 
 export const useGameResult = (difficulty: DifficultyLevel) => {
   const [highScore, setHighScore] = useState(0);
