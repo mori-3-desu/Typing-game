@@ -51,7 +51,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          width: "100%",
         }}
       >
         <div
