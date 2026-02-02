@@ -1,42 +1,60 @@
 /* --- POPなフォントの読み込み --- */
 @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&family=M+PLUS+Rounded+1c:wght@400;700&family=Mochiy+Pop+P+One&display=swap");
+:root {
+  /* カラー基準 */
+  --color-white: #fff;
+  --body-bg: #222;
 
-/* =========================================
-   基本設定 (Base)
-   ========================================= */
+  /* scale基準 */
+  --scale-standard-width: 1200px;
+  --scale-standard-height: 780px;
+
+  /* z-index Map */
+  --z-canvas: 50;
+  --z-loading: 10000;
+
+  /* loading */
+  --loading-grad: linear-gradient(
+    to bottom,
+    #4b256f 0%,
+    #924c78 40%,
+    #de7c6b 70%,
+    #fabe7c 100%
+  );
+
+  /* アニメーション時間 */
+  /* loading */
+  --loading-transition: 1.5s;
+}
+
+/* 基本設定 (Base) */
 body {
   margin: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #111;
+  width: 100%;
+  height: 100dvh;
+  background: var(--body-bg);
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
   font-family: "M PLUS Rounded 1c", sans-serif;
-  color: white;
+  color: var(--color-white);
 }
 
 #scaler {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1200px;
-  height: 780px;
+  width: var(--scale-standard-width);
+  height: var(--scale-standard-height);
   transform-origin: center center;
-  transform: translate(-50%, -50%);
   overflow: hidden;
   border-radius: 20px;
-  background-color: transparent;
 }
 
 #game-wrapper {
-  width: 1200px;
-  height: 780px;
+  width: var(--scale-standard-width);
+  height: var(--scale-standard-height);
   position: relative;
-  overflow: hidden;
-  background-color: white;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  background-color: var(--color-white);
 }
 
 .bg-layer {
@@ -49,12 +67,6 @@ body {
   background-position: center;
   transition: opacity 0.5s ease-in-out;
   opacity: 0;
-  z-index: 0;
-}
-
-.bg-layer.visible {
-  opacity: 1;
-  z-index: 1;
 }
 
 #myCanvas {
@@ -63,7 +75,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  z-index: 50;
+  z-index: var(--z-canvas);
   pointer-events: none;
 }
 
@@ -78,7 +90,7 @@ body {
   text-indent: 0.5em;
 }
 
-/* 追加：ローマ字行も同じだけずらす */
+/* ローマ字行も同じだけずらす */
 #full-roma.has-punctuation {
   text-indent: 0.5em;
 }
@@ -94,14 +106,8 @@ body {
   height: 100%;
 
   /* トワイライト背景 */
-  background: linear-gradient(
-    to bottom,
-    #4b256f 0%,
-    #924c78 40%,
-    #de7c6b 70%,
-    #fabe7c 100%
-  );
-  z-index: 10000;
+  background: var(--loading-grad);
+  z-index: var(--z-loading);
 
   display: flex;
   flex-direction: column;
@@ -109,14 +115,10 @@ body {
   align-items: center;
 
   /* 透明度だけ変化させる */
-  transition: opacity 1.5s ease, visibility 1.5s ease;
+  transition:
+    opacity var(--loading-transition) ease,
+    visibility var(--loading-transition) ease;
   opacity: 1;
-}
-
-/* 消える時のクラス（App.tsx側で制御する場合に備えて） */
-#loading-screen.fade-out {
-  opacity: 0;
-  visibility: hidden;
 }
 
 /* --- キーボード全体の箱 --- */
@@ -136,11 +138,8 @@ body {
 
   /* 本体色＋耳（背景グラデーションで描画） */
   background: 
-      /* 左耳 */ linear-gradient(
-        135deg,
-        transparent 50%,
-        #ffe3e8 50%
-      )
+      /* 左耳 */
+    linear-gradient(135deg, transparent 50%, #ffe3e8 50%)
       no-repeat -10px -15px / 40px 40px,
     /* 右耳 */ linear-gradient(225deg, transparent 50%, #ffe3e8 50%) no-repeat
       30px -15px / 40px 40px,
@@ -149,7 +148,8 @@ body {
   border-radius: 16px;
 
   /* 文字設定 */
-  font-family: "Fredoka One", cursive, sans-serif; /* フォントがない場合の予備を追加 */
+  font-family:
+    "Fredoka One", cursive, sans-serif; /* フォントがない場合の予備を追加 */
   font-size: 30px;
   color: #ff5a78; /* 文字色を濃いピンクに */
   text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5); /* 文字を少し浮き上がらせる */
@@ -158,12 +158,14 @@ body {
   justify-content: center;
   align-items: center;
 
+  will-change: transform;
   /* 影（立体感と側面の色） */
-  box-shadow: 0 8px 0 #efa4b8,
+  box-shadow:
+    0 8px 0 #efa4b8,
     /* 側面の濃いピンク */ 0 15px 20px rgba(0, 0, 0, 0.2); /* 全体の影 */
 
   animation: catBounce 1.2s infinite ease-in-out;
-
+  animation-delay: calc(var(--i) * 0.1s);
   /* ぷるんとした質感のためのハイライト（光沢） */
   overflow: hidden;
 }
@@ -187,64 +189,51 @@ body {
   pointer-events: none;
 }
 
-/* --- アニメーションのタイミング --- */
-.key.cat:nth-child(1) {
-  animation-delay: 0s;
-}
-.key.cat:nth-child(2) {
-  animation-delay: 0.1s;
-}
-.key.cat:nth-child(3) {
-  animation-delay: 0.2s;
-}
-.key.cat:nth-child(4) {
-  animation-delay: 0.3s;
-}
-.key.cat:nth-child(5) {
-  animation-delay: 0.4s;
-}
-.key.cat:nth-child(6) {
-  animation-delay: 0.5s;
-}
-.key.cat:nth-child(7) {
-  animation-delay: 0.6s;
-}
-
 /* --- ★新アニメーション：ぷるんぷるんジャンプ --- */
 @keyframes catBounce {
   0%,
   100% {
     transform: translateY(0) scale(1, 1);
-    box-shadow: 0 8px 0 #efa4b8, 0 15px 20px rgba(0, 0, 0, 0.2);
+    box-shadow:
+      0 8px 0 #efa4b8,
+      0 15px 20px rgba(0, 0, 0, 0.2);
   }
   30% {
     /* ジャンプ！縦に伸びる */
     transform: translateY(-25px) scale(1.1, 0.9) rotateX(-10deg);
-    box-shadow: 0 30px 0 #efa4b8, 0 40px 25px rgba(0, 0, 0, 0.15);
+    box-shadow:
+      0 30px 0 #efa4b8,
+      0 40px 25px rgba(0, 0, 0, 0.15);
   }
   50% {
     /* 着地！横に潰れる（ぷるん感の肝） */
     transform: translateY(8px) scale(0.85, 1.15);
     /* 影をなくして沈み込みを表現 */
-    box-shadow: 0 0 0 #efa4b8, 0 0 0 rgba(0, 0, 0, 0);
+    box-shadow:
+      0 0 0 #efa4b8,
+      0 0 0 rgba(0, 0, 0, 0);
 
     /* 着地時は少し沈んで耳の色が濃くなる演出 */
-    background: linear-gradient(135deg, transparent 50%, #efa4b8 50%) no-repeat -10px -5px /
-        40px 40px,
-      linear-gradient(225deg, transparent 50%, #efa4b8 50%) no-repeat 30px -5px /
-        40px 40px,
+    background:
+      linear-gradient(135deg, transparent 50%, #efa4b8 50%)
+        no-repeat -10px -5px / 40px 40px,
+      linear-gradient(225deg, transparent 50%, #efa4b8 50%) no-repeat
+        30px -5px / 40px 40px,
       linear-gradient(135deg, #ffe3e8 0%, #ffbed2 100%);
   }
   70% {
     /* 反動で少し伸びる */
     transform: translateY(-5px) scale(1.05, 0.95);
-    box-shadow: 0 10px 0 #efa4b8, 0 15px 15px rgba(0, 0, 0, 0.2);
+    box-shadow:
+      0 10px 0 #efa4b8,
+      0 15px 15px rgba(0, 0, 0, 0.2);
 
     /* 背景を元に戻す（重要！） */
-    background: linear-gradient(135deg, transparent 50%, #ffe3e8 50%) no-repeat -10px -15px /
-        40px 40px,
-      linear-gradient(225deg, transparent 50%, #ffe3e8 50%) no-repeat 30px -15px /
-        40px 40px,
+    background:
+      linear-gradient(135deg, transparent 50%, #ffe3e8 50%)
+        no-repeat -10px -15px / 40px 40px,
+      linear-gradient(225deg, transparent 50%, #ffe3e8 50%) no-repeat
+        30px -15px / 40px 40px,
       linear-gradient(135deg, #ffe3e8 0%, #ffbed2 100%);
   }
 }
@@ -297,7 +286,9 @@ body {
 .title-anim-wrapper {
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 1s ease-out, transform 1s ease-out;
+  transition:
+    opacity 1s ease-out,
+    transform 1s ease-out;
   display: inline-block;
 }
 
@@ -309,7 +300,9 @@ body {
 .title-anim-wrapper.exit-up {
   transform: translateY(-80px) !important;
   opacity: 0;
-  transition: transform 0.6s ease-in, opacity 0.6s ease-in;
+  transition:
+    transform 0.6s ease-in,
+    opacity 0.6s ease-in;
 }
 
 .game-title {
@@ -319,8 +312,10 @@ body {
   font-weight: bold;
   margin-top: 20px;
   margin-bottom: 20px;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-    2px 2px 0px rgba(100, 100, 255, 0.8), 0 5px 15px rgba(0, 0, 0, 0.7);
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    2px 2px 0px rgba(100, 100, 255, 0.8),
+    0 5px 15px rgba(0, 0, 0, 0.7);
 }
 
 .game-title.bouncing {
@@ -343,7 +338,9 @@ body {
   gap: 40px;
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+  transition:
+    opacity 0.8s ease-out,
+    transform 0.8s ease-out;
   margin-top: 45px;
   transition-delay: 0.5s;
 }
@@ -356,7 +353,9 @@ body {
 .main-menu-buttons.exit-down {
   transform: translateY(80px);
   opacity: 0;
-  transition: transform 0.6s ease-in, opacity 0.6s ease-in;
+  transition:
+    transform 0.6s ease-in,
+    opacity 0.6s ease-in;
 }
 
 .menu-btn {
@@ -374,7 +373,9 @@ body {
     #c77dff 100%
   );
   border: 4px solid #ffffff;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3), 0 0 20px rgba(255, 200, 255, 0.6);
+  box-shadow:
+    0 10px 20px rgba(0, 0, 0, 0.3),
+    0 0 20px rgba(255, 200, 255, 0.6);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease-out;
   position: relative;
@@ -395,7 +396,9 @@ body {
 
 .menu-btn:hover {
   transform: translateY(-4px) scale(1.05);
-  box-shadow: 0 0 15px rgba(253, 160, 133), 0 0 30px rgba(138, 43, 226);
+  box-shadow:
+    0 0 15px rgba(253, 160, 133),
+    0 0 30px rgba(138, 43, 226);
 }
 
 .menu-btn:active {
@@ -454,7 +457,9 @@ body {
   margin-bottom: 15px;
   display: block;
   letter-spacing: 2px;
-  text-shadow: 2px 2px 0 #ffe5e5, 4px 4px 0 rgba(0, 0, 0, 0.05);
+  text-shadow:
+    2px 2px 0 #ffe5e5,
+    4px 4px 0 rgba(0, 0, 0, 0.05);
   line-height: 1.2;
 }
 
@@ -582,8 +587,10 @@ body {
   font-size: 4.3rem;
   color: #ffe3a3;
   letter-spacing: 0.1em;
-  text-shadow: 0 0 10px rgba(255, 255, 255, 0.8),
-    2px 2px 0px rgba(100, 100, 255, 0.8), 0 5px 15px rgba(0, 0, 0, 0.7);
+  text-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8),
+    2px 2px 0px rgba(100, 100, 255, 0.8),
+    0 5px 15px rgba(0, 0, 0, 0.7);
   margin-bottom: 50px;
   margin-top: -20px;
   line-height: 1;
@@ -655,28 +662,38 @@ body {
 /* --- 難易度別の色設定（変更なし） --- */
 .diff-btn.easy {
   background: linear-gradient(135deg, #74ebd5 0%, #aee8ff 100%);
-  box-shadow: 0 8px 0 #3ecfcf, 0 15px 20px rgba(255, 255, 255, 0.2); /* 影色を調整 */
+  box-shadow:
+    0 8px 0 #3ecfcf,
+    0 15px 20px rgba(255, 255, 255, 0.2); /* 影色を調整 */
 }
 
 .diff-btn.normal {
   background: linear-gradient(135deg, #90ff64 0%, #c1ffb2 100%);
-  box-shadow: 0 8px 0 #54d618, 0 15px 20px rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 0 #54d618,
+    0 15px 20px rgba(255, 255, 255, 0.2);
 }
 
 .diff-btn.hard {
   background: linear-gradient(135deg, #ffff00 0%, #fff891 100%);
-  box-shadow: 0 8px 0 #d4d600, 0 15px 20px rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 0 #d4d600,
+    0 15px 20px rgba(255, 255, 255, 0.2);
   color: #5c5c00; /* 黄色背景なので文字を少し濃くしても良いかも */
 }
 
 .diff-btn#btn-back {
   background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-  box-shadow: 0 8px 0 #ff758c, 0 15px 20px rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 0 #ff758c,
+    0 15px 20px rgba(255, 255, 255, 0.2);
 }
 
 .diff-btn#btn-back {
   background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-  box-shadow: 0 8px 0 #ff758c, 0 15px 20px rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 8px 0 #ff758c,
+    0 15px 20px rgba(255, 255, 255, 0.2);
 }
 
 .diff-info-panel {
@@ -720,7 +737,9 @@ body {
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  transition: transform 0.1s ease, background 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    background 0.1s ease;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
@@ -821,7 +840,9 @@ body {
   line-height: 1;
   padding-top: 40px !important;
   margin-bottom: 5px !important;
-  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2), 0px 0px 10px rgba(0, 0, 0, 0.5);
+  text-shadow:
+    3px 3px 0px rgba(0, 0, 0, 0.2),
+    0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
 #display-diff-text {
@@ -961,7 +982,10 @@ body {
   letter-spacing: 5px;
   color: rgba(95, 234, 255, 1);
   z-index: 2;
-  text-shadow: -2px -2px 0 #fff, 2px 2px 0 #fff, 4px 4px 0 #95e3ff,
+  text-shadow:
+    -2px -2px 0 #fff,
+    2px 2px 0 #fff,
+    4px 4px 0 #95e3ff,
     8px 8px 20px rgba(0, 0, 0, 0.4);
 }
 
@@ -1066,19 +1090,21 @@ body {
   font-weight: 900;
   margin-left: 10px;
   display: inline-block;
-  transition: transform 0.2s ease, color 0.2s;
+  transition:
+    transform 0.2s ease,
+    color 0.2s;
 }
 
 /* コンボ更新時の「縮んで戻る」アニメーション */
 @keyframes combo-shrink-pop {
   0% {
-    transform: scale(0.75);  /* 打った瞬間、衝撃で縮む */
+    transform: scale(0.75); /* 打った瞬間、衝撃で縮む */
   }
   70% {
     transform: scale(1.05); /* 反動でちょっとだけ膨らむ（弾力感） */
   }
   100% {
-    transform: scale(1);    /* 元に戻る */
+    transform: scale(1); /* 元に戻る */
   }
 }
 
@@ -1087,10 +1113,10 @@ body {
   display: block; /* inline-blockよりblockの方が安定します */
   margin: 0 auto;
   width: fit-content; /* 中身のサイズに合わせる */
-  
+
   /* アニメーション適用 */
   animation: combo-shrink-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  
+
   /* 重要: これがないと中心からズレて縮むことがあります */
   transform-origin: center center;
 }
@@ -1108,10 +1134,12 @@ body {
 #combo-count,
 #combo-label {
   /* ▼ 修正: transform を削除し、colorとtext-shadowだけ残す */
-  transition: color 0.1s ease-out, text-shadow 0.1s ease-out;
-  
+  transition:
+    color 0.1s ease-out,
+    text-shadow 0.1s ease-out;
+
   font-family: "M PLUS Rounded 1c", sans-serif !important;
-  
+
   /* ▼ 追加: 高速レンダリングのヒント（チラつき防止） */
   will-change: transform;
 }
@@ -1121,7 +1149,10 @@ body {
   font-weight: bold;
   color: #fff;
   line-height: 1;
-  text-shadow: 0 0 2px #fff, 0 0 10px #d16eff, 2px 2px 0 #b030ff;
+  text-shadow:
+    0 0 2px #fff,
+    0 0 10px #d16eff,
+    2px 2px 0 #b030ff;
 }
 
 #combo-label {
@@ -1129,14 +1160,18 @@ body {
   font-weight: bold;
   color: #fff;
   margin-top: -5px;
-  text-shadow: 1px 1px 0 #b030ff, 0 0 5px #d16eff;
+  text-shadow:
+    1px 1px 0 #b030ff,
+    0 0 5px #d16eff;
 }
 
 /* 100コンボ（金） */
 #combo-count.is-gold,
 #combo-label.is-gold {
   color: gold !important;
-  text-shadow: 2px 2px 0 #b8860b, 0 0 10px #ffd700 !important;
+  text-shadow:
+    2px 2px 0 #b8860b,
+    0 0 10px #ffd700 !important;
   transform: scale(1.1) !important;
   display: block !important;
   margin: 0 auto !important;
@@ -1499,7 +1534,9 @@ body {
 .bonus-pop.normal {
   font-size: 25px;
   color: rgb(47, 255, 0);
-  text-shadow: 1px 1px 0 gold, 0 0 5px orange,
+  text-shadow:
+    1px 1px 0 gold,
+    0 0 5px orange,
     2px 2px 5px rgba(237, 146, 255, 0.5);
 }
 
@@ -1544,9 +1581,13 @@ body {
   font-weight: bold;
   font-family: "M PLUS Rounded 1c", sans-serif;
   color: #ffdd00;
-  text-shadow: 0 0 20px rgba(255, 221, 0, 0.8), 4px 4px 0 #000;
+  text-shadow:
+    0 0 20px rgba(255, 221, 0, 0.8),
+    4px 4px 0 #000;
   z-index: 3000;
-  transition: top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s;
+  transition:
+    top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    opacity 0.5s;
   opacity: 0;
 }
 
@@ -1558,7 +1599,9 @@ body {
 #finish-banner.exit {
   top: -250px !important;
   opacity: 0;
-  transition: top 0.5s ease-in, opacity 0.5s ease-in;
+  transition:
+    top 0.5s ease-in,
+    opacity 0.5s ease-in;
 }
 
 .bg-blur {
@@ -1601,7 +1644,10 @@ body {
   align-items: center;
   overflow: hidden;
   z-index: 2000;
-  transition: background 0.5s, border-color 0.5s, box-shadow 0.5s;
+  transition:
+    background 0.5s,
+    border-color 0.5s,
+    box-shadow 0.5s;
   justify-content: flex-start;
 }
 
@@ -1613,7 +1659,9 @@ body {
     rgba(185, 237, 255, 0.6)
   );
   border: 2px solid rgba(150, 230, 255, 0.6);
-  box-shadow: 0 0 20px rgba(0, 200, 255, 0.4), 0 20px 50px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 20px rgba(0, 200, 255, 0.4),
+    0 20px 50px rgba(0, 0, 0, 0.4);
 }
 
 .res-theme-normal {
@@ -1623,7 +1671,9 @@ body {
     rgba(180, 60, 100, 0.6)
   );
   border: 2px solid rgba(255, 180, 200, 0.5);
-  box-shadow: 0 0 20px rgba(255, 100, 150, 0.5), 0 20px 50px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 0 20px rgba(255, 100, 150, 0.5),
+    0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
 .res-theme-hard {
@@ -1633,7 +1683,9 @@ body {
     rgba(60, 40, 100, 0.7)
   );
   border: 2px solid rgba(255, 215, 0, 0.4);
-  box-shadow: 0 0 20px rgba(100, 80, 255, 0.4), 0 20px 50px rgba(0, 0, 0, 0.6);
+  box-shadow:
+    0 0 20px rgba(100, 80, 255, 0.4),
+    0 20px 50px rgba(0, 0, 0, 0.6);
 }
 
 .result-title {
@@ -1641,7 +1693,9 @@ body {
   font-size: 3.5rem;
   margin: 0 0 10px 0;
   color: #fff;
-  text-shadow: 4px 4px 0px #ffc9b4, 6px 6px 15px rgba(0, 0, 0, 0.5);
+  text-shadow:
+    4px 4px 0px #ffc9b4,
+    6px 6px 15px rgba(0, 0, 0, 0.5);
   letter-spacing: 5px;
 }
 
@@ -1699,7 +1753,9 @@ body {
   font-family: "Fredoka One", cursive !important;
   font-size: 4.3rem !important;
   color: #ff9bc5;
-  text-shadow: 4px 4px 0 #fdf1ff, 6px 6px 10px rgba(0, 0, 0, 0.2);
+  text-shadow:
+    4px 4px 0 #fdf1ff,
+    6px 6px 10px rgba(0, 0, 0, 0.2);
   line-height: 1;
   letter-spacing: 4px;
   margin-left: -5px;
@@ -1710,7 +1766,9 @@ body {
   font-family: "Fredoka One", cursive !important;
   font-size: 2.9rem !important;
   color: #ffffff;
-  text-shadow: 3px 3px 0px #ffc9b4, 4px 4px 10px rgba(0, 0, 0, 0.2);
+  text-shadow:
+    3px 3px 0px #ffc9b4,
+    4px 4px 10px rgba(0, 0, 0, 0.2);
   letter-spacing: 2px;
   margin-bottom: 6px;
 }
@@ -1920,32 +1978,49 @@ body {
 
 .res-rank-s {
   color: #fffce0;
-  text-shadow: 3px 3px 0 #b8860b, -2px -2px 0 #ffffff, 0 0 30px gold,
+  text-shadow:
+    3px 3px 0 #b8860b,
+    -2px -2px 0 #ffffff,
+    0 0 30px gold,
     0 0 60px orange;
-  animation: rank-impact-ultra 1.3s cubic-bezier(0.19, 1, 0.22, 1) forwards,
+  animation:
+    rank-impact-ultra 1.3s cubic-bezier(0.19, 1, 0.22, 1) forwards,
     aura-pulse-mega 2s infinite 1.3s;
 }
 
 .res-rank-a {
   color: rgb(236, 59, 59);
-  text-shadow: 2px 2px 0 #8b0000, 0 0 30px #ff4500, 0 0 60px #ff0000;
-  animation: rank-impact-mega 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards,
+  text-shadow:
+    2px 2px 0 #8b0000,
+    0 0 30px #ff4500,
+    0 0 60px #ff0000;
+  animation:
+    rank-impact-mega 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards,
     aura-burning 1.5s infinite 0.8s;
 }
 
 .res-rank-b {
   color: #16b5ea;
-  text-shadow: 2px 2px 0 #074587, 0 0 20px #90eff1, 0 0 40px #3680e0;
+  text-shadow:
+    2px 2px 0 #074587,
+    0 0 20px #90eff1,
+    0 0 40px #3680e0;
 }
 
 .res-rank-c {
   color: rgb(42, 185, 54);
-  text-shadow: 2px 2px 0 #c7edb8, 0 0 10px #dcf5c1, 0 0 20px #26d557;
+  text-shadow:
+    2px 2px 0 #c7edb8,
+    0 0 10px #dcf5c1,
+    0 0 20px #26d557;
 }
 
 .res-rank-d {
   color: rgb(0, 0, 0);
-  text-shadow: 2px 2px 0 #000000, 0 0 5px #707070, 0 0 10px #000000;
+  text-shadow:
+    2px 2px 0 #000000,
+    0 0 5px #707070,
+    0 0 10px #000000;
 }
 
 @keyframes rank-impact-ultra {
@@ -1973,11 +2048,17 @@ body {
 @keyframes aura-pulse-mega {
   0%,
   100% {
-    text-shadow: 3px 3px 0 #b8860b, 0 0 30px gold, 0 0 60px orange;
+    text-shadow:
+      3px 3px 0 #b8860b,
+      0 0 30px gold,
+      0 0 60px orange;
     filter: brightness(1);
   }
   50% {
-    text-shadow: 3px 3px 0 #b8860b, 0 0 50px gold, 0 0 80px #ffcc00,
+    text-shadow:
+      3px 3px 0 #b8860b,
+      0 0 50px gold,
+      0 0 80px #ffcc00,
       0 0 120px #fff;
     filter: brightness(1.2);
   }
@@ -2173,7 +2254,9 @@ body {
   border-radius: 50px;
   cursor: pointer;
   position: relative;
-  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.1s ease;
   text-shadow: none;
 }
 
@@ -2181,13 +2264,17 @@ body {
   background: #ff4757;
   color: white;
   border: 3px solid #fff;
-  box-shadow: 0 6px 0 #c41e3a, 0 10px 10px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 6px 0 #c41e3a,
+    0 10px 10px rgba(0, 0, 0, 0.3);
 }
 
 .res-btn.primary:hover {
   background: #ff6b81;
   transform: translateY(-2px);
-  box-shadow: 0 8px 0 #c41e3a, 0 15px 20px rgba(255, 71, 87, 0.4);
+  box-shadow:
+    0 8px 0 #c41e3a,
+    0 15px 20px rgba(255, 71, 87, 0.4);
 }
 
 .res-btn.primary:active {
@@ -2199,14 +2286,18 @@ body {
   background: #ffffff;
   color: #555;
   border: 3px solid #eee;
-  box-shadow: 0 6px 0 #ccc, 0 10px 10px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 6px 0 #ccc,
+    0 10px 10px rgba(0, 0, 0, 0.2);
 }
 
 .res-btn.secondary:hover {
   background: #f1f2f6;
   color: #ff8800;
   transform: translateY(-2px);
-  box-shadow: 0 8px 0 #ccc, 0 15px 20px rgba(0, 0, 0, 0.2);
+  box-shadow:
+    0 8px 0 #ccc,
+    0 15px 20px rgba(0, 0, 0, 0.2);
 }
 
 .res-btn.secondary:active {
@@ -2297,7 +2388,9 @@ body {
   border: 2px solid #fff;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
   z-index: 20;
-  animation: rainbowAnim 3s ease infinite, floatUp 0.7s ease-out forwards;
+  animation:
+    rainbowAnim 3s ease infinite,
+    floatUp 0.7s ease-out forwards;
   opacity: 0;
 }
 
@@ -2332,7 +2425,9 @@ body {
 .fade-target {
   opacity: 0;
   transform: translateY(20px);
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
   visibility: hidden;
 }
 
@@ -2538,8 +2633,10 @@ body {
   background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
   border: 0.5cqh solid #ffe0cb;
   border-radius: 3cqh;
-  box-shadow: 0 1cqh 3cqh rgba(0, 0, 0, 0.5),
-    0 0 0 0.8cqh rgba(255, 247, 217, 0.9), 0 0 4cqh rgba(255, 196, 125, 0.9);
+  box-shadow:
+    0 1cqh 3cqh rgba(0, 0, 0, 0.5),
+    0 0 0 0.8cqh rgba(255, 247, 217, 0.9),
+    0 0 4cqh rgba(255, 196, 125, 0.9);
 
   box-sizing: border-box;
   text-align: center;
@@ -2608,7 +2705,9 @@ body {
   color: #fff;
   flex-shrink: 0;
 
-  text-shadow: 0.3cqh 0.3cqh 0px #ff9a9e, 0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
+  text-shadow:
+    0.3cqh 0.3cqh 0px #ff9a9e,
+    0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
 
   border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
   padding-bottom: 2cqh;
@@ -2750,7 +2849,9 @@ body {
   font-size: 2.8cqh;
 
   box-shadow: 0 0.6cqh 0.3cqh #ffc9b4;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
   cursor: pointer;
 }
 
@@ -3187,7 +3288,9 @@ body {
   padding: 5px 15px;
   cursor: pointer;
   box-shadow: 0 4px 0 #f57f17;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
 }
 
 .btn-change-name:active {
@@ -3258,8 +3361,8 @@ body {
   align-items: center;
   opacity: 0;
   animation: fadeIn 0.3s forwards;
-  font-family: "Arial Rounded MT Bold", "M PLUS Rounded 1c", "Varela Round",
-    sans-serif;
+  font-family:
+    "Arial Rounded MT Bold", "M PLUS Rounded 1c", "Varela Round", sans-serif;
 }
 
 @keyframes fadeIn {
@@ -3668,7 +3771,9 @@ body {
   cursor: pointer;
 
   box-shadow: 0 4px 0 #ddd;
-  transition: transform 0.1s, box-shadow 0.1s;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
   border: 2px solid #eee; /* 薄い枠線を追加 */
   padding-bottom: 4px; /* 絵文字の微調整 */
 }

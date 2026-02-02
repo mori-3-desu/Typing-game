@@ -437,21 +437,36 @@ function App() {
   };
 
   // リサイズ
-  useEffect(() => {
-    const handleResize = () => {
-      const scaler = document.getElementById("scaler");
-      if (scaler) {
-        const scale = Math.min(
-          window.innerWidth / DISPLAY_SCALE.WIDTH,
-          window.innerHeight / DISPLAY_SCALE.HEIGHT,
-        );
-        scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
-      }
-    };
-    window.addEventListener("resize", handleResize);
-    handleResize();
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+  const scalerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const handleResize = () => {
+      // 描画タイミングに合わせて実行（二重実行を防止）
+      if (animationFrameId) return;
+
+      animationFrameId = window.requestAnimationFrame(() => {
+        const scaler = scalerRef.current;
+        if (scaler) {
+          const scale = Math.min(
+            window.innerWidth / DISPLAY_SCALE.WIDTH,
+            window.innerHeight / DISPLAY_SCALE.HEIGHT,
+          );
+          scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
+        animationFrameId = 0; // リセット
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // 初回実行
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   // --- Key Handler ---
   useGameKeyHandler({
@@ -506,7 +521,7 @@ function App() {
 
   return (
     <div className="App">
-      <div id="scaler">
+      <div id="scaler" ref={scalerRef}>
         <div id="game-wrapper">
           {allBackgrounds.map((bg) => (
             <div
@@ -538,7 +553,8 @@ function App() {
             <div id="loading-screen">
               <div className="keyboard-loader">
                 {["L", "O", "A", "D", "I", "N", "G"].map((char, i) => (
-                  <span key={i} className="key cat">
+                  <span key={i} className="key cat"
+                    style={{ "--i": i} as React.CSSProperties}>
                     {char}
                   </span>
                 ))}
