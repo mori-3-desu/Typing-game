@@ -4,6 +4,7 @@ import {
   type Segment,
   type Popup,
   type ScorePopup,
+  type TimePopup,
 } from "../../types";
 
 type Props = {
@@ -15,7 +16,6 @@ type Props = {
   combo: number;
   comboClass: string;
   timeLeft: number;
-  isTimeAdded: boolean;
   gaugeValue: number;
   gaugeMax: number;
   completedWords: number;
@@ -29,6 +29,7 @@ type Props = {
   bonusPopups: Popup[];
   perfectPopups: { id: number }[];
   scorePopups: ScorePopup[];
+  timePopups: TimePopup[];
   isRainbowMode: boolean;
   isFinishExit: boolean;
 };
@@ -41,7 +42,6 @@ export const GameScreen = ({
   combo,
   comboClass,
   timeLeft,
-  isTimeAdded,
   gaugeValue,
   gaugeMax,
   completedWords,
@@ -55,6 +55,7 @@ export const GameScreen = ({
   bonusPopups,
   perfectPopups,
   scorePopups,
+  timePopups,
   isFinishExit,
 }: Props) => {
   // まだ ready の時は表示しない、などの制御
@@ -201,7 +202,7 @@ export const GameScreen = ({
         <span
           id="tmr-text"
           className={
-            isTimeAdded
+            timePopups.length > 0
               ? "time-plus"
               : timeLeft <= 10
                 ? "timer-pinch"
@@ -212,6 +213,18 @@ export const GameScreen = ({
         </span>
       </div>
 
+      {/* ▼▼▼ ここに追加！スコアと同じ書き方です ▼▼▼ */}
+        {timePopups.map((p) => (
+          <div
+            key={p.id}
+            // CSSクラスを適用（bonus-pop と、normal か large を付与）
+            className={`bonus-pop ${p.isLarge ? "large" : "normal"}`}
+          >
+            {p.text}
+          </div>
+        ))}
+        {/* ▲▲▲ ここまで ▲▲▲ */}
+        
       <div id="combo-meter" className={`theme-${difficulty.toLowerCase()}`}>
         <div className="meter-header">
           <span>連打メーター</span>

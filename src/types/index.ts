@@ -134,6 +134,12 @@ export type ScorePopup = {
   type: "popup-normal" | "popup-gold" | "popup-rainbow" | "popup-miss";
 };
 
+export type TimePopup = {
+  id: number;
+  text: string;
+  isLarge: boolean;
+}
+
 export type PerfectPopup = { id: number };
 
 export type WordDataMap = Record<string, { jp: string; roma: string }[]>;
