@@ -1,19 +1,58 @@
 /* --- POPなフォントの読み込み --- */
 @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&family=M+PLUS+Rounded+1c:wght@400;700&family=Mochiy+Pop+P+One&display=swap");
 :root {
-  /* カラー基準 */
+  /**
+  * カラー基準 
+  */
   --color-white: #fff;
+  --color-redpink: #ff5a78;
+
+  /* 影の色定義 */
+  --color-shadow-pink: #efa4b8;
+  --color-shadow-dark: rgba(0, 0, 0, 0.2);
+  --color-shadow-dark-deep: rgba(0, 0, 0, 0.15); /* ジャンプ時の薄く広い影 */
+
+  /* 耳と体の色定義 */
+  --color-ear-normal: #ffe3e8; /* 通常の耳 */
+  --color-ear-landing: #efa4b8; /* 着地時の耳（濃い） */
+  --color-body-start: #ffe3e8;
+  --color-body-end: #ffbed2;
+
+  /**
+  * フォント基準
+  */
+  --font-main: "M PLUS Rounded 1c", sans-serif;
+  --font-pop: "Mochiy Pop P One", sans-serif;
+  --font-pop-fredoka: "Fredoka One", cursive, sans-serif;
+
+  /**
+  * Background  
+  */
   --body-bg: #222;
 
-  /* scale基準 */
+  /**
+  * 影の設定 (修正: varの重複を削除し、変数名を統一)
+  */
+  --loading-shadow: rgba(255, 255, 255, 0.5);
+  --loading-box-shadow:
+    0 8px 0 var(--color-shadow-pink), 0 15px 20px var(--color-shadow-dark);
+  /* テキスト用の少し濃い影（なければ作る、あれば既存の濃い方を使う） */
+  --color-text-shadow: rgba(0, 0, 0, 0.3);
+
+  /* scale・レイアウト基準 */
   --scale-standard-width: 1200px;
   --scale-standard-height: 780px;
 
-  /* z-index Map */
+  /**
+  * z-index Map 
+  */
+  --z-key-cat: 1;
   --z-canvas: 50;
   --z-loading: 10000;
 
-  /* loading */
+  /**
+  * Loading背景
+  */
   --loading-grad: linear-gradient(
     to bottom,
     #4b256f 0%,
@@ -22,9 +61,59 @@
     #fabe7c 100%
   );
 
-  /* アニメーション時間 */
-  /* loading */
+  /**
+  * ★ここが追加ポイント！ネコの背景パターンを変数化
+  */
+
+  /* ① 通常の顔（耳が高い -15px） */
+  --loading-key-grad: 
+    /* 左耳 */
+    linear-gradient(135deg, transparent 50%, var(--color-ear-normal) 50%)
+      no-repeat -10px -15px / 40px 40px,
+    /* 右耳 */
+    linear-gradient(225deg, transparent 50%, var(--color-ear-normal) 50%)
+      no-repeat 30px -15px / 40px 40px,
+    /* 本体 */
+    linear-gradient(
+        135deg,
+        var(--color-body-start) 0%,
+        var(--color-body-end) 100%
+      );
+
+  /* ② 着地時の顔（耳が低い -5px / 色が濃い） */
+  --loading-key-grad-landing: 
+    /* 左耳（濃い・低い） */
+    linear-gradient(135deg, transparent 50%, var(--color-ear-landing) 50%)
+      no-repeat -10px -5px / 40px 40px,
+    /* 右耳（濃い・低い） */
+    linear-gradient(225deg, transparent 50%, var(--color-ear-landing) 50%)
+      no-repeat 30px -5px / 40px 40px,
+    /* 本体 */
+    linear-gradient(
+        135deg,
+        var(--color-body-start) 0%,
+        var(--color-body-end) 100%
+      );
+
+  /* 光沢用 */
+  --loading-key-grad-shiny: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.8),
+    rgba(255, 255, 255, 0.1)
+  );
+
+  /**
+  * アニメーション時間 
+  */
+  --loading-animation-key: 1.2s;
+  --loading-animation-paw: 2s;
   --loading-transition: 1.5s;
+
+  /**
+   * ★追加：UIの共通スタイル
+   * キーボードとテキストを同じ角度で傾けるための変数
+   */
+  --ui-tilt: perspective(500px) rotateX(15deg);
 }
 
 /* 基本設定 (Base) */
@@ -37,7 +126,7 @@ body {
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  font-family: "M PLUS Rounded 1c", sans-serif;
+  font-family: var(--font-main);
   color: var(--color-white);
 }
 
@@ -127,7 +216,7 @@ body {
   gap: 14px;
   padding-top: 25px;
   /* 少し斜めから見たようなパースをつける */
-  transform: perspective(500px) rotateX(15deg);
+  transform: var(--ui-tilt);
 }
 
 /* --- ★激かわ：ぷるぷるネコミミキーキャップ --- */
@@ -135,38 +224,19 @@ body {
   position: relative;
   width: 60px;
   height: 60px;
-
-  /* 本体色＋耳（背景グラデーションで描画） */
-  background: 
-      /* 左耳 */
-    linear-gradient(135deg, transparent 50%, #ffe3e8 50%)
-      no-repeat -10px -15px / 40px 40px,
-    /* 右耳 */ linear-gradient(225deg, transparent 50%, #ffe3e8 50%) no-repeat
-      30px -15px / 40px 40px,
-    /* 本体グラデーション */ linear-gradient(135deg, #ffe3e8 0%, #ffbed2 100%);
-
+  background: var(--loading-key-grad);
   border-radius: 16px;
-
-  /* 文字設定 */
-  font-family:
-    "Fredoka One", cursive, sans-serif; /* フォントがない場合の予備を追加 */
+  font-family: var(--font-pop-fredoka);
   font-size: 30px;
-  color: #ff5a78; /* 文字色を濃いピンクに */
-  text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.5); /* 文字を少し浮き上がらせる */
-
+  color: var(--color-redpink);
+  text-shadow: 1px 1px 0 var(--loading-shadow);
   display: flex;
   justify-content: center;
   align-items: center;
-
   will-change: transform;
-  /* 影（立体感と側面の色） */
-  box-shadow:
-    0 8px 0 #efa4b8,
-    /* 側面の濃いピンク */ 0 15px 20px rgba(0, 0, 0, 0.2); /* 全体の影 */
-
-  animation: catBounce 1.2s infinite ease-in-out;
+  box-shadow: var(--loading-box-shadow);
+  animation: catBounce var(--loading-animation-key) infinite ease-in-out;
   animation-delay: calc(var(--i) * 0.1s);
-  /* ぷるんとした質感のためのハイライト（光沢） */
   overflow: hidden;
 }
 
@@ -179,88 +249,72 @@ body {
   width: 85%;
   height: 40%;
   /* 半透明の白い楕円で光沢を表現 */
-  background: linear-gradient(
-    to bottom,
-    rgba(255, 255, 255, 0.8),
-    rgba(255, 255, 255, 0.1)
-  );
+  background: var(--loading-key-grad-shiny);
   border-radius: 12px 12px 20px 20px;
-  z-index: 1; /* 文字より手前 */
+  z-index: var(--z-key-cat); /* 文字より手前 */
   pointer-events: none;
 }
 
-/* --- ★新アニメーション：ぷるんぷるんジャンプ --- */
+/* --- ★新アニメーション：変数を活用してスッキリ化 --- */
 @keyframes catBounce {
   0%,
   100% {
     transform: translateY(0) scale(1, 1);
+    /* 変数ポン置き */
+    background: var(--loading-key-grad);
     box-shadow:
-      0 8px 0 #efa4b8,
-      0 15px 20px rgba(0, 0, 0, 0.2);
+      0 8px 0 var(--color-shadow-pink),
+      0 15px 20px var(--color-shadow-dark);
   }
   30% {
-    /* ジャンプ！縦に伸びる */
+    /* ジャンプ！ */
     transform: translateY(-25px) scale(1.1, 0.9) rotateX(-10deg);
     box-shadow:
-      0 30px 0 #efa4b8,
-      0 40px 25px rgba(0, 0, 0, 0.15);
+      0 30px 0 var(--color-shadow-pink),
+      0 40px 25px var(--color-shadow-dark-deep);
   }
   50% {
-    /* 着地！横に潰れる（ぷるん感の肝） */
+    /* 着地！ */
     transform: translateY(8px) scale(0.85, 1.15);
-    /* 影をなくして沈み込みを表現 */
+    /* ★ここで着地用の顔変数に切り替えるだけ！ */
+    background: var(--loading-key-grad-landing);
     box-shadow:
-      0 0 0 #efa4b8,
-      0 0 0 rgba(0, 0, 0, 0);
-
-    /* 着地時は少し沈んで耳の色が濃くなる演出 */
-    background:
-      linear-gradient(135deg, transparent 50%, #efa4b8 50%)
-        no-repeat -10px -5px / 40px 40px,
-      linear-gradient(225deg, transparent 50%, #efa4b8 50%) no-repeat
-        30px -5px / 40px 40px,
-      linear-gradient(135deg, #ffe3e8 0%, #ffbed2 100%);
+      0 0 0 var(--color-shadow-pink),
+      0 0 0 transparent;
   }
   70% {
-    /* 反動で少し伸びる */
+    /* 反動 */
     transform: translateY(-5px) scale(1.05, 0.95);
+    /* 通常の顔に戻す */
+    background: var(--loading-key-grad);
     box-shadow:
-      0 10px 0 #efa4b8,
-      0 15px 15px rgba(0, 0, 0, 0.2);
-
-    /* 背景を元に戻す（重要！） */
-    background:
-      linear-gradient(135deg, transparent 50%, #ffe3e8 50%)
-        no-repeat -10px -15px / 40px 40px,
-      linear-gradient(225deg, transparent 50%, #ffe3e8 50%) no-repeat
-        30px -15px / 40px 40px,
-      linear-gradient(135deg, #ffe3e8 0%, #ffbed2 100%);
+      0 10px 0 var(--color-shadow-pink),
+      0 15px 15px var(--color-shadow-dark);
   }
 }
 
 /* テキスト部分のデザイン */
 .loading-text {
   margin-top: 60px;
-  font-family: "Fredoka One", cursive, sans-serif;
-  color: #fff;
+  font-family: var(--font-pop-fredoka);
+  color: var(--color-white);
   font-size: 32px;
   letter-spacing: 0.1em;
-  text-shadow: 0 4px 5px rgba(0, 0, 0, 0.3);
-  /* テキストも少し斜めにして一体感を出す */
-  transform: perspective(500px) rotateX(15deg);
+  text-shadow: 0 4px 5px var(--color-text-shadow);
+  transform: var(--ui-tilt);
 }
 
 .paw {
   display: inline-block;
   font-size: 1.2em;
-  filter: drop-shadow(0 3px 3px rgba(0, 0, 0, 0.2));
-  animation: pawFloatBig 2s infinite ease-in-out;
+  will-change: transform;
+  animation: pawFloatBig var(--loading-animation-paw) infinite ease-in-out;
 }
 
 @keyframes pawFloatBig {
   0%,
   100% {
-    transform: rotate(0deg) translateY(0) scale(1);
+    transform: scale(1);
   }
   50% {
     transform: rotate(20deg) translateY(-15px) scale(1.1);
@@ -363,7 +417,7 @@ body {
   padding: 10px 0;
   font-family: "Mochiy Pop P One", sans-serif;
   font-size: 1.4rem;
-  color: #fff;
+  color: var(--color-white);
   cursor: pointer;
   border-radius: 50px;
   background: linear-gradient(
@@ -466,7 +520,7 @@ body {
 /* 入力ボックス */
 .pop-input {
   border: 4px solid #bcacc8;
-  background: #fdfdfd;
+  background: var(--color-white);
   border-radius: 50px;
   padding: 12px 30px;
   font-size: 2rem;
@@ -955,7 +1009,7 @@ body {
 }
 
 #tmr-box {
-  position: absolute;
+  position: relative;
   top: -70px;
   left: 15.5px;
   width: 305px;
@@ -1521,7 +1575,7 @@ body {
 
 .bonus-pop {
   position: absolute;
-  top: -50px;
+  top: 230px;
   left: 50%;
   font-family: "M PLUS Rounded 1c", sans-serif;
   font-weight: bold;
@@ -1543,7 +1597,7 @@ body {
 .bonus-pop.large {
   font-size: 45px;
   color: #ffd700;
-  top: -70px;
+  top: 200px;
   font-family: "M PLUS Rounded 1c", sans-serif;
   background: linear-gradient(180deg, #ffea00 0%, #ff0099 50%, #00e5ff 100%);
   -webkit-background-clip: text;

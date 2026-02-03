@@ -152,11 +152,11 @@ function App() {
     shakeStatus,
     missedWordsRecord,
     missedCharsRecord,
-    isTimeAdded,
     isRainbowMode,
     bonusPopups,
     perfectPopups,
     scorePopups,
+    timePopups,
     tick,
     currentSpeed,
   } = useTypingGame(difficulty, dbWordData);
@@ -437,36 +437,36 @@ function App() {
   };
 
   // リサイズ
-  const scalerRef = useRef<HTMLDivElement>(null);
+  const scalerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    let animationFrameId: number;
+  useEffect(() => {
+    let animationFrameId: number;
 
-    const handleResize = () => {
-      // 描画タイミングに合わせて実行（二重実行を防止）
-      if (animationFrameId) return;
+    const handleResize = () => {
+      // 描画タイミングに合わせて実行（二重実行を防止）
+      if (animationFrameId) return;
 
-      animationFrameId = window.requestAnimationFrame(() => {
-        const scaler = scalerRef.current;
-        if (scaler) {
-          const scale = Math.min(
-            window.innerWidth / DISPLAY_SCALE.WIDTH,
-            window.innerHeight / DISPLAY_SCALE.HEIGHT,
-          );
-          scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
-        }
-        animationFrameId = 0; // リセット
-      });
-    };
+      animationFrameId = window.requestAnimationFrame(() => {
+        const scaler = scalerRef.current;
+        if (scaler) {
+          const scale = Math.min(
+            window.innerWidth / DISPLAY_SCALE.WIDTH,
+            window.innerHeight / DISPLAY_SCALE.HEIGHT,
+          );
+          scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        }
+        animationFrameId = 0; // リセット
+      });
+    };
 
-    window.addEventListener("resize", handleResize);
-    handleResize(); // 初回実行
+    window.addEventListener("resize", handleResize);
+    handleResize(); // 初回実行
 
-    return () => {
-      window.removeEventListener("resize", handleResize);
-      if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
+    };
+  }, []);
 
   // --- Key Handler ---
   useGameKeyHandler({
@@ -553,8 +553,12 @@ function App() {
             <div id="loading-screen">
               <div className="keyboard-loader">
                 {["L", "O", "A", "D", "I", "N", "G"].map((char, i) => (
-                  <span key={i} className="key cat"
-                    style={{ "--i": i} as React.CSSProperties}>
+                  <span
+                    key={i}
+                    className="key cat"
+                    // スマートに書けるが将来重くなったらCSSのnthプロパティ(ブラウザが計算が終わった状態で渡してくれるため爆速)を検討
+                    style={{ "--i": i } as React.CSSProperties}
+                  >
                     {char}
                   </span>
                 ))}
@@ -613,7 +617,6 @@ function App() {
               combo={combo}
               comboClass={comboClass}
               timeLeft={timeLeft}
-              isTimeAdded={isTimeAdded}
               gaugeValue={gaugeValue}
               gaugeMax={gaugeMax}
               completedWords={completedWords}
@@ -627,6 +630,7 @@ function App() {
               bonusPopups={bonusPopups}
               perfectPopups={perfectPopups}
               scorePopups={scorePopups}
+              timePopups={timePopups}
               isRainbowMode={isRainbowMode}
               isFinishExit={isFinishExit}
             />

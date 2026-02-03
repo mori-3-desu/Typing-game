@@ -19,14 +19,13 @@ import {
   SCORE_COMBO_MULTIPLIER,
   COMBO_TIME_BONUS,
 } from "../utils/setting";
-import {
-playSE 
-} from "../utils/audio";
+import { playSE } from "../utils/audio";
 
 import {
   type DifficultyLevel,
   type ScorePopup,
   type BonusPopup,
+  type TimePopup,
   type TypedLog,
   type PerfectPopup,
   type MissedWord,
@@ -67,7 +66,6 @@ interface GameState {
   score: number;
   timeLeft: number;
   elapsedTime: number;
-  isTimeAdded: boolean;
   combo: number;
   maxCombo: number;
   gaugeValue: number;
@@ -89,6 +87,7 @@ interface GameState {
   shakeStatus: "none" | "light" | "error";
   bonusPopups: BonusPopup[];
   scorePopups: ScorePopup[];
+  timePopups: TimePopup[];
   perfectPopups: PerfectPopup[];
 }
 
@@ -96,7 +95,6 @@ const initialState: GameState = {
   score: 0,
   timeLeft: 0,
   elapsedTime: 0,
-  isTimeAdded: false,
   combo: 0,
   maxCombo: 0,
   gaugeValue: 0,
@@ -114,6 +112,7 @@ const initialState: GameState = {
   shakeStatus: "none",
   bonusPopups: [],
   scorePopups: [],
+  timePopups: [],
   perfectPopups: [],
 };
 
@@ -122,7 +121,9 @@ type GameAction =
   | { type: "LOAD_WORD"; jp: string; romaState: any; segments: Segment[] }
   | { type: "UPDATE_DISPLAY"; romaState: any; segments: Segment[] }
   | { type: "TICK"; amount: number } // ★これを使います
-  | { type: "ADD_TIME"; sec: number; isLarge: boolean }
+  | { type: "ADD_TIME"; sec: number; }
+  | { type: "ADD_TIME_POPUP"; popup: TimePopup }
+  | { type: "REMOVE_TIME_POPUP"; id: number }
   | { type: "HIDE_TIME_ADDED" }
   | { type: "BACKSPACE"; penalty: number }
   | {
@@ -173,10 +174,18 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         timeLeft: state.timeLeft + action.sec,
-        isTimeAdded: true,
       };
-    case "HIDE_TIME_ADDED":
-      return { ...state, isTimeAdded: false };
+    case "ADD_TIME_POPUP":
+      return {
+        ...state,
+        timePopups: [...state.timePopups, action.popup],
+      };
+
+    case "REMOVE_TIME_POPUP":
+      return {
+        ...state,
+        timePopups: state.timePopups.filter((p) => p.id !== action.id),
+      };
     case "BACKSPACE":
       return {
         ...state,
@@ -293,7 +302,6 @@ export const useTypingGame = (
     score,
     timeLeft,
     elapsedTime,
-    isTimeAdded,
     combo,
     maxCombo,
     gaugeValue,
@@ -311,6 +319,7 @@ export const useTypingGame = (
     shakeStatus,
     bonusPopups,
     scorePopups,
+    timePopups,
     perfectPopups,
   } = state;
 
@@ -362,17 +371,24 @@ export const useTypingGame = (
     );
   }, []);
 
-  const addTime = useCallback(
-    (sec: number, isLarge: boolean = false) => {
-      dispatch({ type: "ADD_TIME", sec, isLarge });
-      addPopup(`+${sec}秒`, isLarge ? "large" : "normal");
-      setTimeout(
-        () => dispatch({ type: "HIDE_TIME_ADDED" }),
-        UI_ANIMATION_CONFIG.TIME_DURATION_MS,
-      );
-    },
-    [addPopup],
-  );
+  const addTime = useCallback((sec: number, isLarge: boolean = false) => {
+    // 1. ロジック上の時間を足す（Reducerの ADD_TIME を呼ぶ）
+    dispatch({ type: "ADD_TIME", sec });
+
+    // 2. ポップアップを表示リストに追加する（新しいIDを発行）
+    popupIdRef.current += 1;
+    const newId = popupIdRef.current;
+
+    dispatch({
+      type: "ADD_TIME_POPUP",
+      popup: { id: newId, text: `+${sec}秒`, isLarge },
+    });
+
+    // 3. 一定時間後に、そのIDのポップアップだけ消す
+    setTimeout(() => {
+      dispatch({ type: "REMOVE_TIME_POPUP", id: newId });
+    }, UI_ANIMATION_CONFIG.TIME_DURATION_MS);
+  }, []);
 
   // ★ 新しい時間経過関数
   const tick = useCallback((amount: number) => {
@@ -424,7 +440,7 @@ export const useTypingGame = (
       // NOTE: 重複排除のロジック (Deduplication Logic)
       // 直前の単語（prevWordRef.current）以外のリストを新しく作る。
       // これにより、ランダム抽選の候補から物理的に「前の単語」を消す。
-      
+
       // TODO: 将来的なパフォーマンス改善 (Performance Optimization)
       // 現在は Array.filter を使用しているため、計算量は O(N) です。
       // 現在の単語数（数千件）では問題ありませんが、将来的に単語数が10万件を超える場合、
@@ -487,7 +503,7 @@ export const useTypingGame = (
 
   const handleBackspace = useCallback(() => {
     if (!engineRef.current) return;
-    playSE('bs');
+    playSE("bs");
     engineRef.current.backspace();
     dispatch({ type: "BACKSPACE", penalty: SCORE_CONFIG.BACKSPACE_PENALTY });
     addScorePopup(-SCORE_CONFIG.BACKSPACE_PENALTY);
@@ -496,7 +512,7 @@ export const useTypingGame = (
 
   const processMiss = useCallback(
     (missType: "INPUT" | "COMPLETION", charStr?: string) => {
-      playSE('miss');
+      playSE("miss");
       setTimeout(
         () => dispatch({ type: "SET_SHAKE", status: "none" }),
         missType === "INPUT"
@@ -517,9 +533,9 @@ export const useTypingGame = (
 
   const processCorrectHit = useCallback(
     (currentCombo: number) => {
-      playSE('type');
+      playSE("type");
       const nextCombo = currentCombo + 1;
-      let timeBonus: number = COMBO_TIME_BONUS.INIT_BONUS_SEC;
+      let timeBonus = 0;
       let isLarge = false;
 
       if (nextCombo <= COMBO_TIME_BONUS.THRESHOLDS_LEVEL_1) {
@@ -539,7 +555,7 @@ export const useTypingGame = (
       }
 
       if (timeBonus > 0) {
-        playSE('combo');
+        playSE("combo");
         addTime(timeBonus, isLarge);
       }
       const multiplier = getScoreMultiplier(nextCombo);
@@ -559,7 +575,7 @@ export const useTypingGame = (
     );
 
     if (allGreen) {
-      playSE('correct');
+      playSE("correct");
       if (currentWordMiss === 0) {
         const wordLength = engine.segments.reduce(
           (acc, s) => acc + s.display.length,
@@ -629,7 +645,7 @@ export const useTypingGame = (
 
   useEffect(() => {
     if (gaugeValue >= gaugeMax) {
-      playSE('gauge');
+      playSE("gauge");
       addTime(GAUGE_CONFIG.RECOVER_SEC, true);
       dispatch({ type: "GAUGE_MAX_REACHED" });
     }
@@ -672,11 +688,11 @@ export const useTypingGame = (
     shakeStatus,
     missedWordsRecord,
     missedCharsRecord,
-    isTimeAdded,
     isRainbowMode,
     bonusPopups,
     perfectPopups,
     scorePopups,
+    timePopups,
     handleKeyInput,
     handleBackspace,
     startGame,
