@@ -190,6 +190,7 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
       return {
         ...state,
         score: Math.max(0, state.score - action.penalty),
+        combo: 0,
         backspaceCount: state.backspaceCount + 1,
         shakeStatus: "none",
       };

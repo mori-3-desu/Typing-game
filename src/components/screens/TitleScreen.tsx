@@ -2,25 +2,25 @@ import React from "react";
 import { type TitlePhase } from "../../types";
 
 type TitleScreenProps = {
-    // 表示制御系
-    showTitle: boolean;
-    enableBounce: boolean;
-    titlePhase: TitlePhase;
-    isTitleExiting: boolean;
-    isNameConfirmed: boolean;
-    // データ系
-    playerName: string;
-    setPlayerName: (name: string) => void;
-    nameError: string;
-    setNameError: (error: string) => void;
-    // アクション系（関数）
-    handleStartSequence: () => void;
-    handleOpenHowToPlay: () => void;
-    handleOpenConfig: () => void;
-    handleCancelInput: () => void;
-    handleNameSubmit: () => void;
-    handleBackToInput: () => void;
-    handleFinalConfirm: () => void;
+  // 表示制御系
+  showTitle: boolean;
+  enableBounce: boolean;
+  titlePhase: TitlePhase;
+  isTitleExiting: boolean;
+  isNameConfirmed: boolean;
+  // データ系
+  playerName: string;
+  setPlayerName: (name: string) => void;
+  nameError: string;
+  setNameError: (error: string) => void;
+  // アクション系（関数）
+  handleStartSequence: () => void;
+  handleOpenHowToPlay: () => void;
+  handleOpenConfig: () => void;
+  handleCancelInput: () => void;
+  handleNameSubmit: () => void;
+  handleBackToInput: () => void;
+  handleFinalConfirm: () => void;
 };
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({
@@ -47,11 +47,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
         className={`title-content-wrapper ${
           titlePhase !== "normal" ? "exit" : "enter"
         }`}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-        }}
       >
         <div
           className={`title-anim-wrapper ${showTitle ? "visible" : ""} ${
@@ -66,9 +61,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
         <div
           className={`main-menu-buttons fade-element ${
             showTitle ? "visible" : ""
-          } ${
-            titlePhase !== "normal" || isTitleExiting ? "exit-down" : ""
-          }`}
+          } ${titlePhase !== "normal" || isTitleExiting ? "exit-down" : ""}`}
         >
           <button
             className="menu-btn"
@@ -161,10 +154,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <button className="pop-btn" onClick={handleCancelInput}>
               キャンセル
             </button>
-            <button
-              className="pop-btn primary"
-              onClick={handleNameSubmit}
-            >
+            <button className="pop-btn primary" onClick={handleNameSubmit}>
               OK
             </button>
           </div>
@@ -193,10 +183,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <button className="pop-btn" onClick={handleBackToInput}>
               戻る
             </button>
-            <button
-              className="pop-btn primary"
-              onClick={handleFinalConfirm}
-            >
+            <button className="pop-btn primary" onClick={handleFinalConfirm}>
               はい
             </button>
           </div>
