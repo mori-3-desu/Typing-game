@@ -6,6 +6,10 @@
   */
   --color-white: #fff;
   --color-redpink: #ff5a78;
+  --color-lightorange: #ffe3a3;
+  --color-creamorange: #ffd399;
+  --color-orange: #ffa74f;
+  --color-gray: #555;
 
   /* 影の色定義 */
   --color-shadow-pink: #efa4b8;
@@ -33,11 +37,17 @@
   /**
   * 影の設定 (修正: varの重複を削除し、変数名を統一)
   */
+  /* loading */
   --loading-shadow: rgba(255, 255, 255, 0.5);
   --loading-box-shadow:
     0 8px 0 var(--color-shadow-pink), 0 15px 20px var(--color-shadow-dark);
   /* テキスト用の少し濃い影（なければ作る、あれば既存の濃い方を使う） */
   --color-text-shadow: rgba(0, 0, 0, 0.3);
+
+  /* title */
+  --title-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0px rgba(100, 100, 255, 0.8),
+    0 5px 15px rgba(0, 0, 0, 0.7);
 
   /* scale・レイアウト基準 */
   --scale-standard-width: 1200px;
@@ -48,11 +58,14 @@
   */
   --z-key-cat: 1;
   --z-canvas: 50;
+  --z-title: 100;
+  --z-modal: 200;
   --z-loading: 10000;
 
   /**
-  * Loading背景
+  * グラデーション
   */
+  /* loading */
   --loading-grad: linear-gradient(
     to bottom,
     #4b256f 0%,
@@ -61,8 +74,16 @@
     #fabe7c 100%
   );
 
+  /* title */
+  --title-menu-grad: linear-gradient(
+    135deg,
+    hsl(42, 100%, 65%) 0%,
+    #ffa442 40%,
+    #c77dff 100%
+  );
+
   /**
-  * ★ここが追加ポイント！ネコの背景パターンを変数化
+  * ネコの背景パターン
   */
 
   /* ① 通常の顔（耳が高い -15px） */
@@ -105,9 +126,13 @@
   /**
   * アニメーション時間 
   */
+  /* loading */
   --loading-animation-key: 1.2s;
   --loading-animation-paw: 2s;
   --loading-transition: 1.5s;
+
+  /* title */
+  --title-animation-bouncing: 2.5s;
 
   /**
    * ★追加：UIの共通スタイル
@@ -321,9 +346,7 @@ body {
   }
 }
 
-/* =========================================
-   ★タイトル画面 UI
-   ========================================= */
+/* タイトル画面 UI */
 .title-screen {
   position: absolute;
   top: 0;
@@ -334,7 +357,14 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  z-index: var(--z-title);
+}
+
+.title-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 60px;
 }
 
 .title-anim-wrapper {
@@ -343,7 +373,6 @@ body {
   transition:
     opacity 1s ease-out,
     transform 1s ease-out;
-  display: inline-block;
 }
 
 .title-anim-wrapper.visible {
@@ -352,7 +381,7 @@ body {
 }
 
 .title-anim-wrapper.exit-up {
-  transform: translateY(-80px) !important;
+  transform: translateY(-80px);
   opacity: 0;
   transition:
     transform 0.6s ease-in,
@@ -360,20 +389,14 @@ body {
 }
 
 .game-title {
-  font-family: "M PLUS Rounded 1c", sans-serif;
   font-size: 115px;
-  color: #ffe3a3;
+  color: var(--color-lightorange);
   font-weight: bold;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.8),
-    2px 2px 0px rgba(100, 100, 255, 0.8),
-    0 5px 15px rgba(0, 0, 0, 0.7);
+  text-shadow: var(--title-shadow);
 }
 
 .game-title.bouncing {
-  animation: titleBounce 2.5s infinite ease-in-out;
+  animation: titleBounce var(--title-animation-bouncing) infinite ease-in-out;
 }
 
 @keyframes titleBounce {
@@ -389,13 +412,13 @@ body {
 .main-menu-buttons {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 45px;
   opacity: 0;
   transform: translateY(20px);
   transition:
     opacity 0.8s ease-out,
     transform 0.8s ease-out;
-  margin-top: 45px;
+
   transition-delay: 0.5s;
 }
 
@@ -412,51 +435,81 @@ body {
     opacity 0.6s ease-in;
 }
 
+/* --- 共通の立体感定義（これを変数に入れて使い回す！） --- */
 .menu-btn {
+  /* 変数定義：内側のツヤと影のセット */
+  --btn-inner-shine:
+    inset 0 2px 4px rgba(255, 255, 255, 0.9),
+    /* フチの光 */ inset 0 10px 15px rgba(255, 255, 255, 0.4),
+    /* 全体の丸み */ inset 0 -3px 8px rgba(0, 0, 0, 0.15); /* 下の影 */
+
+  position: relative;
+  overflow: hidden;
   width: 260px;
   padding: 10px 0;
-  font-family: "Mochiy Pop P One", sans-serif;
+
+  font-weight: bold;
   font-size: 1.4rem;
   color: var(--color-white);
   cursor: pointer;
-  border-radius: 50px;
-  background: linear-gradient(
-    135deg,
-    hsl(42, 100%, 65%) 0%,
-    #ffa442 40%,
-    #c77dff 100%
-  );
-  border: 4px solid #ffffff;
+  border-radius: 100px;
+
+  background: var(--title-menu-grad);
+  border: 4px solid var(--color-white);
+
+  /* ★変数を呼び出して、外側の影だけをここで指定 */
   box-shadow:
+    var(--btn-inner-shine),
     0 10px 20px rgba(0, 0, 0, 0.3),
-    0 0 20px rgba(255, 200, 255, 0.6);
+    /* 地面に落ちる影 */ 0 0 20px rgba(255, 200, 255, 0.6); /* ほのかな発光 */
+
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease-out;
-  position: relative;
-  overflow: hidden;
+
+  /* 軽量化ポイント：allではなく変化するものだけ指定する */
+  transition:
+    transform 0.2s ease-out,
+    box-shadow 0.2s ease-out;
 }
 
-/* --- ボタン内の光沢演出（ツヤっと感を出す） --- */
+/* ツヤ（光沢部分） */
 .menu-btn::before {
   content: "";
   position: absolute;
-  top: 5%;
-  left: 10%;
-  width: 80%;
-  height: 40%;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 25px;
+  top: 0%;
+  left: 3%;
+  width: 93%;
+  height: 25%;
+
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0) 45%,
+    rgba(255, 255, 255, 0) 100%
+  );
+
+  border-radius: 40px;
+  mix-blend-mode: overlay;
+  pointer-events: none;
 }
 
+/* --- ホバー時：浮き上がる --- */
 .menu-btn:hover {
   transform: translateY(-4px) scale(1.05);
   box-shadow:
-    0 0 15px rgba(253, 160, 133),
-    0 0 30px rgba(138, 43, 226);
+    var(--btn-inner-shine),
+    0 15px 30px rgba(0, 0, 0, 0.3),
+    /* 影が遠くなる */ 0 0 30px rgba(183, 105, 255),
+    /* 紫の光を強く */ 0 0 15px rgba(255, 181, 161); /* オレンジの光を足す */
 }
 
+/* --- クリック時：押し込む --- */
 .menu-btn:active {
   transform: translateY(-1px) scale(0.98);
+  /* 影を小さくして「地面に近い」感じを出す */
+  box-shadow:
+    var(--btn-inner-shine),
+    0 2px 5px rgba(0, 0, 0, 0.3),
+    0 0 10px rgba(255, 200, 255, 0.4);
 }
 
 /* =========================================
@@ -465,6 +518,13 @@ body {
 
 /* ポップなモーダルの枠 */
 .pop-modal-frame {
+  --modal-grad: linear-gradient(
+    130deg,
+    hsl(234, 77%, 59%) 5%,
+    #e281ff 70%,
+    #ff65fc 100%
+  );
+
   position: absolute;
   top: 50%;
   left: 50%;
@@ -482,23 +542,17 @@ body {
   align-items: center;
 
   /* トワイライト風デザイン */
-  background: linear-gradient(
-    130deg,
-    hsl(234, 77%, 59%) 5%,
-    #e281ff 70%,
-    #ff65fc 100%
-  );
-  border: 6px solid #ffd399; /* 内側のクリーム色枠 */
-  outline: 6px solid #ffa74f; /* 外側のオレンジ枠 */
+  background: var(--modal-grad);
+  border: 6px solid var(--color-creamorange); /* 内側のクリーム色枠 */
   border-radius: 60px; /* カプセル型 */
-
-  padding: 20px; /* パディングは少し減らして中央揃えに任せる */
-  box-shadow: 10px 10px 0 rgba(255, 183, 77, 0.4);
-
-  z-index: 200;
+  box-shadow: 
+    /* ① 2本目の枠（ぼかし0、広がり6px）→ これで外枠に見える！ */
+    0 0 0 6px var(--color-orange),
+    /* ② その外側の影（元のやつ） */ 10px 10px 0 rgba(255, 183, 77, 0.4);
+  padding: 20px;
+  z-index: var(--z-modal);
   text-align: center;
-  color: #555;
-
+  color: VAR(--color-gray);
   /* 全体のフォント統一 */
   font-family: "M PLUS Rounded 1c", "Arial Rounded MT Bold", sans-serif;
   font-weight: 800;
