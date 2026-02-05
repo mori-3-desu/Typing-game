@@ -1,120 +1,134 @@
 /* --- POPなフォントの読み込み --- */
 @import url("https://fonts.googleapis.com/css2?family=Fredoka+One&family=M+PLUS+Rounded+1c:wght@400;700&family=Mochiy+Pop+P+One&display=swap");
 :root {
-  /**
-  * カラー基準 
-  */
+  /* =========================================
+     🎨 1. Base Colors & Typography
+     ========================================= */
+  
+  /* --- Basic Palette --- */
   --color-white: #fff;
+  --color-offwhite: #ddd;
+  --color-gray: #555;
+  --color-darkgray: #333;
+  --color-darkblue: #546e7a;
+  --color-aquablue: #aeffff;
+  
+  /* --- Accent Colors --- */
   --color-redpink: #ff5a78;
   --color-lightorange: #ffe3a3;
   --color-creamorange: #ffd399;
   --color-orange: #ffa74f;
-  --color-gray: #555;
+  --color-gold: #ffd700;
+  --color-pink: pink;
+  --color-purple: #bcacc8;
 
-  /* 影の色定義 */
-  --color-shadow-pink: #efa4b8;
-  --color-shadow-dark: rgba(0, 0, 0, 0.2);
-  --color-shadow-dark-deep: rgba(0, 0, 0, 0.15); /* ジャンプ時の薄く広い影 */
-
-  /* 耳と体の色定義 */
-  --color-ear-normal: #ffe3e8; /* 通常の耳 */
-  --color-ear-landing: #efa4b8; /* 着地時の耳（濃い） */
-  --color-body-start: #ffe3e8;
-  --color-body-end: #ffbed2;
-
-  /**
-  * フォント基準
-  */
+  /* --- Fonts --- */
   --font-main: "M PLUS Rounded 1c", sans-serif;
   --font-pop: "Mochiy Pop P One", sans-serif;
   --font-pop-fredoka: "Fredoka One", cursive, sans-serif;
 
-  /**
-  * Background  
-  */
+  /* --- Backgrounds --- */
   --body-bg: #222;
+  --pop-bg: #cfd8dc;
 
-  /**
-  * 影の設定 (修正: varの重複を削除し、変数名を統一)
-  */
-  /* loading */
-  --loading-shadow: rgba(255, 255, 255, 0.5);
-  --loading-box-shadow:
-    0 8px 0 var(--color-shadow-pink), 0 15px 20px var(--color-shadow-dark);
-  /* テキスト用の少し濃い影（なければ作る、あれば既存の濃い方を使う） */
-  --color-text-shadow: rgba(0, 0, 0, 0.3);
 
-  /* title */
-  --title-shadow:
-    0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0px rgba(100, 100, 255, 0.8),
-    0 5px 15px rgba(0, 0, 0, 0.7);
-
-  /* scale・レイアウト基準 */
+  /* =========================================
+     📐 2. Layout & Layers
+     ========================================= */
+  
+  /* --- Scale Standard --- */
   --scale-standard-width: 1200px;
   --scale-standard-height: 780px;
+  --ui-tilt: perspective(500px) rotateX(15deg);
 
-  /**
-  * z-index Map 
-  */
+  /* --- Z-Index Map --- */
   --z-key-cat: 1;
   --z-canvas: 50;
+  --z-diff-header: 10;
   --z-title: 100;
   --z-modal: 200;
   --z-loading: 10000;
 
-  /**
-  * グラデーション
-  */
-  /* loading */
-  --loading-grad: linear-gradient(
-    to bottom,
-    #4b256f 0%,
-    #924c78 40%,
-    #de7c6b 70%,
-    #fabe7c 100%
-  );
 
-  /* title */
-  --title-menu-grad: linear-gradient(
-    135deg,
-    hsl(42, 100%, 65%) 0%,
-    #ffa442 40%,
-    #c77dff 100%
-  );
+  /* =========================================
+     💎 3. Materials (Glass, Shine, Shadow)
+     ========================================= */
 
-  /**
-  * ネコの背景パターン
-  */
+  /* --- Glass Backgrounds --- */
+  --glass-bg-light: rgba(255, 255, 255, 0.15);
+  --glass-bg-dark: rgba(0, 0, 0, 0.5);
 
+  /* --- Shadows (General) --- */
+  --color-shadow-pink: #efa4b8;
+  --color-shadow-dark: rgba(0, 0, 0, 0.2);
+  --color-shadow-dark-deep: rgba(0, 0, 0, 0.15); /* ジャンプ時の薄く広い影 */
+  --color-text-shadow: rgba(0, 0, 0, 0.3);
+
+  /* --- Shine Presets (光沢プリセット) --- */
+  
+  /* 1. 大きなパネル用（シャープな線） */
+  --shine-panel-base: 
+    inset 0.8px 1px 0px rgba(255, 255, 255, 0.8),
+    inset -0.2px -0.8px 0px rgba(255, 255, 255, 0.6),
+    0 20px 50px rgba(0, 0, 0, 0.2);
+
+  /* 2. 王冠アイコン用（中くらいの柔らかさ） */
+  --shine-icon-base:
+    inset 1.7px 1.3px 2px rgba(255, 255, 255, 1),
+    inset -1.1px -1.5px 1px rgba(255, 255, 255, 0.5),
+    0 4px 10px rgba(0, 0, 0, 0.2);
+  --shine-icon-hover:
+    inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+    inset -1px -1px 3px rgba(255, 255, 255, 0.5),
+    0 8px 15px rgba(0, 0, 0, 0.3);
+  --shine-icon-active:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.6),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.2),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+
+  /* 3. 詳細ボタン用（小さな宝石風） */
+  --shine-detail-base:
+    inset 0.8px 0.6px 4px rgba(255, 255, 255, 0.8),
+    inset -0.2px 0.1px 0.5px rgba(255, 255, 255, 0.3),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+  --shine-detail-hover:
+    inset 2px 2px 6px rgba(255, 255, 255, 1),
+    inset -1px -1px 4px rgba(255, 255, 255, 0.5),
+    0 0 10px rgba(255, 255, 255, 0.6);
+  --shine-detail-active:
+    inset 2px 2px 6px rgba(255, 255, 255, 0.8),
+    0 0 5px rgba(255, 255, 255, 0.8);
+
+  /* 4. ハイスコア枠用（ダーク枠） */
+  --shine-darkbox-base:
+    inset 1.5px 1.2px 0px rgba(255, 255, 255, 0.9),
+    inset -1px -1px 0px rgba(255, 255, 255, 0.6),
+    0 4px 10px rgba(0, 0, 0, 0.3);
+
+
+  /* =========================================
+     🐈 4. Component: Loading & Cat Character
+     ========================================= */
+
+  /* --- Cat Colors --- */
+  --color-ear-normal: #ffe3e8;  /* 通常の耳 */
+  --color-ear-landing: #efa4b8; /* 着地時の耳（濃い） */
+  --color-body-start: #ffe3e8;
+  --color-body-end: #ffbed2;
+
+  /* --- Cat Patterns (Gradients) --- */
+  
   /* ① 通常の顔（耳が高い -15px） */
   --loading-key-grad: 
-    /* 左耳 */
-    linear-gradient(135deg, transparent 50%, var(--color-ear-normal) 50%)
-      no-repeat -10px -15px / 40px 40px,
-    /* 右耳 */
-    linear-gradient(225deg, transparent 50%, var(--color-ear-normal) 50%)
-      no-repeat 30px -15px / 40px 40px,
-    /* 本体 */
-    linear-gradient(
-        135deg,
-        var(--color-body-start) 0%,
-        var(--color-body-end) 100%
-      );
+    linear-gradient(135deg, transparent 50%, var(--color-ear-normal) 50%) no-repeat -10px -15px / 40px 40px, /* 左耳 */
+    linear-gradient(225deg, transparent 50%, var(--color-ear-normal) 50%) no-repeat 30px -15px / 40px 40px,  /* 右耳 */
+    linear-gradient(135deg, var(--color-body-start) 0%, var(--color-body-end) 100%); /* 本体 */
 
   /* ② 着地時の顔（耳が低い -5px / 色が濃い） */
   --loading-key-grad-landing: 
-    /* 左耳（濃い・低い） */
-    linear-gradient(135deg, transparent 50%, var(--color-ear-landing) 50%)
-      no-repeat -10px -5px / 40px 40px,
-    /* 右耳（濃い・低い） */
-    linear-gradient(225deg, transparent 50%, var(--color-ear-landing) 50%)
-      no-repeat 30px -5px / 40px 40px,
-    /* 本体 */
-    linear-gradient(
-        135deg,
-        var(--color-body-start) 0%,
-        var(--color-body-end) 100%
-      );
+    linear-gradient(135deg, transparent 50%, var(--color-ear-landing) 50%) no-repeat -10px -5px / 40px 40px,
+    linear-gradient(225deg, transparent 50%, var(--color-ear-landing) 50%) no-repeat 30px -5px / 40px 40px,
+    linear-gradient(135deg, var(--color-body-start) 0%, var(--color-body-end) 100%);
 
   /* 光沢用 */
   --loading-key-grad-shiny: linear-gradient(
@@ -123,22 +137,41 @@
     rgba(255, 255, 255, 0.1)
   );
 
-  /**
-  * アニメーション時間 
-  */
-  /* loading */
+  /* --- Loading Screen Styles --- */
+  --loading-shadow: rgba(255, 255, 255, 0.5);
+  --loading-box-shadow: 0 8px 0 var(--color-shadow-pink), 0 15px 20px var(--color-shadow-dark);
+  --loading-grad: linear-gradient(
+    to bottom,
+    #4b256f 0%,
+    #924c78 40%,
+    #de7c6b 70%,
+    #fabe7c 100%
+  );
+
+  /* --- Loading Animations --- */
   --loading-animation-key: 1.2s;
   --loading-animation-paw: 2s;
   --loading-transition: 1.5s;
 
-  /* title */
-  --title-animation-bouncing: 2.5s;
 
-  /**
-   * ★追加：UIの共通スタイル
-   * キーボードとテキストを同じ角度で傾けるための変数
-   */
-  --ui-tilt: perspective(500px) rotateX(15deg);
+  /* =========================================
+     🎮 5. Component: Title & UI
+     ========================================= */
+
+  /* --- Title Styles --- */
+  --title-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0px rgba(100, 100, 255, 0.8),
+    0 5px 15px rgba(0, 0, 0, 0.7);
+  
+  --title-menu-grad: linear-gradient(
+    135deg,
+    hsl(42, 100%, 65%) 0%,
+    #ffa442 40%,
+    #c77dff 100%
+  );
+
+  /* --- Title Animations --- */
+  --title-animation-bouncing: 2.5s;
 }
 
 /* 基本設定 (Base) */
@@ -157,6 +190,7 @@ body {
 
 #scaler {
   position: absolute;
+  transform: translate(-50%, -50%);
   width: var(--scale-standard-width);
   height: var(--scale-standard-height);
   transform-origin: center center;
@@ -560,27 +594,26 @@ body {
 
 /* ラベルテキスト */
 .pop-label {
+  --pop-label-shadow: 2px 2px 0 #ffe5e5, 4px 4px 0 rgba(0, 0, 0, 0.05);
   font-size: 1.8rem;
-  color: rgb(252, 157, 173);
+  color: var(--color-pink);
   margin-bottom: 15px;
   display: block;
   letter-spacing: 2px;
-  text-shadow:
-    2px 2px 0 #ffe5e5,
-    4px 4px 0 rgba(0, 0, 0, 0.05);
+  text-shadow: var(--pop-label-shadow);
   line-height: 1.2;
 }
 
 /* 入力ボックス */
 .pop-input {
-  border: 4px solid #bcacc8;
+  border: 4px solid var(--color-purple);
   background: var(--color-white);
   border-radius: 50px;
   padding: 12px 30px;
   font-size: 2rem;
   font-family: inherit;
   font-weight: 800;
-  color: #333;
+  color: var(--color-darkgray);
   text-align: center;
   width: 70%; /* 横幅いっぱい */
   outline: none;
@@ -589,20 +622,20 @@ body {
 }
 
 .pop-input:focus {
-  border-color: #eda268;
+  border-color: var(--color-orange);
   transform: scale(1.05);
-  background: #fff;
+  background: var(--color-white);
 }
 
 .pop-input::placeholder {
-  color: #ddd;
+  color: var(--color-offwhite);
   font-weight: normal;
 }
 
 /* 注釈テキスト */
 .pop-note {
   font-size: 1.2rem;
-  color: #fffdfd;
+  color: var(--color-white);
   margin-top: 10px;
   font-weight: bold;
   opacity: 0.9;
@@ -612,7 +645,7 @@ body {
 .confirm-name-disp {
   font-size: 2.6rem; /* 名前を少し大きく */
   font-weight: 900;
-  color: #fff;
+  color: var(--color-white);
   margin: 10px 0 20px 0;
 
   /* 文字周りの装飾 */
@@ -638,20 +671,21 @@ body {
   top: 0;
 
   /* デフォルト色（戻るボタンなど） */
-  background: #cfd8dc;
-  color: #546e7a;
+  background: var(--pop-bg);
+  color: var(--color-darkblue);
   box-shadow: 0 6px 0 #90a4ae;
 }
 
 /* メインボタン (OK/はい) - 上書き設定 */
 .pop-btn.primary {
-  background: linear-gradient(
+  --pop-btn-grad: linear-gradient(
     135deg,
     hsl(42, 100%, 65%) 0%,
     #ffa442 40%,
     #d8a4ff 100%
   );
-  color: #fff;
+  background: var(--pop-btn-grad);
+  color: var(--color-white);
   box-shadow: 0 6px 0 #d96441;
 }
 
@@ -676,108 +710,92 @@ body {
   box-shadow: 0 0 0; /* 影なし */
 }
 
-/* =========================================
-   ★難易度選択画面 UI
-   ========================================= */
+/* 難易度選択画面 UI */
 #difficulty-view {
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding-top: 0;
+  align-items: center;
+  gap: 50px;
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
 }
 
 .diff-view-title {
-  font-family: "Fredoka One", cursive;
-  font-size: 4.3rem;
-  color: #ffe3a3;
-  letter-spacing: 0.1em;
-  text-shadow:
-    0 0 10px rgba(255, 255, 255, 0.8),
-    2px 2px 0px rgba(100, 100, 255, 0.8),
+  --diff-title-shadow:
+    0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0px rgba(100, 100, 255, 0.8),
     0 5px 15px rgba(0, 0, 0, 0.7);
-  margin-bottom: 50px;
-  margin-top: -20px;
-  line-height: 1;
+  margin: 0;
+  font-family: var(--font-pop-fredoka);
+  font-size: 4.3rem;
+  color: var(--color-lightorange);
+  letter-spacing: 0.1em;
+  text-shadow: var(--diff-title-shadow);
 }
 
 .diff-main-container {
   display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  gap: 80px;
-  width: 100%;
-  margin-top: 0;
+  gap: 85px;
 }
 
 .diff-button-menu {
   display: flex;
   flex-direction: column;
   gap: 40px;
-  /* ★修正: 余白を確保して判定エリアを正常化 */
-  padding: 20px;
 }
 
+/* ベースのボタン設定 */
 .diff-btn {
-  width: 270px;
-  padding: 12px 0;
-  font-family: "Mochiy Pop P One", sans-serif;
-  font-size: 1.8rem;
-  color: #fff;
-  cursor: pointer;
-  border-radius: 50px;
-  border: 5px solid #fff;
+  --glass-shine:
+    inset 5px 5px 15px rgba(255, 255, 255, 0.8),
+    inset -3px -3px 8px rgba(255, 255, 255, 0.4);
+
   position: relative;
   overflow: hidden;
+  width: 270px;
+  padding: 12px 0;
+  font-family: var(--font-pop);
+  font-size: 1.8rem;
+  color: var(--color-white);
+  border-radius: 50px;
+  border: 4px solid var(--color-white);
   transition: all 0.1s ease;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
-  background: none;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding-top: 18px;
-  padding-bottom: 12px;
+  padding: 15px;
   line-height: 1;
-}
+  cursor: pointer;
 
-/* ツヤ感（変更なし） */
-.diff-btn::before {
-  content: "";
-  position: absolute;
-  top: 5px;
-  left: 15%;
-  width: 70%;
-  height: 35%;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 20px;
+  /* ベースの状態でも変数を適用しておく */
+  box-shadow:
+    var(--glass-shine),
+    0 5px 15px rgba(0, 0, 0, 0.15);
 }
 
 .diff-btn:hover {
   transform: translateY(-4px);
-  filter: brightness(1.05);
 }
 
 .diff-btn:active {
   transform: translateY(4px);
-  box-shadow: none !important;
-  filter: brightness(0.95);
+  /* クリック時も「ガラス感」だけは残しつつ、影(0 8px 0)を消す */
+  box-shadow:
+    var(--glass-shine),
+    0 0 0 rgba(0, 0, 0, 0) !important;
 }
 
-/* --- 難易度別の色設定（変更なし） --- */
+/* --- 難易度別の色設定 --- */
 .diff-btn.easy {
   background: linear-gradient(135deg, #74ebd5 0%, #aee8ff 100%);
   box-shadow:
+    var(--glass-shine),
     0 8px 0 #3ecfcf,
-    0 15px 20px rgba(255, 255, 255, 0.2); /* 影色を調整 */
+    0 15px 20px rgba(255, 255, 255, 0.2);
 }
 
 .diff-btn.normal {
   background: linear-gradient(135deg, #90ff64 0%, #c1ffb2 100%);
   box-shadow:
+    var(--glass-shine),
     0 8px 0 #54d618,
     0 15px 20px rgba(255, 255, 255, 0.2);
 }
@@ -785,25 +803,21 @@ body {
 .diff-btn.hard {
   background: linear-gradient(135deg, #ffff00 0%, #fff891 100%);
   box-shadow:
+    var(--glass-shine),
     0 8px 0 #d4d600,
     0 15px 20px rgba(255, 255, 255, 0.2);
-  color: #5c5c00; /* 黄色背景なので文字を少し濃くしても良いかも */
+  color: #5c5c00;
 }
 
 .diff-btn#btn-back {
   background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
   box-shadow:
+    var(--glass-shine),
     0 8px 0 #ff758c,
     0 15px 20px rgba(255, 255, 255, 0.2);
 }
 
-.diff-btn#btn-back {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-  box-shadow:
-    0 8px 0 #ff758c,
-    0 15px 20px rgba(255, 255, 255, 0.2);
-}
-
+/* --- メイン情報パネル --- */
 .diff-info-panel {
   position: relative;
   padding: 30px 40px 40px 40px;
@@ -811,12 +825,14 @@ body {
   height: 400px;
   display: flex;
   flex-direction: column;
-  margin-top: 10px;
-  background: rgba(255, 255, 255, 0.15);
+  
+  /* ガラス設定 */
+  background: var(--glass-bg-light);
   backdrop-filter: blur(15px);
   border-radius: 40px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
+  border: none;
+  box-shadow: var(--shine-panel-base); /* ★変数適用 */
+  
   transition: opacity 0.2s ease;
 }
 
@@ -824,116 +840,113 @@ body {
   opacity: 0;
 }
 
+/* --- ヘッダーグループ --- */
 .diff-header-group {
   position: absolute;
   top: 20px;
   right: 26px;
   display: flex;
-  align-items: flex-end;
   gap: 15px;
-  z-index: 10;
+  z-index: var(--z-diff-header);
 }
 
-/* 難易度選択画面の王冠アイコン */
+/* --- 👑 王冠アイコン --- */
 .crown-icon-only {
-  width: 41px;
+  width: 40px;
   height: 36px;
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 20%;
+  background: var(--glass-bg-light);
+  border-radius: 12px;
+  border: none;
   display: flex;
-  justify-content: center;
-  align-items: center;
   cursor: pointer;
-  transition:
-    transform 0.1s ease,
-    background 0.1s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  padding: 2px;
+  box-shadow: var(--shine-icon-base); /* ★変数適用 */
+  transition: all 0.2s ease;
 }
 
 .crown-icon-only:hover {
-  transform: scale(1.1);
-  background: rgba(255, 255, 255, 0.4);
-  filter: brightness(1.2);
+  transform: scale(1.1) translateY(-2px);
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: var(--shine-icon-hover); /* ★変数適用 */
 }
 
 .crown-icon-only:active {
-  transform: scale(0.95);
+  transform: scale(0.95) translateY(0);
   background: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shine-icon-active); /* ★変数適用 */
 }
 
-/* --- ハイスコア表示ボックス（修正版） --- */
+/* --- 📊 ハイスコア表示ボックス --- */
 .diff-hiscore-box {
-  /* ▼ 変更・追加部分 ▼ */
-  min-width: 310px; /* 横長にする */
-  justify-content: space-between; /* 中身を左右（ラベル群 vs スコア）に離す */
-  padding: 2.5px 12px; /* 少しゆとりを持たせる */
+  min-width: 310px;
+  justify-content: space-between;
+  padding: 2.5px 12px;
+  
+  background: var(--glass-bg-dark);
+  border-radius: 20px;
+  border: none;
+  box-shadow: var(--shine-darkbox-base); /* ★変数適用 */
 
-  /* ▼ 既存のデザイン維持 ▼ */
-  background: rgba(0, 0, 0, 0.5);
-  border-radius: 20px; /* お好みで30pxくらいに丸めても可愛いです */
-  border: 2px solid rgba(232, 255, 253, 0.8);
   display: flex;
   align-items: center;
-  /* gap: 10px;  <-- space-betweenを使うので親のgapは削除か0でOK */
-
-  font-family: "Fredoka One", cursive;
-  color: #ffd700;
+  font-family: var(--font-pop-fredoka);
+  color: var(--color-gold);
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.5);
   font-size: 1.2rem;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-/* ★NEW: 左側の「ラベル＋ボタン」をまとめるグループ */
+/* ラベルグループ */
 .hiscore-label-group {
   display: flex;
   align-items: center;
-  gap: 10px; /* 文字とボタンの間隔 */
+  gap: 10px;
 }
 
-/* 既存のラベル調整 */
 .diff-hiscore-box .label {
   font-size: 1rem;
-  color: #ddd;
-  margin: 0; /* 余白リセット */
+  color: var(--color-white);
+  margin: 0;
 }
 
-/* ★NEW: 詳細へ飛ぶ丸いボタン */
+/* --- 📝 詳細ボタン --- */
 .hiscore-detail-btn {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  
+  background: var(--glass-bg-light);
   color: #fff;
 
   display: flex;
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  transition: all 0.2s ease;
-
-  /* アイコンがない場合は文字サイズ調整 */
   font-size: 1rem;
-  padding: 0;
+  
+  box-shadow: var(--shine-detail-base); /* ★変数適用 */
+  transition: all 0.2s ease;
 }
 
 .hiscore-detail-btn:hover {
-  background: #fff;
-  color: #333;
-  transform: scale(1.1);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  transform: scale(1.15);
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: var(--shine-detail-hover); /* ★変数適用 */
 }
 
-/* スコア数値（既存維持＋微調整） */
+.hiscore-detail-btn:active {
+  transform: scale(0.9);
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: var(--shine-detail-active); /* ★変数適用 */
+}
+
+/* --- テキスト系・その他（変更なし） --- */
 #menu-hiscore-val {
-  font-family: "M PLUS Rounded 1c", monospace;
+  font-family: var(--font-main);
   font-variant-numeric: tabular-nums;
   font-weight: bold;
-  font-size: 1.6rem; /* 箱が大きくなったので少し大きく */
-  color: #fff;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  font-size: 1.6rem;
+  color: var(--color-white);
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.6);
   line-height: 1;
   min-width: 140px;
   text-align: right;
@@ -941,70 +954,61 @@ body {
 }
 
 #display-diff-name {
-  padding-bottom: 40px;
   font-family: "Fredoka One", cursive;
   font-size: 3.5rem;
-  color: #fff;
+  color: var(--color-white);
   line-height: 1;
-  padding-top: 40px !important;
-  margin-bottom: 5px !important;
+  padding-top: 40px;
   text-shadow:
     3px 3px 0px rgba(0, 0, 0, 0.2),
     0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
 #display-diff-text {
-  padding-bottom: 40px;
   flex-grow: 1;
-  font-size: 1.3rem;
-  line-height: 1.2;
+  font-size: 1.2rem;
+  line-height: 6;
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
-  white-space: nowrap;
-  overflow-y: auto;
   scrollbar-width: none;
 }
 
 .diff-info-footer {
-  margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 16px;
   padding-top: 20px;
   border-top: 2px dashed rgba(255, 255, 255, 0.4);
 }
 
 .status-item {
-  font-family: "Fredoka One", cursive;
   font-size: 2.2rem;
   font-weight: bold;
   display: flex;
   align-items: center;
   gap: 15px;
-  line-height: 1.1;
+  line-height: 1;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
 }
 
 #display-diff-time {
-  color: #aeffff;
+  color: var(--color-aquablue);
   letter-spacing: 1px;
 }
-
 #display-diff-time::before {
   content: "TIME:⏳";
-  font-size: 2.5rem;
-  filter: drop-shadow(0 0 5px rgba(0, 255, 255, 0.6));
+  font-size: 2.6rem;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
 }
 
 #display-diff-chars {
-  color: #ffaeae;
-  letter-spacing: 1px;
+  color: var(--color-pink);
 }
 
 #display-diff-chars::before {
   content: "CHAR:⌨️";
-  font-size: 2.5rem;
-  filter: drop-shadow(0 0 5px rgba(255, 100, 100, 0.6));
+  font-size: 2.6rem;
+  text-shadow: 0 0 5px rgba(255, 100, 100, 0.6)
 }
 
 /* =========================================

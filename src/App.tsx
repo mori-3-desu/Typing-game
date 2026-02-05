@@ -4,6 +4,7 @@ import "./App.css";
 
 // --- Components ---
 import { GameCanvas } from "./components/screens/GameCanvas";
+import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { TitleScreen } from "./components/screens/TitleScreen";
 import { DifficultySelectScreen } from "./components/screens/Difficulty";
 import { GameScreen } from "./components/screens/GameScreen";
@@ -223,7 +224,7 @@ function App() {
   });
 
   // --- Hook: Auth(認証)
-  const { userId } = useAuth();
+  const { userId, isLoading, error } = useAuth();
 
   // --- Effects ---
   useEffect(() => {
@@ -376,10 +377,12 @@ function App() {
       console.error("Name update error:", err);
     }
   };
+
   const handleOpenHowToPlay = () => {
     playSE("decision");
     setShowHowToPlay(true);
   };
+
   const handleCloseHowToPlay = () => {
     playSE("decision");
     setShowHowToPlay(false);
@@ -522,156 +525,147 @@ function App() {
   return (
     <div className="App">
       <div id="scaler" ref={scalerRef}>
-        <div id="game-wrapper">
-          {allBackgrounds.map((bg) => (
+        {isLoading ? (
+          <LoadingScreen />
+        ) : error ? (
+          <div className="error-fallback">Error: {error.message}</div>
+        ) : (
+          <div id="game-wrapper">
+            {allBackgrounds.map((bg) => (
+              <div
+                key={bg.key}
+                className="bg-layer"
+                style={{
+                  backgroundImage: `url(${bg.src})`,
+                  opacity: targetBgSrc === bg.src ? 1 : 0,
+                  zIndex: targetBgSrc === bg.src ? 1 : 0,
+                }}
+              />
+            ))}
             <div
-              key={bg.key}
-              className="bg-layer"
+              id="game-screen"
+              className={`${isRainbowMode && (gameState === "playing" || gameState === "finishing") ? "rainbow-glow" : ""} ${gameState === "finishing" ? "bg-blur" : ""}`}
               style={{
-                backgroundImage: `url(${bg.src})`,
-                opacity: targetBgSrc === bg.src ? 1 : 0,
-                zIndex: targetBgSrc === bg.src ? 1 : 0,
+                position: "absolute",
+                width: "100%",
+                height: "100%",
+                pointerEvents: "none",
+                zIndex: 2,
               }}
-            />
-          ))}
-          <div
-            id="game-screen"
-            className={`${isRainbowMode && (gameState === "playing" || gameState === "finishing") ? "rainbow-glow" : ""} ${gameState === "finishing" ? "bg-blur" : ""}`}
-            style={{
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              pointerEvents: "none",
-              zIndex: 2,
-            }}
-          ></div>
-          <div id="fade-overlay" style={{ opacity: isWhiteFade ? 1 : 0 }}></div>
+            ></div>
+            <div
+              id="fade-overlay"
+              style={{ opacity: isWhiteFade ? 1 : 0 }}
+            ></div>
 
-          <GameCanvas gameState={gameState} playPhase={playPhase} />
+            <GameCanvas gameState={gameState} playPhase={playPhase} />
 
-          {gameState === "loading" && (
-            <div id="loading-screen">
-              <div className="keyboard-loader">
-                {["L", "O", "A", "D", "I", "N", "G"].map((char, i) => (
-                  <span
-                    key={i}
-                    className="key cat"
-                    // スマートに書けるが将来重くなったらCSSのnthプロパティ(ブラウザが計算が終わった状態で渡してくれるため爆速)を検討
-                    style={{ "--i": i } as React.CSSProperties}
-                  >
-                    {char}
-                  </span>
-                ))}
-              </div>
-              <div className="loading-text">
-                <span className="paw">🐾</span> Loading...{" "}
-                <span className="paw">🐾</span>
-              </div>
-            </div>
-          )}
+            {gameState === "loading" && <LoadingScreen />}
 
-          {gameState === "title" && (
-            <TitleScreen
-              showTitle={showTitle}
-              enableBounce={enableBounce}
-              titlePhase={titlePhase}
-              isTitleExiting={isTitleExiting}
-              isNameConfirmed={isNameConfirmed}
-              playerName={playerName}
-              setPlayerName={setPlayerName}
-              nameError={nameError}
-              setNameError={setNameError}
-              handleStartSequence={handleStartSequence}
-              handleOpenHowToPlay={handleOpenHowToPlay}
-              handleOpenConfig={handleOpenConfig}
-              handleCancelInput={handleCancelInput}
-              handleNameSubmit={handleNameSubmit}
-              handleBackToInput={handleBackToInput}
-              handleFinalConfirm={handleFinalConfirm}
-            />
-          )}
+            {gameState === "title" && (
+              <TitleScreen
+                showTitle={showTitle}
+                enableBounce={enableBounce}
+                titlePhase={titlePhase}
+                isTitleExiting={isTitleExiting}
+                isNameConfirmed={isNameConfirmed}
+                playerName={playerName}
+                setPlayerName={setPlayerName}
+                nameError={nameError}
+                setNameError={setNameError}
+                handleStartSequence={handleStartSequence}
+                handleOpenHowToPlay={handleOpenHowToPlay}
+                handleOpenConfig={handleOpenConfig}
+                handleCancelInput={handleCancelInput}
+                handleNameSubmit={handleNameSubmit}
+                handleBackToInput={handleBackToInput}
+                handleFinalConfirm={handleFinalConfirm}
+              />
+            )}
 
-          {gameState === "difficulty" && (
-            <DifficultySelectScreen
-              difficulty={difficulty}
-              setDifficulty={setDifficulty}
-              hoverDifficulty={hoverDifficulty}
-              setHoverDifficulty={setHoverDifficulty}
-              isInputLocked={isInputLocked}
-              isTransitioning={isTransitioning}
-              handleSelectDifficulty={handleSelectDifficulty}
-              backToTitle={backToTitle}
-              fetchRanking={fetchRanking}
-              handleShowHighScoreDetail={handleShowHighScoreDetail}
-              playDecisionSound={() => playSE("decision")}
-            />
-          )}
+            {gameState === "difficulty" && (
+              <DifficultySelectScreen
+                difficulty={difficulty}
+                setDifficulty={setDifficulty}
+                hoverDifficulty={hoverDifficulty}
+                setHoverDifficulty={setHoverDifficulty}
+                isInputLocked={isInputLocked}
+                isTransitioning={isTransitioning}
+                handleSelectDifficulty={handleSelectDifficulty}
+                backToTitle={backToTitle}
+                fetchRanking={fetchRanking}
+                handleShowHighScoreDetail={handleShowHighScoreDetail}
+                playDecisionSound={() => playSE("decision")}
+              />
+            )}
 
-          {(gameState === "playing" || gameState === "finishing") && (
-            <GameScreen
-              gameState={gameState}
-              playPhase={playPhase}
-              difficulty={difficulty}
-              score={score}
-              displayScore={displayScore}
-              combo={combo}
-              comboClass={comboClass}
-              timeLeft={timeLeft}
-              gaugeValue={gaugeValue}
-              gaugeMax={gaugeMax}
-              completedWords={completedWords}
-              currentSpeed={currentSpeed}
-              jpText={jpText}
-              romaState={romaState}
-              showRomaji={showRomaji}
-              allSegments={allSegments}
-              shakeStatus={shakeStatus}
-              rank={rank}
-              bonusPopups={bonusPopups}
-              perfectPopups={perfectPopups}
-              scorePopups={scorePopups}
-              timePopups={timePopups}
-              isRainbowMode={isRainbowMode}
-              isFinishExit={isFinishExit}
-            />
-          )}
+            {(gameState === "playing" || gameState === "finishing") && (
+              <GameScreen
+                gameState={gameState}
+                playPhase={playPhase}
+                difficulty={difficulty}
+                score={score}
+                displayScore={displayScore}
+                combo={combo}
+                comboClass={comboClass}
+                timeLeft={timeLeft}
+                gaugeValue={gaugeValue}
+                gaugeMax={gaugeMax}
+                completedWords={completedWords}
+                currentSpeed={currentSpeed}
+                jpText={jpText}
+                romaState={romaState}
+                showRomaji={showRomaji}
+                allSegments={allSegments}
+                shakeStatus={shakeStatus}
+                rank={rank}
+                bonusPopups={bonusPopups}
+                perfectPopups={perfectPopups}
+                scorePopups={scorePopups}
+                timePopups={timePopups}
+                isRainbowMode={isRainbowMode}
+                isFinishExit={isFinishExit}
+              />
+            )}
 
-          {(gameState === "result" || gameState === "hiscore_review") && (
-            <ResultScreen
-              gameState={gameState}
-              difficulty={difficulty}
-              resultData={displayData}
-              highScore={gameState === "result" ? highScore : undefined}
-              scoreDiff={scoreDiff}
-              isNewRecord={gameState === "result" ? isNewRecord : false}
-              resultAnimStep={resultAnimStep}
-              onRetry={retryGame}
-              onBackToDifficulty={backToDifficulty}
-              onBackToTitle={backToTitle}
-              onShowRanking={fetchRanking}
-              onTweet={getShareUrl}
-              onClickScreen={() => {
-                if (gameState === "hiscore_review") {
-                  backToDifficulty();
-                } else {
-                  skipAnimation(displayData.rank);
-                }
-              }}
-            />
-          )}
+            {(gameState === "result" || gameState === "hiscore_review") && (
+              <ResultScreen
+                gameState={gameState}
+                difficulty={difficulty}
+                resultData={displayData}
+                highScore={gameState === "result" ? highScore : undefined}
+                scoreDiff={scoreDiff}
+                isNewRecord={gameState === "result" ? isNewRecord : false}
+                resultAnimStep={resultAnimStep}
+                onRetry={retryGame}
+                onBackToDifficulty={backToDifficulty}
+                onBackToTitle={backToTitle}
+                onShowRanking={fetchRanking}
+                onTweet={getShareUrl}
+                onClickScreen={() => {
+                  if (gameState === "hiscore_review") {
+                    backToDifficulty();
+                  } else {
+                    skipAnimation(displayData.rank);
+                  }
+                }}
+              />
+            )}
 
-          {showRanking && (
-            <Ranking
-              difficulty={difficulty}
-              rankingData={rankingData}
-              userId={userId}
-              isDevRankingMode={isDevRankingMode}
-              onClose={closeRanking}
-              onShowDevScore={handleShowDevScore}
-              onFetchRanking={fetchRanking}
-            />
-          )}
-        </div>
+            {showRanking && (
+              <Ranking
+                difficulty={difficulty}
+                rankingData={rankingData}
+                userId={userId}
+                isDevRankingMode={isDevRankingMode}
+                onClose={closeRanking}
+                onShowDevScore={handleShowDevScore}
+                onFetchRanking={fetchRanking}
+              />
+            )}
+          </div>
+        )}
+        ;
       </div>
       {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
       {showConfig && (
