@@ -33,7 +33,7 @@ export const BGM_PATHS = {
 export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   EASY: {
     bg:    "/images/sea.png",
-    time:  100,
+    time:  100000000000,
     chars: "1 ~ 7 文字",
     text:  "初心者の方におすすめ。朝の爽やかな海でいざ練習！",
     bgm:   "/bgm/Secret-Adventure.mp3",
@@ -139,7 +139,7 @@ export const STORAGE_KEYS = {
 export const DEFAULT_CONFIG = {
   VOLUME_BGM_SE: 0.5,
   IS_MUTED: false,
-  SHOW_ROMAJI: true,
+  D_SHOW_ROMAJI: true,
 } as const;
 
 // useTypingEngine
@@ -187,8 +187,8 @@ export const SCORE_DIRECTION = {
 
 // コンボに応じたクラス
 export const COMBO_THRESHOLDS = {
-  GOLD:    100,
-  RAINBOW: 200,
+  GOLD:    10,
+  RAINBOW: 20,
 } as const;
 
 // コンボ数によるスコア倍率
