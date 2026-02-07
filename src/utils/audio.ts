@@ -124,7 +124,7 @@ export const initAudio = async () => {
         console.error(`SE Load Error (${key}):`, e);
       }
     }),
-    ...Object.entries(BGM_PATHS).map(async ([_, path]) => {
+    ...Object.entries(BGM_PATHS).map(async ([, path]) => {
       try {
         const buffer = await loadAudio(path);
         bgmBuffers[path] = buffer;

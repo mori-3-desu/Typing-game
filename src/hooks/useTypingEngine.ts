@@ -1,5 +1,5 @@
 /**
- * @file useTypingGame.ts
+ * @file useTypingEngine.ts
  * @description タイピングゲームのコアロジック
  */
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
@@ -89,7 +89,7 @@ export class Segment {
     if (nextExpected === "。" && key === ".") inputChar = "。";
 
     const nextBuffer = this.inputBuffer + inputChar;
-    
+
     // 変数名を分かりやすく、ロジックをシンプルに
     // startsWithで「未来があるルート」を探す
     const hasFutureRoute = this.patterns.some((p) => p.startsWith(nextBuffer));
@@ -105,7 +105,7 @@ export class Segment {
     }
 
     // --- ミスルート処理 ---
-    
+
     // 既に入力が終わってるのに余計な入力をした
     if (this.patterns.includes(this.inputBuffer)) {
       return "MISS";
@@ -179,7 +179,6 @@ export class TypingEngine {
     // n拡張チェック
     // 親クラスは「条件を確認して、命令する」だけ。中身はいじらない。
     if (key === "n" && this.segIndex > 0 && prevSegment) {
-      
       // 1. 現在のセグメントがこのキーを受け入れるか？（segmentが無い＝最後の文字後の入力などの場合はfalse）
       const isCorrectForCurrent = segment ? segment.canAccept(key) : false;
 
@@ -209,10 +208,13 @@ export class TypingEngine {
 
   // Backspace処理
   backspace(): { status: string } {
-    if (
-      this.segIndex === 0 &&
-      this.segments[0].inputBuffer.length === 0
-    ) {
+    // セグメントが存在しない場合（空文字など）は常にEMPTY
+    if (this.segments.length === 0) {
+      this.segIndex = 0;
+      return { status: "EMPTY" };
+    }
+
+    if (this.segIndex === 0 && this.segments[0].inputBuffer.length === 0) {
       return { status: "EMPTY" };
     }
 

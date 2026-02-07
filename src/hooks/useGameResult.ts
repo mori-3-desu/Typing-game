@@ -165,7 +165,6 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
       if (resultAnimStep < 5) skipAnimation(rank);
       else onBack();
     }
-    [resultAnimStep, skipAnimation];
   };
 
   return {

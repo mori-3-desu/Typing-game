@@ -199,16 +199,7 @@ function App() {
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
 
-  // --- ★ Hook: Game Control (タイマー & 終了ロジック) ---
-  const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
-    gameState,
-    playPhase,
-    difficulty,
-    timeLeft,
-    tick,
-    setGameState,
-    processResult,
-    // 統計データ (typingGame から取得したもの)
+  const myGameStats = {
     score,
     completedWords,
     correctCount,
@@ -220,7 +211,19 @@ function App() {
     missedWordsRecord,
     missedCharsRecord,
     jpText,
-    currentWordMiss: currentWordMissRef.current,
+    currentWordMiss: currentWordMissRef.current, // Refではなく値を渡すのがポイント
+  };
+
+  // --- ★ Hook: Game Control (タイマー & 終了ロジック) ---
+  const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
+    gameState,
+    playPhase,
+    difficulty,
+    timeLeft,
+    currentStats: myGameStats,
+    tick,
+    setGameState,
+    processResult,
   });
 
   // --- Hook: Auth(認証)
@@ -233,13 +236,20 @@ function App() {
   }, [handleKeyInput, handleBackspace]);
 
   useEffect(() => {
+    // ① 単語が変わった瞬間のリセット処理
     if (jpText !== prevWordRef.current) {
-      currentWordMissRef.current = 0;
-      prevWordRef.current = jpText;
+      currentWordMissRef.current = 0; // 新しい単語になったので、ミス数を0にリセット
+      prevWordRef.current = jpText; // 「今の単語」を記憶（次の比較用）
     }
+
+    // ② ミスが増えたかどうかの監視処理
     if (missCount > prevMissCountRef.current) {
+      // 全体のミス数が増えた分だけ、今の単語のミス数に加算する
+      // (例: 全体ミスが 10 → 11 になったら、今の単語ミスを +1 する)
       currentWordMissRef.current += missCount - prevMissCountRef.current;
     }
+
+    // ③ 次回の比較用に、今の全体ミス数を記憶
     prevMissCountRef.current = missCount;
   }, [missCount, jpText]);
 
@@ -324,6 +334,7 @@ function App() {
     playSE("decision");
     setTitlePhase("normal");
   };
+
   const handleNameSubmit = () => {
     const trimmedName = playerName.trim();
     setNameError("");
@@ -342,6 +353,7 @@ function App() {
     playSE("decision");
     setTitlePhase("confirm");
   };
+
   const handleFinalConfirm = () => {
     localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, playerName);
     playSE("decision");
@@ -350,18 +362,22 @@ function App() {
     setGameState("difficulty");
     setTitlePhase("normal");
   };
+
   const handleBackToInput = () => {
     playSE("decision");
     setTitlePhase("input");
   };
+
   const handleOpenConfig = () => {
     playSE("decision");
     setShowConfig(true);
   };
+
   const handleCloseConfig = () => {
     playSE("decision");
     setShowConfig(false);
   };
+
   const handleSaveName = async (newName: string) => {
     // userId がない（認証が終わっていない）場合は処理を中断
     if (!userId) {

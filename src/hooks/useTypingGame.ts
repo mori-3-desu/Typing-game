@@ -27,6 +27,7 @@ import {
   type BonusPopup,
   type TimePopup,
   type TypedLog,
+  type RomaState,
   type PerfectPopup,
   type MissedWord,
   type WordDataMap,
@@ -71,11 +72,7 @@ interface GameState {
   gaugeValue: number;
   gaugeMax: number;
   jpText: string;
-  romaState: {
-    typedLog: TypedLog[];
-    current: string;
-    remaining: string;
-  };
+  romaState: RomaState;
   allSegments: Segment[];
   correctCount: number;
   missCount: number;
@@ -118,10 +115,19 @@ const initialState: GameState = {
 
 type GameAction =
   | { type: "RESET"; initialTime: number }
-  | { type: "LOAD_WORD"; jp: string; romaState: any; segments: Segment[] }
-  | { type: "UPDATE_DISPLAY"; romaState: any; segments: Segment[] }
+  | {
+      type: "LOAD_WORD";
+      jp: string;
+      romaState: RomaState;
+      segments: Segment[];
+    }
+  | {
+      type: "UPDATE_DISPLAY";
+      romaState: RomaState;
+      segments: Segment[];
+    }
   | { type: "TICK"; amount: number } // ★これを使います
-  | { type: "ADD_TIME"; sec: number; }
+  | { type: "ADD_TIME"; sec: number }
   | { type: "ADD_TIME_POPUP"; popup: TimePopup }
   | { type: "REMOVE_TIME_POPUP"; id: number }
   | { type: "HIDE_TIME_ADDED" }
