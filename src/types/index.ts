@@ -31,6 +31,42 @@ export type DifficultyConfig = {
   color: string; // 難易度ごとのテーマカラー
 };
 
+// ---------------------------------------------------------
+// 1. 純粋な「成績データ」だけの型を作る
+// ---------------------------------------------------------
+export type GameStats = {
+  score: number;
+  completedWords: number;
+  correctCount: number;
+  missCount: number;
+  backspaceCount: number;
+  maxCombo: number;
+  currentSpeed: string | number;
+  rank: string;
+  missedWordsRecord: { word: string; misses: number }[];
+  missedCharsRecord: { [key: string]: number };
+  jpText: string;
+  currentWordMiss: number; // 値として渡すならここでOK
+};
+
+// ---------------------------------------------------------
+// 2. フックが受け取る「引数全体」の型
+//    (ここに GameStats を 'currentStats' として含める)
+// ---------------------------------------------------------
+export type GameControlProps = {
+  // ▼ 制御系 (State, Function)
+  gameState: GameState;
+  playPhase: PlayPhase;
+  difficulty: DifficultyLevel;
+  timeLeft: number;
+  tick: (amount: number) => void;
+  setGameState: (state: GameState) => void;
+  processResult: (stats: GameResultStats) => void;
+
+  // ▼ データ系 (さっき作った型をここで使う！)
+  currentStats: GameStats;
+};
+
 export type UpdateHighscoreParams = {
   p_difficulty: DifficultyLevel; // "EASY" | "NORMAL" | "HARD" しか許さない！
   p_score: number;
@@ -138,7 +174,7 @@ export type TimePopup = {
   id: number;
   text: string;
   isLarge: boolean;
-}
+};
 
 export type PerfectPopup = { id: number };
 

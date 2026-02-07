@@ -108,4 +108,11 @@ describe("TypingEngine ロジックテスト", () => {
     // 4. 中身が空文字であること(変な文字やundefinedが入っていないか)
     expect(engine.segments[0].inputBuffer).toBe("");
   });
+  it("空文字の単語: セグメントが0件でもBSがクラッシュせずEMPTYを返す", () => {
+    const engine = new TypingEngine("");
+
+    expect(engine.segments.length).toBe(0);
+    expect(engine.backspace().status).toBe(0);
+    expect(engine.segIndex).toBe(0);
+  });
 });

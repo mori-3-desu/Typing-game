@@ -2,62 +2,40 @@ import { useState, useEffect } from "react";
 import { stopBGM, playSE } from "../utils/audio";
 import { calculateFinalStats } from "../utils/gameUtils";
 import { UI_TIMINGS } from "../utils/setting";
-import { 
-  type GameState, 
-  type PlayPhase, 
-  type GameResultStats, 
-  type DifficultyLevel 
+import {
+  type GameResultStats,
+  type GameControlProps,
 } from "../types";
-
-// フックが受け取る引数の型定義
-type GameControlProps = {
-  gameState: GameState;
-  playPhase: PlayPhase;
-  difficulty: DifficultyLevel;
-  timeLeft: number;
-  tick: (amount: number) => void;
-  setGameState: (state: GameState) => void;
-  processResult: (stats: GameResultStats) => void;
-  
-  // ゲームの統計データ (calculateFinalStats用)
-  score: number;
-  completedWords: number;
-  correctCount: number;
-  missCount: number;
-  backspaceCount: number;
-  maxCombo: number;
-  currentSpeed: string | number;
-  rank: string;
-  missedWordsRecord: any[];
-  missedCharsRecord: any;
-  jpText: string;
-  currentWordMiss: number; // ref.current の値を渡す
-};
 
 const {
   TIMER_DECREMENT,
   TIMER_COUNT_DOWN,
   FINISH_ANIMATION,
   WHITE_FADE_OUT,
-  GO_TO_RESULT
+  GO_TO_RESULT,
 } = UI_TIMINGS.GAME;
 
 export const useGameControl = (props: GameControlProps) => {
   const {
-    gameState, playPhase, timeLeft, tick, setGameState, processResult,
-    score, completedWords, correctCount, missCount, backspaceCount,
-    maxCombo, currentSpeed, rank, missedWordsRecord, missedCharsRecord,
-    jpText, currentWordMiss
+    gameState,
+    playPhase,
+    timeLeft,
+    currentStats,
+    tick,
+    setGameState,
+    processResult,
   } = props;
 
-  const [lastGameStats, setLastGameStats] = useState<GameResultStats | null>(null);
+  const [lastGameStats, setLastGameStats] = useState<GameResultStats | null>(
+    null,
+  );
   const [isFinishExit, setIsFinishExit] = useState(false);
   const [isWhiteFade, setIsWhiteFade] = useState(false);
 
   // 1. タイマーのカウントダウン処理
   useEffect(() => {
     let interval: number;
-    
+
     if (gameState === "playing" && playPhase === "game") {
       interval = window.setInterval(() => {
         tick(TIMER_DECREMENT);
@@ -74,18 +52,8 @@ export const useGameControl = (props: GameControlProps) => {
       playSE("finish");
 
       const finalStats = calculateFinalStats({
-        score,
-        completedWords,
-        correctCount,
-        missCount,
-        backspaceCount,
-        maxCombo,
-        currentSpeed: Number(currentSpeed),
-        rank,
-        missedWordsRecord,
-        missedCharsRecord,
-        jpText,
-        currentWordMiss,
+        ...currentStats,
+        currentSpeed: Number(currentStats.currentSpeed),
       });
 
       setLastGameStats(finalStats);
@@ -105,11 +73,12 @@ export const useGameControl = (props: GameControlProps) => {
       }, GO_TO_RESULT);
     }
   }, [
-    timeLeft, gameState, playPhase, 
-    score, correctCount, missCount, backspaceCount, maxCombo, 
-    currentSpeed, rank, missedWordsRecord, missedCharsRecord, 
-    jpText, completedWords, currentWordMiss,
-    processResult, setGameState
+    timeLeft,
+    gameState,
+    playPhase,
+    currentStats,
+    processResult,
+    setGameState,
   ]);
 
   return {

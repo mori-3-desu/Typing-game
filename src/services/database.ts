@@ -46,6 +46,12 @@ export const DatabaseService = {
     wordsData?.forEach((row: WordRow) => {
       if (!row.difficulty) return;
 
+      const cleanJp = row.jp?.trim();
+      const cleanRoma = row.roma?.trim();
+      if(!cleanJp || !cleanRoma) {
+        console.warn('空のJP、または空のROMAをしました', row);
+        return;
+      }
       // 1. まず掃除だけする（まだ型は string のまま！）
       // ※ ここで 'as DifficultyLevel' は書かないのが作法です
       const cleanLevel = row.difficulty.trim().toUpperCase();
@@ -57,7 +63,7 @@ export const DatabaseService = {
         // 「cleanLevel はただの string ではなく DifficultyLevel だ」と認識します。
 
         if (formattedData[cleanLevel]) {
-          formattedData[cleanLevel].push({ jp: row.jp, roma: row.roma });
+          formattedData[cleanLevel].push({ jp: cleanJp, roma: cleanRoma });
         }
       } else {
         console.warn(`[Data Skip] 未知のデータ: ${row.difficulty}`);
