@@ -688,6 +688,7 @@ export const useTypingGame = (
     correctCount,
     missCount,
     completedWords,
+    currentWordMiss,
     backspaceCount,
     jpText,
     romaState,
@@ -704,7 +705,7 @@ export const useTypingGame = (
     handleBackspace,
     startGame,
     resetGame,
-    tick, // ★ここに setTimeLeft, setElapsedTime の代わりに tick を追加
+    tick,
     currentSpeed,
     addPopup,
   };

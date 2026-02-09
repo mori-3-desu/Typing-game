@@ -110,9 +110,9 @@ describe("TypingEngine ロジックテスト", () => {
   });
   it("空文字の単語: セグメントが0件でもBSがクラッシュせずEMPTYを返す", () => {
     const engine = new TypingEngine("");
-
+    
     expect(engine.segments.length).toBe(0);
-    expect(engine.backspace().status).toBe(0);
+    expect(engine.backspace().status).toBe("EMPTY");
     expect(engine.segIndex).toBe(0);
   });
 });

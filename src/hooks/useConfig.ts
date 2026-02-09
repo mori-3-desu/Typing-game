@@ -128,7 +128,7 @@ const configReducer = (
     case "SHOWROMA":
       return { ...state, showRomaji: action.payload };
 
-    case "SYNC_STORAGE":
+    case "SYNC_STORAGE": {
       // 無限ループ防止（ピンポン現象対策）
       // 新しい値が現行Stateと完全に同じなら、更新をスキップして再レンダリングを防ぐ
       const payload = action.payload;
@@ -140,7 +140,7 @@ const configReducer = (
       if (!hasActualChange) return state;
 
       return { ...state, ...payload };
-
+    }
     default:
       // 想定外のアクションが来てもクラッシュさせず、現状維持する
       return state;

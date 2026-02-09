@@ -73,7 +73,7 @@ export const DISPLAY_SCALE = {
 export const READY_GO_ANIMATION = {
   // Ready画面
   INIT:     800, // Ready画像初期位置
-  DROP:      18, // 降りてくるスピード
+  DROP:      35, // 降りてくるスピード
   GO_INIT:    0, // GO初期の大きさ
   GO_HIG:   0.1, // 0.1ずつ拡大
   GO_MAX:   1.0  // 最大値

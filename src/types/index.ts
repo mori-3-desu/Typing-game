@@ -46,7 +46,7 @@ export type GameStats = {
   missedWordsRecord: { word: string; misses: number }[];
   missedCharsRecord: { [key: string]: number };
   jpText: string;
-  currentWordMiss: number; // 値として渡すならここでOK
+  currentWordMiss: number;
 };
 
 // ---------------------------------------------------------

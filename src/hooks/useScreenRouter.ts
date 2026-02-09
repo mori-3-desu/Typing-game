@@ -66,6 +66,7 @@ export const useScreenRouter = ({
     }, 50);
   }, [
     isTransitioning,
+    setIsTransitioning,
     resetGame,
     setPlayPhase,
     setGameState,
