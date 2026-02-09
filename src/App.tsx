@@ -148,6 +148,7 @@ function App() {
     missCount,
     maxCombo,
     completedWords,
+    currentWordMiss,
     backspaceCount,
     allSegments,
     shakeStatus,
@@ -192,10 +193,6 @@ function App() {
     resetResultState, // Hooksから渡す
   });
 
-  // --- Refs ---
-  const currentWordMissRef = useRef(0);
-  const prevMissCountRef = useRef(0);
-  const prevWordRef = useRef("");
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
 
@@ -211,8 +208,8 @@ function App() {
     missedWordsRecord,
     missedCharsRecord,
     jpText,
-    currentWordMiss: currentWordMissRef.current, // Refではなく値を渡すのがポイント
-  };
+    currentWordMiss,
+  }
 
   // --- ★ Hook: Game Control (タイマー & 終了ロジック) ---
   const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
@@ -235,23 +232,7 @@ function App() {
     handleBackspaceRef.current = handleBackspace;
   }, [handleKeyInput, handleBackspace]);
 
-  useEffect(() => {
-    // ① 単語が変わった瞬間のリセット処理
-    if (jpText !== prevWordRef.current) {
-      currentWordMissRef.current = 0; // 新しい単語になったので、ミス数を0にリセット
-      prevWordRef.current = jpText; // 「今の単語」を記憶（次の比較用）
-    }
 
-    // ② ミスが増えたかどうかの監視処理
-    if (missCount > prevMissCountRef.current) {
-      // 全体のミス数が増えた分だけ、今の単語のミス数に加算する
-      // (例: 全体ミスが 10 → 11 になったら、今の単語ミスを +1 する)
-      currentWordMissRef.current += missCount - prevMissCountRef.current;
-    }
-
-    // ③ 次回の比較用に、今の全体ミス数を記憶
-    prevMissCountRef.current = missCount;
-  }, [missCount, jpText]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
