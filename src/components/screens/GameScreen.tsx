@@ -204,9 +204,11 @@ export const GameScreen = ({
           className={
             timePopups.length > 0
               ? "time-plus"
-              : timeLeft <= 10
-                ? "timer-pinch"
-                : "timer-normal"
+              : timeLeft <= 0
+                ? "timer-zero"
+                : timeLeft <= 10
+                  ? "timer-pinch"
+                  : "timer-normal"
           }
         >
           {Math.ceil(timeLeft)}
@@ -214,17 +216,17 @@ export const GameScreen = ({
       </div>
 
       {/* ▼▼▼ ここに追加！スコアと同じ書き方です ▼▼▼ */}
-        {timePopups.map((p) => (
-          <div
-            key={p.id}
-            // CSSクラスを適用（bonus-pop と、normal か large を付与）
-            className={`bonus-pop ${p.isLarge ? "large" : "normal"}`}
-          >
-            {p.text}
-          </div>
-        ))}
-        {/* ▲▲▲ ここまで ▲▲▲ */}
-        
+      {timePopups.map((p) => (
+        <div
+          key={p.id}
+          // CSSクラスを適用（bonus-pop と、normal か large を付与）
+          className={`bonus-pop ${p.isLarge ? "large" : "normal"}`}
+        >
+          {p.text}
+        </div>
+      ))}
+      {/* ▲▲▲ ここまで ▲▲▲ */}
+
       <div id="combo-meter" className={`theme-${difficulty.toLowerCase()}`}>
         <div className="meter-header">
           <span>連打メーター</span>

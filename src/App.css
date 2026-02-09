@@ -4,7 +4,7 @@
   /* =========================================
      🎨 1. Base Colors & Typography
      ========================================= */
-  
+
   /* --- Basic Palette --- */
   --color-white: #fff;
   --color-milkywhite: #efefef;
@@ -15,8 +15,10 @@
   --color-darkblue: #546e7a;
   --color-oceanblue: #3d5ef4;
   --color-aquablue: #aeffff;
-  --color-green: #44ff44;
-  
+  --color-lightblue: #00ffff;
+  --color-green: #4aff50;
+  --color-yellow: yellow;
+
   /* --- Accent Colors --- */
   --color-redpink: #ff5a78;
   --color-red: red;
@@ -39,11 +41,10 @@
   --pop-bg: #cfd8dc;
   --game-word-bg: #0f26d4;
 
-
   /* =========================================
      📐 2. Layout & Layers
      ========================================= */
-  
+
   /* --- Scale Standard --- */
   --scale-standard-width: 1200px;
   --scale-standard-height: 780px;
@@ -59,6 +60,8 @@
   --z-game-hud: 20;
   --z-game-score: 100;
   --z-game-render: 999;
+  --z-game-finish: 1000;
+  --z-fade-overlay: 1500;
 
   /* =========================================
      💎 3. Materials (Glass, Shine, Shadow)
@@ -75,9 +78,9 @@
   --color-text-shadow: rgba(0, 0, 0, 0.3);
 
   /* --- Shine Presets (光沢プリセット) --- */
-  
+
   /* 1. 大きなパネル用（シャープな線） */
-  --shine-panel-base: 
+  --shine-panel-base:
     inset 0.8px 1px 0px rgba(255, 255, 255, 0.8),
     inset -0.2px -0.8px 0px rgba(255, 255, 255, 0.6),
     0 20px 50px rgba(0, 0, 0, 0.2);
@@ -89,12 +92,10 @@
     0 4px 10px rgba(0, 0, 0, 0.2);
   --shine-icon-hover:
     inset 2px 2px 5px rgba(255, 255, 255, 0.9),
-    inset -1px -1px 3px rgba(255, 255, 255, 0.5),
-    0 8px 15px rgba(0, 0, 0, 0.3);
+    inset -1px -1px 3px rgba(255, 255, 255, 0.5), 0 8px 15px rgba(0, 0, 0, 0.3);
   --shine-icon-active:
     inset 1px 1px 2px rgba(255, 255, 255, 0.6),
-    inset -1px -1px 2px rgba(255, 255, 255, 0.2),
-    0 2px 5px rgba(0, 0, 0, 0.2);
+    inset -1px -1px 2px rgba(255, 255, 255, 0.2), 0 2px 5px rgba(0, 0, 0, 0.2);
 
   /* 3. 詳細ボタン用（小さな宝石風） */
   --shine-detail-base:
@@ -106,39 +107,50 @@
     inset -1px -1px 4px rgba(255, 255, 255, 0.5),
     0 0 10px rgba(255, 255, 255, 0.6);
   --shine-detail-active:
-    inset 2px 2px 6px rgba(255, 255, 255, 0.8),
-    0 0 5px rgba(255, 255, 255, 0.8);
+    inset 2px 2px 6px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.8);
 
   /* 4. ハイスコア枠用（ダーク枠） */
   --shine-darkbox-base:
     inset 1.5px 1.2px 0px rgba(255, 255, 255, 0.9),
-    inset -1px -1px 0px rgba(255, 255, 255, 0.6),
-    0 4px 10px rgba(0, 0, 0, 0.3);
-
+    inset -1px -1px 0px rgba(255, 255, 255, 0.6), 0 4px 10px rgba(0, 0, 0, 0.3);
 
   /* =========================================
      🐈 4. Component: Loading & Cat Character
      ========================================= */
 
   /* --- Cat Colors --- */
-  --color-ear-normal: #ffe3e8;  /* 通常の耳 */
+  --color-ear-normal: #ffe3e8; /* 通常の耳 */
   --color-ear-landing: #efa4b8; /* 着地時の耳（濃い） */
   --color-body-start: #ffe3e8;
   --color-body-end: #ffbed2;
 
   /* --- Cat Patterns (Gradients) --- */
-  
+
   /* ① 通常の顔（耳が高い -15px） */
-  --loading-key-grad: 
-    linear-gradient(135deg, transparent 50%, var(--color-ear-normal) 50%) no-repeat -10px -15px / 40px 40px, /* 左耳 */
-    linear-gradient(225deg, transparent 50%, var(--color-ear-normal) 50%) no-repeat 30px -15px / 40px 40px,  /* 右耳 */
-    linear-gradient(135deg, var(--color-body-start) 0%, var(--color-body-end) 100%); /* 本体 */
+  --loading-key-grad:
+    linear-gradient(135deg, transparent 50%, var(--color-ear-normal) 50%)
+      no-repeat -10px -15px / 40px 40px,
+    /* 左耳 */
+    linear-gradient(225deg, transparent 50%, var(--color-ear-normal) 50%)
+      no-repeat 30px -15px / 40px 40px,
+    /* 右耳 */
+    linear-gradient(
+        135deg,
+        var(--color-body-start) 0%,
+        var(--color-body-end) 100%
+      ); /* 本体 */
 
   /* ② 着地時の顔（耳が低い -5px / 色が濃い） */
-  --loading-key-grad-landing: 
-    linear-gradient(135deg, transparent 50%, var(--color-ear-landing) 50%) no-repeat -10px -5px / 40px 40px,
-    linear-gradient(225deg, transparent 50%, var(--color-ear-landing) 50%) no-repeat 30px -5px / 40px 40px,
-    linear-gradient(135deg, var(--color-body-start) 0%, var(--color-body-end) 100%);
+  --loading-key-grad-landing:
+    linear-gradient(135deg, transparent 50%, var(--color-ear-landing) 50%)
+      no-repeat -10px -5px / 40px 40px,
+    linear-gradient(225deg, transparent 50%, var(--color-ear-landing) 50%)
+      no-repeat 30px -5px / 40px 40px,
+    linear-gradient(
+      135deg,
+      var(--color-body-start) 0%,
+      var(--color-body-end) 100%
+    );
 
   /* 光沢用 */
   --loading-key-grad-shiny: linear-gradient(
@@ -149,7 +161,8 @@
 
   /* --- Loading Screen Styles --- */
   --loading-shadow: rgba(255, 255, 255, 0.5);
-  --loading-box-shadow: 0 8px 0 var(--color-shadow-pink), 0 15px 20px var(--color-shadow-dark);
+  --loading-box-shadow:
+    0 8px 0 var(--color-shadow-pink), 0 15px 20px var(--color-shadow-dark);
   --loading-grad: linear-gradient(
     to bottom,
     #4b256f 0%,
@@ -163,7 +176,6 @@
   --loading-animation-paw: 2s;
   --loading-transition: 1.5s;
 
-
   /* =========================================
      🎮 5. Component: Title & UI
      ========================================= */
@@ -172,7 +184,7 @@
   --title-shadow:
     0 0 10px rgba(255, 255, 255, 0.8), 2px 2px 0px rgba(100, 100, 255, 0.8),
     0 5px 15px rgba(0, 0, 0, 0.7);
-  
+
   --title-menu-grad: linear-gradient(
     135deg,
     hsl(42, 100%, 65%) 0%,
@@ -835,14 +847,14 @@ body {
   height: 400px;
   display: flex;
   flex-direction: column;
-  
+
   /* ガラス設定 */
   background: var(--glass-bg-light);
   backdrop-filter: blur(15px);
   border-radius: 40px;
   border: none;
   box-shadow: var(--shine-panel-base); /* ★変数適用 */
-  
+
   transition: opacity 0.2s ease;
 }
 
@@ -891,7 +903,7 @@ body {
   min-width: 310px;
   justify-content: space-between;
   padding: 2.5px 12px;
-  
+
   background: var(--glass-bg-dark);
   border-radius: 20px;
   border: none;
@@ -923,7 +935,7 @@ body {
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  
+
   background: var(--glass-bg-light);
   color: #fff;
 
@@ -932,7 +944,7 @@ body {
   align-items: center;
   cursor: pointer;
   font-size: 1rem;
-  
+
   box-shadow: var(--shine-detail-base); /* ★変数適用 */
   transition: all 0.2s ease;
 }
@@ -1018,7 +1030,7 @@ body {
 #display-diff-chars::before {
   content: "CHAR:⌨️";
   font-size: 2.6rem;
-  text-shadow: 0 0 5px rgba(255, 100, 100, 0.6)
+  text-shadow: 0 0 5px rgba(255, 100, 100, 0.6);
 }
 
 /* =========================================
@@ -1093,6 +1105,7 @@ body {
 }
 
 #tmr-text {
+  --shadow-color: var(--color-aquablue);
   position: relative;
   right: -2.5px;
   bottom: -8px;
@@ -1104,8 +1117,100 @@ body {
   text-shadow:
     -2px -2px 0 var(--color-white),
     2px 2px 0 var(--color-white),
-    4px 4px 0 var(--color-aquablue),
-    8px 8px 20px rgba(0, 0, 0, 0.4);
+    4px 4px 0 var(--shadow-color),
+    /* 👈 ここがポイント！ */ 8px 8px 20px rgba(0, 0, 0, 0.4);
+
+  /* アニメーションの設定も親に持たせてOK */
+  transition:
+    transform 0.2s,
+    color 0.2s,
+    text-shadow 0.2s;
+}
+
+/* 演出アニメーション */
+#tmr-text.time-plus {
+  /* ③ 上書きしたい時だけ、変の中身を入れ替える */
+  --shadow-color: var(--color-green);
+
+  /* テキスト自体の色も変えるなら */
+  color: var(--color-green);
+  transform: scale(1.3);
+}
+
+/* ピンチ（残り時間わずか） */
+#tmr-text.timer-pinch {
+  /* ① 影の色変数を「ピンク」に上書き */
+  /* これだけで、親で定義した text-shadow の 3番目の色が入れ替わる */
+  --shadow-color: #ff9eb5;
+
+  /* ② 文字色を「赤」に変更 */
+  color: rgba(255, 36, 113, 1);
+
+  /* ③ アニメーション */
+  animation: blink 0.8s infinite alternate;
+}
+
+/* 終了時 (0秒) */
+#tmr-text.timer-zero {
+  color: rgba(255, 36, 113, 1);
+  --shadow-color: #ff9eb5; /* 影も赤系に */
+}
+
+.bonus-pop {
+  position: absolute;
+  top: 230px;
+  left: 50%;
+  font-weight: bold;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: popUpFade 1s ease-out forwards;
+}
+
+.bonus-pop.normal {
+  font-size: 25px;
+  color: var(--color-green);
+  text-shadow:
+    1px 1px 0 var(--color-gold),
+    0 0 5px var(--color-orange),
+    2px 2px 5px rgba(237, 146, 255, 0.5);
+}
+
+.bonus-pop.large {
+  font-size: 45px;
+  top: 200px;
+  background: linear-gradient(180deg, #ffea00 0%, #ff0099 50%, #00e5ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 2px var(--color-white);
+  filter: drop-shadow(4px 4px 0px var(--color-black));
+}
+
+@keyframes blink {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* タイム加算ポップアップ */
+@keyframes popUpFade {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px) scale(0.5);
+  }
+  20% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-60px) scale(1);
+  }
 }
 
 #center-area {
@@ -1158,6 +1263,20 @@ body {
   line-height: 1;
 }
 
+.text-yellow {
+  color: var(--color-yellow);
+  text-shadow: 0 0 5px var(--color-darkorange);
+  text-decoration: underline;
+  text-underline-offset: 6px;
+  text-decoration-thickness: 3px;
+  text-decoration-skip-ink: none;
+}
+
+.text-red {
+  color: var(--color-red);
+  text-shadow: 0 0 5px var(--color-red);
+}
+
 #rank-monitor {
   position: absolute;
   left: 50%;
@@ -1176,7 +1295,7 @@ body {
 
 #rank-monitor .rank-a {
   color: var(--color-red);
-  text-shadow: 0 0 10px ;
+  text-shadow: 0 0 10px;
 }
 
 #rank-monitor .rank-b {
@@ -1191,7 +1310,7 @@ body {
 
 #rank-monitor .rank-d {
   color: var(--color-gray);
-  text-shadow: 2px 2px 0 var(--color-black) ;
+  text-shadow: 2px 2px 0 var(--color-black);
 }
 
 #rank-value {
@@ -1214,9 +1333,15 @@ body {
 }
 
 @keyframes combo-shrink-pop {
-  0% { transform: scale(0.75); }
-  75% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% {
+    transform: scale(0.75);
+  }
+  75% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* コンボ表示エリア (変更なし) */
@@ -1240,10 +1365,9 @@ body {
   font-size: 62px;
   font-weight: bold;
   line-height: 1;
-  
+
   /* ★修正: ぼかしを小さくし、色を半透明にして光を弱める */
-  filter: 
-    drop-shadow(0 0 4px rgba(209, 110, 255, 0.7))  /* 発光を抑えめに */
+  filter: drop-shadow(0 0 4px rgba(209, 110, 255, 0.7)) /* 発光を抑えめに */
     drop-shadow(2px 2px 0 #b030ff); /* くっきり影はそのまま */
 }
 
@@ -1252,8 +1376,7 @@ body {
   font-size: 24px;
   color: var(--color-white);
   /* ★修正: こちらも少し弱める */
-  filter: 
-    drop-shadow(0 0 1px rgba(209, 110, 255, 0.5));
+  filter: drop-shadow(0 0 1px rgba(209, 110, 255, 0.5));
 }
 
 /* ▼ 100コンボ（金 - マイルド版） */
@@ -1261,10 +1384,9 @@ body {
 #combo-label.is-gold {
   color: var(--color-gold);
   transform: scale(1.1);
-  
+
   /* ★修正: 金色のギラギラ感を抑える */
-  filter:
-    drop-shadow(0 0 1px rgba(255, 215, 0, 0.7)) /* 半透明の金色の光 */
+  filter: drop-shadow(0 0 1px rgba(255, 215, 0, 0.7)) /* 半透明の金色の光 */
     drop-shadow(0.04em 0.04em 0 var(--color-darkorange));
 }
 
@@ -1339,11 +1461,11 @@ body {
   background: var(--meter-bg);
   border-color: var(--meter-border);
   box-shadow: 0 10px 30px var(--meter-shadow);
-  
+
   /* アニメーション用：テーマ切り替え時にフワッと色が変わる */
-  transition: 
-    background 0.3s, 
-    border-color 0.3s, 
+  transition:
+    background 0.3s,
+    border-color 0.3s,
     box-shadow 0.3s;
 }
 
@@ -1376,27 +1498,27 @@ body {
 }
 
 .theme-easy .meter-header {
-  color: #fff;
+  color: var(--color-white);
   text-shadow: 0 2px 4px rgba(0, 100, 200, 0.8);
 }
 
 .theme-normal .meter-header {
-  color: rgb(255, 255, 0);
+  color: var(--color-yellow);
   text-shadow: 0 2px 4px rgba(255, 98, 127, 0.8);
 }
 
 .theme-hard .meter-header {
-  color: #00ffff;
+  color: var(--color-lightblue);
   text-shadow: 0 0 8px rgba(0, 255, 255, 0.8);
 }
 
 #meter-bar {
   width: 100%;
   height: 20px;
-  background: #424040;
+  background: var(--color-gray);
   border-radius: 10px;
   overflow: hidden;
-  border: 1px solid #ffffff;
+  border: 1px solid var(--color-white);
 }
 
 #meter-fill {
@@ -1411,12 +1533,11 @@ body {
   position: absolute;
   bottom: 120px;
   right: 110px;
-  border: 4px solid rgba(255, 255, 255, 0.8);
+  border: 4px solid var(--color-milkywhite);
   border-radius: 15px;
   padding: 40px 30px;
   background: rgba(0, 0, 0, 0.3);
   text-align: center;
-  z-index: 100;
   pointer-events: none;
   min-width: 100px;
   height: 100px;
@@ -1427,23 +1548,16 @@ body {
 
 #word-counter legend {
   color: #42f5bf;
-  font-family: "M PLUS Rounded 1c", sans-serif;
   font-weight: bold;
   font-size: 15px;
-  padding: 5px;
-  margin: 0 auto;
-  width: auto;
-  line-height: 1;
 }
 
 #stat-words {
   display: block;
-  font-family: "M PLUS Rounded 1c", sans-serif;
   font-weight: 800;
   font-size: 54px;
-  color: #fff;
+  color: var(--color-white);
   line-height: 1;
-  margin-top: 0px;
   text-shadow: 0 0 20px rgba(66, 245, 191, 0.8);
 }
 
@@ -1451,13 +1565,11 @@ body {
   position: absolute;
   bottom: 30px;
   right: 60px;
-  font-family: "Fredoka One", sans-serif;
-  font-size: 35px;
-  letter-spacing: 1px;
-  color: rgba(255, 255, 255, 0.8);
+  font-family: var(--font-pop-fredoka);
+  font-size: 33px;
+  letter-spacing: 0.02em;
   text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.5);
   pointer-events: none;
-  z-index: 100;
 }
 
 .speed-label {
@@ -1469,30 +1581,12 @@ body {
   font-weight: bold;
 }
 
-/* 演出アニメーション */
-.time-plus {
-  color: #4aff50 !important;
-  transform: scale(1.3);
-  transition: transform 0.2s;
-  text-shadow: 0 0 10px #00ff00;
+.light-shake {
+  animation: lightShake 0.2s ease;
 }
 
-.timer-pinch {
-  color: rgba(255, 36, 113, 1) !important;
-  text-shadow: 4px 4px 0px #ff9eb5 !important;
-  animation: blink 0.5s infinite;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-  }
+.error-shake {
+  animation: shakeAndFlash 0.4s ease;
 }
 
 @keyframes shakeAndFlash {
@@ -1501,12 +1595,12 @@ body {
   }
   25% {
     transform: translateX(-10px);
-    border-color: red;
+    border-color: var(--color-red);
     background-color: rgba(255, 0, 0, 0.2);
   }
   50% {
     transform: translateX(10px);
-    border-color: red;
+    border-color: var(--color-red);
   }
   75% {
     transform: translateX(-10px);
@@ -1516,65 +1610,23 @@ body {
   }
 }
 
-.error-shake {
-  animation: shakeAndFlash 0.4s ease;
-}
-
 @keyframes lightShake {
   0% {
     transform: translateX(0);
   }
   25% {
     transform: translateX(-4px);
-    border-color: #ff6666;
+    border-color: var(--color-redpink);
   }
   50% {
     transform: translateX(4px);
-    border-color: #ff6666;
+    border-color: var(--color-redpink);
   }
   75% {
     transform: translateX(-4px);
   }
   100% {
     transform: translateX(0);
-  }
-}
-
-.light-shake {
-  animation: lightShake 0.2s ease;
-}
-
-/* 虹色グロー */
-@keyframes rainbow-inner {
-  0% {
-    box-shadow: inset 0 0 80px 10px rgba(255, 188, 188);
-  }
-  15% {
-    box-shadow: inset 0 0 80px 10px rgba(255, 255, 174);
-  }
-  30% {
-    box-shadow: inset 0 0 80px 10px rgba(196, 255, 196);
-  }
-  45% {
-    box-shadow: inset 0 0 80px 10px rgba(193, 255, 255);
-  }
-  60% {
-    box-shadow: inset 0 0 80px 10px rgba(192, 192, 255);
-  }
-  75% {
-    box-shadow: inset 0 0 80px 10px rgba(255, 185, 255);
-  }
-  100% {
-    box-shadow: inset 0 0 80px 10px rgba(255, 176, 176);
-  }
-}
-
-@keyframes glowFadeIn {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
   }
 }
 
@@ -1589,82 +1641,56 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  border-radius: 14px;
-  z-index: 100;
-  pointer-events: none;
-  animation-name: rainbow-inner, glowFadeIn;
-  animation-duration: 3s, 0.5s;
-  animation-iteration-count: infinite, 1;
-  animation-timing-function: linear, ease-out;
-  animation-fill-mode: none, forwards;
+  border-radius: 14px; /* 親要素と合わせるのを忘れずに！ */
+  pointer-events: none; /* これはクリック透過のために重要！残す！ */
+
+  animation:
+    rainbow-inner 3s linear infinite,
+    /* 虹色ループ */ glowFadeIn 0.5s ease-out forwards; /* 出現アニメーション */
+
+  /* チラつき防止：初期状態を透明にしておく */
+  opacity: 0;
 }
 
-/* タイム加算ポップアップ */
-@keyframes popUpFade {
+/* 虹色グロー */
+@keyframes rainbow-inner {
+  /* box-shadowのinsetは共通なので、色の変化だけ記述すればOK */
   0% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(20px) scale(0.5);
+    box-shadow: inset 0 0 80px 10px rgb(255, 188, 188);
   }
-  20% {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1.2);
+  15% {
+    box-shadow: inset 0 0 80px 10px rgb(255, 255, 174);
+  }
+  30% {
+    box-shadow: inset 0 0 80px 10px rgb(196, 255, 196);
+  }
+  45% {
+    box-shadow: inset 0 0 80px 10px rgb(193, 255, 255);
+  }
+  60% {
+    box-shadow: inset 0 0 80px 10px rgb(192, 192, 255);
+  }
+  75% {
+    box-shadow: inset 0 0 80px 10px rgb(255, 185, 255);
   }
   100% {
-    opacity: 0;
-    transform: translateX(-50%) translateY(-60px) scale(1);
+    box-shadow: inset 0 0 80px 10px rgb(255, 176, 176);
   }
 }
 
-.bonus-pop {
-  position: absolute;
-  top: 230px;
-  left: 50%;
-  font-family: "M PLUS Rounded 1c", sans-serif;
-  font-weight: bold;
-  pointer-events: none;
-  z-index: 9999;
-  white-space: nowrap;
-  animation: popUpFade 1s ease-out forwards;
+@keyframes glowFadeIn {
+  to {
+    opacity: 1;
+  }
 }
 
-.bonus-pop.normal {
-  font-size: 25px;
-  color: rgb(47, 255, 0);
-  text-shadow:
-    1px 1px 0 gold,
-    0 0 5px orange,
-    2px 2px 5px rgba(237, 146, 255, 0.5);
-}
-
-.bonus-pop.large {
-  font-size: 45px;
-  color: #ffd700;
-  top: 200px;
-  font-family: "M PLUS Rounded 1c", sans-serif;
-  background: linear-gradient(180deg, #ffea00 0%, #ff0099 50%, #00e5ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  -webkit-text-stroke: 2px #ffffff;
-  filter: drop-shadow(4px 4px 0px #000000);
-  transform: rotate(-5deg);
-  z-index: 1002;
-}
-
-.text-yellow {
-  color: #ffff00 !important;
-  text-shadow: 0 0 5px #ffaa00;
-  text-decoration: underline;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 3px;
-  text-decoration-skip-ink: none;
-}
-
-.text-red {
-  color: #ff4444 !important;
-  text-shadow: 0 0 5px #ff0000;
-  text-decoration: underline;
+@keyframes glowFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 /* --- FINISH Banner --- */
@@ -1675,12 +1701,11 @@ body {
   transform: translateX(-50%);
   font-size: 180px;
   font-weight: bold;
-  font-family: "M PLUS Rounded 1c", sans-serif;
-  color: #ffdd00;
+  color: var(--color-gold);
   text-shadow:
     0 0 20px rgba(255, 221, 0, 0.8),
-    4px 4px 0 #000;
-  z-index: 3000;
+    4px 4px 0 var(--color-black);
+  z-index: var(--z-game-finish);
   transition:
     top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
     opacity 0.5s;
@@ -1693,7 +1718,7 @@ body {
 }
 
 #finish-banner.exit {
-  top: -250px !important;
+  top: -250px;
   opacity: 0;
   transition:
     top 0.5s ease-in,
@@ -1712,10 +1737,10 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: white;
+  background-color: var(--color-white);
   opacity: 0;
-  pointer-events: none !important;
-  z-index: 1500;
+  pointer-events: none;
+  z-index: var(--z-fade-overlay);
   transition: opacity 0.4s ease-in-out;
 }
 
@@ -1732,19 +1757,16 @@ body {
   height: 92%;
   max-height: 780px;
   /* 余白調整 */
-  padding: 20px 30px 20px 30px;
+  padding: 20px 30px;
   backdrop-filter: blur(15px);
   border-radius: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow: hidden;
-  z-index: 2000;
   transition:
     background 0.5s,
     border-color 0.5s,
     box-shadow 0.5s;
-  justify-content: flex-start;
 }
 
 /* テーマ別背景 */
