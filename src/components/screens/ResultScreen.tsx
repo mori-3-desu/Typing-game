@@ -106,7 +106,7 @@ export const ResultScreen = ({
                       }`}
                       id="score-diff"
                     >
-                      {scoreDiff > 0 ? "+" : ""}
+                      {scoreDiff > 0 ? "+" : scoreDiff === 0 ? "±" : ""}
                       {scoreDiff.toLocaleString()}
                     </div>
                   )}

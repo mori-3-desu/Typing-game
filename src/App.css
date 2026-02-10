@@ -28,6 +28,7 @@
   --color-darkorange: #cb7c0c;
   --color-gold: #ffd700;
   --color-pink: pink;
+  --color-hotpink: rgb(255, 121, 143);
   --color-purple: #bcacc8;
   --color-lightpurple: #f8d1ff;
 
@@ -1757,62 +1758,61 @@ body {
   height: 92%;
   max-height: 780px;
   /* 余白調整 */
-  padding: 20px 30px;
+  padding: 15px 20px;
   backdrop-filter: blur(15px);
   border-radius: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
+
+  background: linear-gradient(
+    to bottom,
+    var(--theme-bg-top),
+    var(--theme-bg-bot)
+  );
+
+  border: 2px solid var(--theme-border);
+
+  box-shadow:
+    0 0 20px var(--theme-glow),
+    0 20px 50px rgba(0, 0, 0, 0.5);
+
   transition:
     background 0.5s,
     border-color 0.5s,
     box-shadow 0.5s;
 }
 
-/* テーマ別背景 */
+/* --- EASY テーマ --- */
 .res-theme-easy {
-  background: linear-gradient(
-    to bottom,
-    rgba(134, 182, 224, 0.7),
-    rgba(185, 237, 255, 0.6)
-  );
-  border: 2px solid rgba(150, 230, 255, 0.6);
-  box-shadow:
-    0 0 20px rgba(0, 200, 255, 0.4),
-    0 20px 50px rgba(0, 0, 0, 0.4);
+  --theme-bg-top: rgba(134, 182, 224, 0.7);
+  --theme-bg-bot: rgba(185, 237, 255, 0.6);
+  --theme-border: rgba(150, 230, 255, 0.6);
+  --theme-glow:   rgba(0, 200, 255, 0.4);
 }
 
+/* --- NORMAL テーマ --- */
 .res-theme-normal {
-  background: linear-gradient(
-    to bottom,
-    rgba(40, 20, 60, 0.7),
-    rgba(180, 60, 100, 0.6)
-  );
-  border: 2px solid rgba(255, 180, 200, 0.5);
-  box-shadow:
-    0 0 20px rgba(255, 100, 150, 0.5),
-    0 20px 50px rgba(0, 0, 0, 0.5);
+  --theme-bg-top: rgba(40, 20, 60, 0.7);
+  --theme-bg-bot: rgba(180, 60, 100, 0.6);
+  --theme-border: rgba(255, 180, 200, 0.5);
+  --theme-glow:   rgba(255, 100, 150, 0.5);
 }
 
+/* --- HARD テーマ --- */
 .res-theme-hard {
-  background: linear-gradient(
-    to bottom,
-    rgba(10, 10, 40, 0.8),
-    rgba(60, 40, 100, 0.7)
-  );
-  border: 2px solid rgba(255, 215, 0, 0.4);
-  box-shadow:
-    0 0 20px rgba(100, 80, 255, 0.4),
-    0 20px 50px rgba(0, 0, 0, 0.6);
+  --theme-bg-top: rgba(10, 10, 40, 0.8);
+  --theme-bg-bot: rgba(60, 40, 100, 0.7);
+  --theme-border: rgba(255, 215, 0, 0.4);
+  --theme-glow:   rgba(100, 80, 255, 0.4);
 }
 
 .result-title {
-  font-family: "Fredoka One", cursive;
+  font-family: var(--font-pop-fredoka);
   font-size: 3.5rem;
-  margin: 0 0 10px 0;
-  color: #fff;
+  color: var(--color-white);
   text-shadow:
-    4px 4px 0px #ffc9b4,
+    4px 4px 0px var(--color-creamorange),
     6px 6px 15px rgba(0, 0, 0, 0.5);
   letter-spacing: 5px;
 }
@@ -1821,9 +1821,7 @@ body {
   display: flex;
   gap: 20px;
   width: 100%;
-  margin-bottom: 10px;
   flex-grow: 1;
-  min-height: 0;
 }
 
 .result-left-col {
@@ -1847,55 +1845,45 @@ body {
   position: relative;
   border: 2px solid rgba(255, 255, 255, 0.3);
   box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2);
-  min-height: 160px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  min-height: 155px;
 }
 
 .score-header-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 5px;
 }
 
 .score-main-row {
-  width: 100%;
   display: flex;
-  justify-content: flex-end;
-  margin-top: 5px;
 }
 
 .score-val-huge {
-  font-family: "Fredoka One", cursive !important;
-  font-size: 4.3rem !important;
-  color: #ff9bc5;
+  font-family: var(--font-pop-fredoka);
+  font-size: 4.3rem;
+  color: var(--color-hotpink);
   text-shadow:
-    4px 4px 0 #fdf1ff,
+    4px 4px 0 #fbe7ff,
     6px 6px 10px rgba(0, 0, 0, 0.2);
-  line-height: 1;
+  line-height: 0.6;
   letter-spacing: 4px;
-  margin-left: -5px;
-  margin-top: -14px;
 }
 
 .score-label-main {
-  font-family: "Fredoka One", cursive !important;
-  font-size: 2.9rem !important;
-  color: #ffffff;
+  font-family: var(--font-pop-fredoka);
+  font-size: 46px;
+  color: var(--color-white);
   text-shadow:
-    3px 3px 0px #ffc9b4,
+    3px 3px 0px var(--color-creamorange),
     4px 4px 10px rgba(0, 0, 0, 0.2);
   letter-spacing: 2px;
   margin-bottom: 6px;
 }
 
 .hiscore-block {
-  text-align: right;
   background: rgba(0, 0, 0, 0.15);
   padding: 1px 14px;
-  border-radius: 12px;
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -1911,36 +1899,35 @@ body {
 
 .hiscore-label {
   font-size: 0.9rem;
-  color: #ccc;
-  font-family: "Fredoka One", cursive;
+  color: var(--color-milkywhite);
+  font-family: var(--font-pop-fredoka);
 }
 
 .hiscore-value {
   font-size: 1.4rem;
-  color: #fffee2;
-  font-family: "Fredoka One", cursive;
-  letter-spacing: 1px;
+  color: var(--color-white);
+  font-family: var(--font-pop-fredoka);
+  letter-spacing: 0.5px;
 }
 
 .score-diff {
-  font-family: "Fredoka One", sans-serif;
-  font-size: 1rem;
-  letter-spacing: 1px;
+  font-family: var(--font-pop-fredoka);
+  font-size: 16px;
+  letter-spacing: 0.5px;
 }
 
 .diff-plus {
-  color: #ffd700;
+  color: var(--color-gold);
   text-shadow: 1px 1px 0 #b8860b;
 }
 
 .diff-minus {
-  color: #ff6b6b;
+  color: var(--color-redpink);
   text-shadow: 1px 1px 0 #8b0000;
 }
 
 .diff-zero {
-  color: #888;
-  font-size: 0.9rem;
+  color: var(--color-milkywhite);
 }
 
 .stats-compact-container {
