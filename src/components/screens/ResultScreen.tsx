@@ -52,6 +52,10 @@ export const ResultScreen = ({
     .sort((a, b) => b[1] - a[1])
     .slice(0, LIMIT_DATA.WEAK_DATA_LIMIT);
 
+  let diffClass = "diff-zero";
+  if (scoreDiff > 0) diffClass = "diff-plus";
+  if (scoreDiff < 0) diffClass = "diff-minus";
+
   return (
     <div
       id="result-screen"
@@ -96,16 +100,7 @@ export const ResultScreen = ({
 
                   {/* スコア差分 */}
                   {gameState === "result" && (
-                    <div
-                      className={`score-diff ${
-                        scoreDiff > 0
-                          ? "diff-plus"
-                          : scoreDiff < 0
-                            ? "diff-minus"
-                            : "diff-zero"
-                      }`}
-                      id="score-diff"
-                    >
+                    <div className={`score-diff ${diffClass}`} id="score-diff">
                       {scoreDiff > 0 ? "+" : scoreDiff === 0 ? "±" : ""}
                       {scoreDiff.toLocaleString()}
                     </div>
@@ -115,15 +110,7 @@ export const ResultScreen = ({
               {/* ▲ 条件分岐ここまで */}
             </div>
 
-            <div
-              className="score-main-row"
-              style={{
-                width: "100%",
-                display: "flex",
-                justifyContent: "flex-end",
-                marginTop: "5px",
-              }}
-            >
+            <div className="score-main-row">
               <div
                 className="score-val-huge"
                 id="res-score"
@@ -212,19 +199,7 @@ export const ResultScreen = ({
                   <span className="miss-count">{item.misses}ミス</span>
                 </li>
               ))}
-              {displayWeakWords.length === 0 && (
-                <li
-                  style={{
-                    listStyle: "none",
-                    color: "#ccc",
-                    textAlign: "center",
-                    marginTop: "10px",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  None
-                </li>
-              )}
+              {displayWeakWords.length === 0 && <li>None</li>}
             </ul>
           </div>
 
@@ -242,31 +217,12 @@ export const ResultScreen = ({
               style={{ display: "flex", flexDirection: "column" }}
             >
               {displayWeakKeys.map(([char, count], idx) => (
-                <li
-                  key={idx}
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    width: "100%",
-                  }}
-                >
+                <li key={idx}>
                   <span>{char.toUpperCase()}</span>{" "}
                   <span className="miss-count">{count}回</span>
                 </li>
               ))}
-              {displayWeakKeys.length === 0 && (
-                <li
-                  style={{
-                    listStyle: "none",
-                    color: "#ccc",
-                    textAlign: "center",
-                    marginTop: "10px",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  None
-                </li>
-              )}
+              {displayWeakKeys.length === 0 && <li>None</li>}
             </ul>
           </div>
 
@@ -296,14 +252,6 @@ export const ResultScreen = ({
           resultAnimStep >= 5 ? "visible" : ""
         }`}
         id="res-anim-6"
-        style={{
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          position: "relative",
-          marginTop: "10px",
-        }}
       >
         {gameState === "result" ? (
           <>

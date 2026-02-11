@@ -17,6 +17,7 @@
   --color-aquablue: #aeffff;
   --color-lightblue: #00ffff;
   --color-green: #4aff50;
+  --color-lightyellow: #fff9c4;
   --color-yellow: yellow;
 
   /* --- Accent Colors --- */
@@ -1856,6 +1857,7 @@ body {
 
 .score-main-row {
   display: flex;
+  justify-content: flex-end;
 }
 
 .score-val-huge {
@@ -1865,7 +1867,7 @@ body {
   text-shadow:
     4px 4px 0 #fbe7ff,
     6px 6px 10px rgba(0, 0, 0, 0.2);
-  line-height: 0.6;
+  line-height: 0.7;
   letter-spacing: 4px;
 }
 
@@ -1946,43 +1948,41 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 4px;
-  padding-bottom: 4px;
   border-bottom: 1px dotted rgba(255, 255, 255, 0.3);
 }
 
 .stat-label {
-  font-family: "Fredoka One", cursive;
+  font-family: var(--font-pop-fredoka);
   font-size: 1.6rem;
-  color: #ddd;
+  color: var(--color-milkywhite);
   text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .stat-val {
-  font-family: "Fredoka One", cursive;
-  font-size: 1.6rem;
+  font-family: var(--font-pop-fredoka);
+  font-size: 26px;
   font-weight: bold;
-  color: #333;
-  margin-right: 5px;
+  color: var(--val-color);
+  margin-right: 3px;
 }
 
-.c-green {
-  color: #26ff00 !important;
+#result-screen .c-green {
+  color: var(--color-green);
   text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.8);
 }
 
-.c-red {
-  color: #ff4757 !important;
+#result-screen .c-red {
+  color: #ff4757;
   text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.8);
 }
 
-.c-blue {
-  color: #3742fa !important;
+#result-screen .c-blue {
+  color: #3742fa;
   text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.8);
 }
 
-.c-cyan {
-  color: #12f3bf !important;
+#result-screen .c-cyan {
+  color: #12f3bf;
   text-shadow: 1px 1px 0px rgba(255, 255, 255, 0.8);
 }
 
@@ -1991,56 +1991,40 @@ body {
   display: flex;
   flex-direction: column; /* 縦並びにする */
   align-items: flex-end; /* 右寄せ */
-  justify-content: center;
-  line-height: 1;
 }
 
 /* words数（数値の上に表示する小さい文字） */
 .sub-val-upper {
-  font-family: "M PLUS Rounded 1c", sans-serif; /* 日本語フォントで読みやすく */
   font-weight: bold;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.9);
-  margin-bottom: 2px; /* 下の数値との間隔 */
+  font-size: 13px;
+  color: var(--color-white);
   text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
-}
-
-/* 数値本体の位置微調整 */
-.stat-right-stacked .stat-val {
-  margin-right: 1 !important; /* 右余白をリセット */
-  line-height: 1.4;
 }
 
 /* Correctの行だけ少し高さを確保してバランスを取る */
 .stat-row:first-child {
   padding-bottom: 6px;
-  align-items: center; /* ラベルと数値を上下中央揃え */
 }
 
 /* Correctの数値だけを少し上にずらす */
 .stat-right-stacked .stat-val {
   /* マイナスの値で上に移動します。数値を調整してください */
   transform: translateY(-6px);
-  display: inline-block; /* transformを効かせるために必要 */
 }
 
 .combo-row .c-orange {
   background: linear-gradient(45deg, #f1c40f, #e67e22);
-  -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(2px 2px 0px rgba(255, 255, 255, 0.8));
-  font-family: "Fredoka One", cursive;
+  font-family: var(--font-pop-fredoka);
 }
 
 .combo-row .stat-label.c-orange {
-  font-size: 2rem;
+  font-size: 32px;
 }
 
 .combo-row .stat-val.c-orange {
-  font-size: 3.8rem;
+  font-size: 60px;
   line-height: 1;
-  margin-left: 10px;
 }
 
 .rank-area {
@@ -2048,8 +2032,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: -5px;
-  position: relative;
 }
 
 .rank-circle {
@@ -2059,73 +2041,85 @@ body {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: relative;
 }
 
 .rank-label {
-  font-family: "Fredoka One", cursive;
-  font-size: 1.6rem;
-  color: #fff;
+  font-family: var(--font-pop-fredoka);
+  font-size: 25px;
+  color: var(--color-white);
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-  margin-bottom: -15px;
-  z-index: 20;
 }
 
 #res-rank {
-  font-family: "Fredoka One", cursive;
-  font-size: 10rem;
-  line-height: 1;
-  z-index: 15;
-  display: inline-block;
-  position: relative;
-  transform-origin: center center;
+  font-family: var(--font-pop-fredoka);
+  font-size: 160px;
+  line-height: 0.8;
+
+  color: var(--rank-color, var(--color-white)); /* デフォルトは白 */
+  text-shadow: var(--rank-shadow, none);
+  
+  /* SとAだけアニメがある場合、変数がなければ 'none' になる */
+  animation: var(--rank-anim, none); 
 }
 
+/* --- S RANK (Special Luxury) --- */
 .res-rank-s {
-  color: #fffce0;
-  text-shadow:
-    3px 3px 0 #b8860b,
-    -2px -2px 0 #ffffff,
-    0 0 30px gold,
-    0 0 60px orange;
-  animation:
+  --rank-color: var(--color-lightyellow);
+  
+  /* 複雑な影も、一つの変数に入れてしまえばOK */
+  --rank-shadow:
+    3px 3px 0 var(--color-darkorange),
+    -2px -2px 0 var(--color-white),
+    0 0 30px var(--color-gold),
+    0 0 60px var(--color-orange);
+    
+  /* 複雑なアニメーションも変数へ */
+  --rank-anim:
     rank-impact-ultra 1.3s cubic-bezier(0.19, 1, 0.22, 1) forwards,
     aura-pulse-mega 2s infinite 1.3s;
 }
 
+/* --- A RANK (Burning) --- */
 .res-rank-a {
-  color: rgb(236, 59, 59);
-  text-shadow:
+  --rank-color: rgb(236, 59, 59);
+  
+  --rank-shadow:
     2px 2px 0 #8b0000,
     0 0 30px #ff4500,
-    0 0 60px #ff0000;
-  animation:
+    0 0 60px var(--color-red);
+    
+  --rank-anim:
     rank-impact-mega 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards,
     aura-burning 1.5s infinite 0.8s;
 }
 
+/* --- B RANK (Simple) --- */
 .res-rank-b {
-  color: #16b5ea;
-  text-shadow:
+  --rank-color: var(--color-oceanblue);
+  
+  --rank-shadow:
     2px 2px 0 #074587,
     0 0 20px #90eff1,
     0 0 40px #3680e0;
+    
+  /* アニメ定義なし → 自動的に none になるので記述不要！ */
 }
 
+/* --- C & D RANK --- */
 .res-rank-c {
-  color: rgb(42, 185, 54);
-  text-shadow:
+  --rank-color: rgb(42, 185, 54);
+  --rank-shadow:
     2px 2px 0 #c7edb8,
     0 0 10px #dcf5c1,
     0 0 20px #26d557;
 }
 
 .res-rank-d {
-  color: rgb(0, 0, 0);
-  text-shadow:
-    2px 2px 0 #000000,
-    0 0 5px #707070,
-    0 0 10px #000000;
+  --rank-color: var(--color-black);
+  --rank-shadow:
+    2px 2px 0 var(--color-black),
+    0 0 5px var(--color-gray),
+    0 0 10px var(--color-black);
 }
 
 @keyframes rank-impact-ultra {
@@ -2155,17 +2149,17 @@ body {
   100% {
     text-shadow:
       3px 3px 0 #b8860b,
-      0 0 30px gold,
-      0 0 60px orange;
+      0 0 30px var(--color-gold),
+      0 0 60px var(--color-orange);
     filter: brightness(1);
   }
   50% {
     text-shadow:
       3px 3px 0 #b8860b,
-      0 0 50px gold,
-      0 0 80px #ffcc00,
-      0 0 120px #fff;
-    filter: brightness(1.2);
+      0 0 70px var(--color-gold),
+      0 0 90px #ffcc00,
+      0 0 120px var(--color-white);
+    filter: brightness(1.3);
   }
 }
 
@@ -2190,15 +2184,11 @@ body {
    苦手エリア (POP & すりガラス & ゴールドスクロール)
    ========================================= */
 .result-box.weak-box {
-  /* 左側(.score-big-container)と全く同じ設定 */
-  background: rgba(218, 212, 228, 0.4) !important; /* 明るい半透明 */
-  border: 2px solid rgba(255, 255, 255, 0.3) !important; /* 枠線 */
-  border-radius: 20px !important; /* 角丸 */
-  box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2) !important; /* 内側の光沢 */
-
-  backdrop-filter: blur(10px);
+  background: rgba(218, 212, 228, 0.4); /* 明るい半透明 */
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2); /* 内側の光沢 */;
   padding: 10px 15px;
-
   /* レイアウト維持 */
   display: flex;
   flex-direction: column;
@@ -2208,23 +2198,17 @@ body {
 
 /* リスト部分（文字色などの調整） */
 .weak-list {
-  font-family: "M PLUS Rounded 1c", sans-serif !important;
-  font-weight: 700;
-  color: #eee;
-  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2); /* 視認性確保の影 */
-
+  font-weight: bold;
+  color: var(--color-milkywhite);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
   overflow-y: auto;
   flex-grow: 1;
   padding-right: 5px;
-  margin: 0;
-  padding-left: 0;
-  list-style: none;
 }
 
 /* 区切り線 */
 .weak-list li {
   border-bottom: 1px dashed rgba(255, 255, 255, 0.4);
-  padding: 4px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -2232,7 +2216,6 @@ body {
 
 /* ラベル (苦手な単語/キー) */
 .label-small {
-  font-family: "M PLUS Rounded 1c", sans-serif !important;
   font-weight: 700;
   color: #fff;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
