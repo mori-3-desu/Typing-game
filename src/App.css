@@ -77,6 +77,7 @@
   --color-shadow-pink: #efa4b8;
   --color-shadow-dark: rgba(0, 0, 0, 0.2);
   --color-shadow-dark-deep: rgba(0, 0, 0, 0.15); /* ジャンプ時の薄く広い影 */
+  --color-shadow-hotred: #c41e3a;
   --color-text-shadow: rgba(0, 0, 0, 0.3);
 
   /* --- Shine Presets (光沢プリセット) --- */
@@ -1789,7 +1790,7 @@ body {
   --theme-bg-top: rgba(134, 182, 224, 0.7);
   --theme-bg-bot: rgba(185, 237, 255, 0.6);
   --theme-border: rgba(150, 230, 255, 0.6);
-  --theme-glow:   rgba(0, 200, 255, 0.4);
+  --theme-glow: rgba(0, 200, 255, 0.4);
 }
 
 /* --- NORMAL テーマ --- */
@@ -1797,7 +1798,7 @@ body {
   --theme-bg-top: rgba(40, 20, 60, 0.7);
   --theme-bg-bot: rgba(180, 60, 100, 0.6);
   --theme-border: rgba(255, 180, 200, 0.5);
-  --theme-glow:   rgba(255, 100, 150, 0.5);
+  --theme-glow: rgba(255, 100, 150, 0.5);
 }
 
 /* --- HARD テーマ --- */
@@ -1805,7 +1806,7 @@ body {
   --theme-bg-top: rgba(10, 10, 40, 0.8);
   --theme-bg-bot: rgba(60, 40, 100, 0.7);
   --theme-border: rgba(255, 215, 0, 0.4);
-  --theme-glow:   rgba(100, 80, 255, 0.4);
+  --theme-glow: rgba(100, 80, 255, 0.4);
 }
 
 .result-title {
@@ -2057,22 +2058,20 @@ body {
 
   color: var(--rank-color, var(--color-white)); /* デフォルトは白 */
   text-shadow: var(--rank-shadow, none);
-  
+
   /* SとAだけアニメがある場合、変数がなければ 'none' になる */
-  animation: var(--rank-anim, none); 
+  animation: var(--rank-anim, none);
 }
 
 /* --- S RANK (Special Luxury) --- */
 .res-rank-s {
   --rank-color: var(--color-lightyellow);
-  
+
   /* 複雑な影も、一つの変数に入れてしまえばOK */
   --rank-shadow:
-    3px 3px 0 var(--color-darkorange),
-    -2px -2px 0 var(--color-white),
-    0 0 30px var(--color-gold),
-    0 0 60px var(--color-orange);
-    
+    3px 3px 0 var(--color-darkorange), -2px -2px 0 var(--color-white),
+    0 0 30px var(--color-gold), 0 0 60px var(--color-orange);
+
   /* 複雑なアニメーションも変数へ */
   --rank-anim:
     rank-impact-ultra 1.3s cubic-bezier(0.19, 1, 0.22, 1) forwards,
@@ -2082,12 +2081,9 @@ body {
 /* --- A RANK (Burning) --- */
 .res-rank-a {
   --rank-color: rgb(236, 59, 59);
-  
-  --rank-shadow:
-    2px 2px 0 #8b0000,
-    0 0 30px #ff4500,
-    0 0 60px var(--color-red);
-    
+
+  --rank-shadow: 2px 2px 0 #8b0000, 0 0 30px #ff4500, 0 0 60px var(--color-red);
+
   --rank-anim:
     rank-impact-mega 0.8s cubic-bezier(0.19, 1, 0.22, 1) forwards,
     aura-burning 1.5s infinite 0.8s;
@@ -2096,29 +2092,22 @@ body {
 /* --- B RANK (Simple) --- */
 .res-rank-b {
   --rank-color: var(--color-oceanblue);
-  
-  --rank-shadow:
-    2px 2px 0 #074587,
-    0 0 20px #90eff1,
-    0 0 40px #3680e0;
-    
+
+  --rank-shadow: 2px 2px 0 #074587, 0 0 20px #90eff1, 0 0 40px #3680e0;
+
   /* アニメ定義なし → 自動的に none になるので記述不要！ */
 }
 
 /* --- C & D RANK --- */
 .res-rank-c {
   --rank-color: rgb(42, 185, 54);
-  --rank-shadow:
-    2px 2px 0 #c7edb8,
-    0 0 10px #dcf5c1,
-    0 0 20px #26d557;
+  --rank-shadow: 2px 2px 0 #c7edb8, 0 0 10px #dcf5c1, 0 0 20px #26d557;
 }
 
 .res-rank-d {
   --rank-color: var(--color-black);
   --rank-shadow:
-    2px 2px 0 var(--color-black),
-    0 0 5px var(--color-gray),
+    2px 2px 0 var(--color-black), 0 0 5px var(--color-gray),
     0 0 10px var(--color-black);
 }
 
@@ -2187,13 +2176,32 @@ body {
   background: rgba(218, 212, 228, 0.4); /* 明るい半透明 */
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 20px;
-  box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2); /* 内側の光沢 */;
+  box-shadow: inset 0 0 20px rgba(235, 235, 255, 0.2); /* 内側の光沢 */
   padding: 10px 15px;
   /* レイアウト維持 */
   display: flex;
   flex-direction: column;
   max-height: 140px;
   overflow: hidden;
+}
+
+/* ラベル (苦手な単語/キー) */
+.label-small {
+  font-family: "M PLUS Rounded 1c", sans-serif !important;
+  font-weight: 500;
+  font-size: 0.7rem;
+  color: #fff;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+
+  background: var(--color-orange); /* オレンジ背景 */
+  padding: 4px 12px;
+  border-radius: 10px;
+  border: 2px solid #fff;
+
+  margin-bottom: 5px;
+  display: inline-block;
+  width: fit-content;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
 }
 
 /* リスト部分（文字色などの調整） */
@@ -2214,33 +2222,6 @@ body {
   align-items: center;
 }
 
-/* ラベル (苦手な単語/キー) */
-.label-small {
-  font-weight: 700;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-
-  /* 左端のオレンジ線 */
-  border-left: 4px solid #ff8800;
-  padding-left: 8px;
-  margin-bottom: 8px;
-  flex-shrink: 0;
-}
-
-/* スクロールバーのデザイン */
-.weak-list::-webkit-scrollbar {
-  width: 6px;
-}
-
-.weak-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 3px;
-}
-
-.weak-list::-webkit-scrollbar-track {
-  background: transparent;
-}
-
 /* 単語省略設定 */
 .weak-text {
   white-space: nowrap;
@@ -2252,157 +2233,129 @@ body {
 
 /* ミス回数 */
 .miss-count {
-  font-family: "Fredoka One", sans-serif;
-  color: #ff9eb5 !important; /* パステルピンク */
-  text-shadow: 1px 1px 0 #fff; /* 白フチ */
-  font-size: 1.1rem;
-  flex-shrink: 0;
+  font-family: var(--font-pop-fredoka);
+  color: var(--color-hotpink);
+  text-shadow: 1px 1px 0 var(--color-white);
+  font-size: 17px;
 }
 
-/* --- カスタムスクロールバー (POPなゴールド) --- */
-.weak-list::-webkit-scrollbar {
-  width: 12px; /* 少し太め */
+.scroll-gold::-webkit-scrollbar {
+  width: 12px;
 }
 
 /* 軌道 */
-.weak-list::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.15); /* 暗めの背景でコントラスト */
+.scroll-gold::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.15);
   border-radius: 10px;
   margin: 5px 0;
 }
 
-/* つまみ (ここをゴールドに) */
-.weak-list::-webkit-scrollbar-thumb {
+/* つまみ (変数化！) */
+.scroll-gold::-webkit-scrollbar-thumb {
+  /* 色を変数にしておけば、後で「もっと輝かせたい」時に一箇所変えるだけで済む */
   background: linear-gradient(
     180deg,
-    #ffd700 0%,
-    #ffaa00 100%
-  ); /* ゴールドグラデ */
+    var(--color-gold, #ffd700) 0%,
+    /* 未定義ならデフォルト色 */ var(--color-orange, #ffaa00) 100%
+  );
   border-radius: 10px;
-  border: 2px solid rgba(255, 255, 255, 0.5); /* 白枠でぷっくり感 */
+  border: 2px solid rgba(255, 255, 255, 0.5);
   background-clip: padding-box;
 }
 
-/* つまみホバー時 */
-.weak-list::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #fff700 0%, #ffcc00 100%);
-}
-
-/* ラベル (苦手な単語/キー) */
-.label-small {
-  font-family: "M PLUS Rounded 1c", sans-serif !important;
-  font-weight: 500;
-  font-size: 0.7rem;
-  color: #fff;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-
-  background: rgba(251, 191, 122, 0.8); /* オレンジ背景 */
-  padding: 4px 12px;
-  border-radius: 10px;
-  border: 2px solid #fff;
-
-  margin-bottom: 5px;
-  display: inline-block;
-  width: fit-content;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.1);
+/* ホバー時 */
+.scroll-gold::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    var(--color-lightyellow, #ffffaa) 0%,
+    var(--color-gold, #ffcc00) 100%
+  );
+  border: 2px solid rgba(255, 255, 255, 0.8);
+  background-clip: padding-box;
 }
 
 /* --- 2. リザルトフッター (ボタン & アイコン) --- */
 .result-footer-area {
   width: 100%;
-  height: 80px;
-  position: relative;
+  height: 85px;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 15px;
-  z-index: 2000;
 }
 
 /* 中央のボタン群 */
 .result-buttons {
   display: flex;
   gap: 15px;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  z-index: 2010;
 }
 
 .res-btn {
+  /* --- 共通設定 --- */
   appearance: none;
-  -webkit-appearance: none;
-  border: none;
   outline: none;
-  background: none;
-  font-family: "Fredoka One", cursive, sans-serif;
-  font-size: 1.3rem;
-  letter-spacing: 1px;
-  padding: 12px 30px;
   border-radius: 50px;
   cursor: pointer;
-  position: relative;
+  font-family: var(--font-pop-fredoka);
+  font-size: 1.3rem;
+  padding: 12px 30px;
+  letter-spacing: 1px;
   transition:
     transform 0.1s ease,
     box-shadow 0.1s ease;
-  text-shadow: none;
-}
 
-.res-btn.primary {
-  background: #ff4757;
-  color: white;
-  border: 3px solid #fff;
+  background: var(--btn-bg); /* 背景色 */
+  color: var(--btn-text); /* 文字色 */
+  border: 3px solid var(--btn-border); /* 枠線 */
+
+  /* 影の色も変数化 */
   box-shadow:
-    0 6px 0 #c41e3a,
+    0 6px 0 var(--btn-shadow-color),
     0 10px 10px rgba(0, 0, 0, 0.3);
 }
 
-.res-btn.primary:hover {
-  background: #ff6b81;
+/* --- 動き（ロジック）はここで統一！ --- */
+.res-btn:hover {
+  color: var(--btn-hover-text);
+  background: var(--btn-bg-hover); /* ホバー時の色 */
   transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 #c41e3a,
-    0 15px 20px rgba(255, 71, 87, 0.4);
-}
 
-.res-btn.primary:active {
-  transform: translateY(4px);
-  box-shadow: 0 2px 0 #c41e3a;
-}
-
-.res-btn.secondary {
-  background: #ffffff;
-  color: #555;
-  border: 3px solid #eee;
   box-shadow:
-    0 6px 0 #ccc,
-    0 10px 10px rgba(0, 0, 0, 0.2);
-}
-
-.res-btn.secondary:hover {
-  background: #f1f2f6;
-  color: #ff8800;
-  transform: translateY(-2px);
-  box-shadow:
-    0 8px 0 #ccc,
+    0 8px 0 var(--btn-shadow-color),
     0 15px 20px rgba(0, 0, 0, 0.2);
 }
 
-.res-btn.secondary:active {
+.res-btn:active {
   transform: translateY(4px);
-  box-shadow: 0 2px 0 #ccc;
+  /* 影が減る演出も、変数を使い回すので記述は1回でOK */
+  box-shadow: 0 2px 0 var(--btn-shadow-color);
+}
+
+/* --- Primary (赤) --- */
+.res-btn.primary {
+  --btn-bg: #ff4757;
+  --btn-bg-hover: var(--color-redpink);
+  --btn-text: var(--color-white);
+  --btn-border: var(--color-white);
+  --btn-shadow-color: var(--color-shadow-hotred);
+}
+
+/* --- Secondary (白) --- */
+.res-btn.secondary {
+  --btn-bg: var(--color-white);
+  --btn-bg-hover: var(--color-milkywhite);
+  --btn-text: var(--color-gray);
+  --btn-hover-text: var(--color-orange);
+  --btn-border: var(--color-milkywhite);
+  --btn-shadow-color: var(--color-offwhite);
 }
 
 /* 右端のシェアアイコン群 */
 .result-share-group {
   position: absolute;
-  right: 0px;
-  top: 50%;
-  transform: translateY(-50%);
+  right: 10px;
   display: flex;
   gap: 10px;
-  z-index: 3000;
-  pointer-events: auto !important;
+  pointer-events: auto;
 }
 
 /* アイコンボックス (ID指定で強制適用) */
