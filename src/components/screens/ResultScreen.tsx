@@ -164,14 +164,6 @@ export const ResultScreen = ({
                 <span className="stat-unit">key/s</span>
               </div>
             </div>
-            <hr
-              className="stat-divider"
-              style={{
-                border: 0,
-                borderTop: "1px dashed rgba(255,255,255,0.3)",
-                margin: "5px 0",
-              }}
-            />
             <div className="stat-row combo-row">
               <span className="stat-label c-orange">MAX COMBO</span>
               <span className="stat-val c-orange" id="res-max-combo">
@@ -190,7 +182,7 @@ export const ResultScreen = ({
             id="res-anim-3"
           >
             <div className="label-small">苦手な単語</div>
-            <ul id="weak-words-list" className="weak-list">
+            <ul id="weak-words-list" className="weak-list scroll-gold">
               {displayWeakWords.map((item: WeakWord, idx: number) => (
                 <li key={idx}>
                   <span className="weak-text" title={item.word}>
@@ -213,7 +205,7 @@ export const ResultScreen = ({
             <div className="label-small">苦手なキー</div>
             <ul
               id="weak-keys-list"
-              className="weak-list horizontal-list"
+              className="weak-list scroll-gold"
               style={{ display: "flex", flexDirection: "column" }}
             >
               {displayWeakKeys.map(([char, count], idx) => (
@@ -287,32 +279,15 @@ export const ResultScreen = ({
                 タイトルへ
               </button>
             </div>
-            <div
-              className="result-share-group"
-              style={{
-                position: "absolute",
-                right: "10px",
-                display: "flex",
-                gap: "10px",
-              }}
-            >
+            <div className="result-share-group">
               <div
                 className="share-icon-box crown-box"
                 onClick={(e) => {
                   e.stopPropagation();
                   onShowRanking();
                 }}
-                style={{ cursor: "pointer" }}
               >
-                <img
-                  src="/images/ranking.png"
-                  alt="Ranking"
-                  style={{
-                    width: "30px",
-                    height: "30px",
-                    objectFit: "contain",
-                  }}
-                />
+                <img src="/images/ranking.png" alt="Ranking" />
               </div>
               <a
                 href={onTweet()}
