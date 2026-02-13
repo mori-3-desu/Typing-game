@@ -209,7 +209,7 @@ function App() {
     missedCharsRecord,
     jpText,
     currentWordMiss,
-  }
+  };
 
   // --- ★ Hook: Game Control (タイマー & 終了ロジック) ---
   const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
@@ -231,8 +231,6 @@ function App() {
     handleKeyInputRef.current = handleKeyInput;
     handleBackspaceRef.current = handleBackspace;
   }, [handleKeyInput, handleBackspace]);
-
-
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -663,24 +661,24 @@ function App() {
           </div>
         )}
         ;
+        {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
+        {showConfig && (
+          <Setting
+            playerName={playerName}
+            isMuted={isMuted}
+            bgmVol={bgmVol}
+            seVol={seVol}
+            showRomaji={showRomaji}
+            ngWordsList={ngWordsList}
+            setIsMuted={setIsMuted}
+            setBgmVol={setBgmVol}
+            setSeVol={setSeVol}
+            setShowRomaji={setShowRomaji}
+            onSaveName={handleSaveName}
+            onClose={handleCloseConfig}
+          />
+        )}
       </div>
-      {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
-      {showConfig && (
-        <Setting
-          playerName={playerName}
-          isMuted={isMuted}
-          bgmVol={bgmVol}
-          seVol={seVol}
-          showRomaji={showRomaji}
-          ngWordsList={ngWordsList}
-          setIsMuted={setIsMuted}
-          setBgmVol={setBgmVol}
-          setSeVol={setSeVol}
-          setShowRomaji={setShowRomaji}
-          onSaveName={handleSaveName}
-          onClose={handleCloseConfig}
-        />
-      )}
     </div>
   );
 }

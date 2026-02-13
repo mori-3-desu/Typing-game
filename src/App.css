@@ -64,6 +64,7 @@
   --z-game-render: 999;
   --z-game-finish: 1000;
   --z-fade-overlay: 1500;
+  --z-config: 9999;
 
   /* =========================================
      💎 3. Materials (Glass, Shine, Shadow)
@@ -1070,24 +1071,154 @@ body {
   }
 }
 
-#score-container {
+.score-container {
   position: absolute;
   bottom: 25px;
   left: 30px;
-  font-family: "Fredoka One", monospace;
+  font-family: var(--font-pop-fredoka);
   font-size: 40px;
   color: var(--color-white);
   text-shadow: 2px 2px 0 #000;
 }
 
-#score {
-  font-family: "Fredoka One", monospace;
+.score {
+  font-family: var(--font-pop-fredoka);
   font-variant-numeric: tabular-nums;
   letter-spacing: 5px;
   display: inline-block;
   min-width: 200px;
   text-align: right;
   font-size: 40px;
+}
+
+/* スコアポップアップ */
+.score-popups {
+  position: relative;
+  top: -80px;
+  left: 100%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+
+/* ベースの定義 */
+.score-popup-item {
+  /* --- デフォルト値 (Normal) --- */
+  --p-color: var(--color-white);
+  --p-stroke: 1px var(--color-black);
+  --p-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
+  --p-size: 30px;
+  --p-anim: popup-normal 0.4s ease-out forwards;
+
+  /* --- 共通レイアウト --- */
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 0;
+  white-space: nowrap;
+
+  font-family: var(--font-pop-fredoka);
+  font-weight: bold;
+
+  /* --- 変数を適用 --- */
+  color: var(--p-color);
+  font-size: var(--p-size);
+  -webkit-text-stroke: var(--p-stroke);
+
+  text-shadow: var(--p-shadow);
+
+  animation: var(--p-anim);
+}
+
+/* ゴールド */
+.popup-gold {
+  --p-color: var(--color-gold);
+  --p-stroke: 1px #8b4500;
+  --p-shadow: 2px 2px 0px var(--color-white);
+  --p-size: 32px;
+  --p-anim: popup-normal 0.55s ease-out forwards;
+}
+
+/* ミス */
+.popup-miss {
+  --p-color: var(--color-red);
+  --p-stroke: 1px var(--color-white);
+  --p-shadow: none; /* 影なし */
+  --p-size: 24px;
+  --p-anim: popup-miss 0.8s ease-in forwards;
+}
+
+/* レインボー */
+.popup-rainbow {
+  --p-stroke: 1px rgba(255, 255, 255, 0.8);
+  --p-size: 40px;
+  --p-anim: popup-rainbow 1.3s ease-out forwards;
+
+  background: linear-gradient(
+    to right,
+    #ff0000,
+    #ffff00,
+    #00ff00,
+    #00ffff,
+    #0000ff,
+    #ff00ff
+  );
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.5));
+  text-shadow: none;
+}
+@keyframes popup-normal {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.8);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0) scale(1.2);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-28px) scale(1);
+  }
+}
+
+@keyframes popup-rainbow {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.5) rotate(-10deg);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1.5) rotate(0deg);
+  }
+  80% {
+    opacity: 1;
+    transform: translateY(-20px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-55px) scale(1.5);
+  }
+}
+
+@keyframes popup-miss {
+  0% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  20% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px) rotate(10deg);
+  }
 }
 
 #tmr-box {
@@ -1213,6 +1344,42 @@ body {
   100% {
     opacity: 0;
     transform: translateX(-50%) translateY(-60px) scale(1);
+  }
+}
+
+/* お題ノーミス時PEAFECT演出 */
+.perfect-item {
+  position: absolute;
+  overflow: visible;
+  pointer-events: none;
+  top: 160px;
+  left: 172px;
+  white-space: nowrap;
+  font-family: "Mochiy Pop P One", sans-serif;
+  font-size: 35px;
+  font-weight: 900;
+  background: linear-gradient(180deg, #fff700 0%, #ff8800 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
+  animation: floatUpPerfect 0.4s ease-out forwards;
+}
+
+@keyframes floatUpPerfect {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 30px);
+  }
+  20% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 20px);
   }
 }
 
@@ -2458,14 +2625,13 @@ body {
     #d87eff
   );
   background-size: 300% 300%;
-  color: #fff;
-  font-family: "Fredoka One", cursive;
+  color: var(--color-white);
+  font-family: var(--font-pop-fredoka);
   font-size: 0.6rem;
   padding: 2px 16px;
   border-radius: 40px;
-  border: 2px solid #fff;
+  border: 2px solid;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  z-index: 20;
   animation:
     rainbowAnim 3s ease infinite,
     floatUp 0.7s ease-out forwards;
@@ -2515,170 +2681,7 @@ body {
   visibility: visible;
 }
 
-/* Perfect演出 */
-#perfect-container {
-  position: absolute;
-  top: 170px;
-  left: 35.5%;
-  width: 0;
-  height: 0;
-  overflow: visible;
-  z-index: 9999;
-  pointer-events: none;
-}
-
-.perfect-item {
-  position: absolute;
-  left: -250px;
-  transform: translateX(-50%);
-  white-space: nowrap;
-  font-family: "Mochiy Pop P One", sans-serif;
-  font-size: 35px;
-  font-weight: 900;
-  background: linear-gradient(180deg, #fff700 0%, #ff8800 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  filter: drop-shadow(0 0 10px rgba(0, 0, 0, 0.5));
-  animation: floatUpPerfect 0.4s ease-out forwards;
-}
-
-@keyframes floatUpPerfect {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, 30px);
-  }
-  20% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, 20px);
-  }
-}
-
-/* スコアポップアップ */
-#score-popups {
-  position: absolute;
-  top: -10px;
-  left: 100%;
-  width: 200px;
-  pointer-events: none;
-  z-index: 20;
-}
-
-.score-popup {
-  position: absolute;
-  font-family: "Fredoka One", sans-serif;
-  font-weight: bold;
-  font-size: 30px;
-  opacity: 0;
-  white-space: nowrap;
-  top: 0;
-  left: 0;
-}
-
-@keyframes popup-normal {
-  0% {
-    opacity: 0;
-    transform: translateY(10px) scale(0.8);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(0) scale(1.2);
-  }
-  80% {
-    opacity: 1;
-    transform: translateY(-10px) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-28px) scale(1);
-  }
-}
-
-@keyframes popup-rainbow {
-  0% {
-    opacity: 0;
-    transform: translateY(20px) scale(0.5) rotate(-10deg);
-  }
-  15% {
-    opacity: 1;
-    transform: translateY(0) scale(1.5) rotate(0deg);
-  }
-  80% {
-    opacity: 1;
-    transform: translateY(-20px) scale(1.2);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-55px) scale(1.5);
-  }
-}
-
-@keyframes popup-miss {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  20% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(20px) rotate(10deg);
-  }
-}
-
-.popup-normal {
-  color: #ffffff;
-  -webkit-text-stroke: 1px #000;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.3);
-  animation: popup-normal 0.4s ease-out forwards;
-}
-
-.popup-gold {
-  color: #ffd700;
-  -webkit-text-stroke: 1px #8b4500;
-  text-shadow: 2px 2px 0px #fff;
-  font-size: 32px;
-  animation: popup-normal 0.55s ease-out forwards;
-}
-
-.popup-rainbow {
-  background: linear-gradient(
-    to right,
-    #ff0000,
-    #ffff00,
-    #00ff00,
-    #00ffff,
-    #0000ff,
-    #ff00ff
-  );
-  background-clip: text;
-  color: transparent;
-  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.8);
-  filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.5));
-  font-size: 40px;
-  animation: popup-rainbow 1.3s ease-out forwards;
-}
-
-.popup-miss {
-  color: #ff3333;
-  -webkit-text-stroke: 1px #fff;
-  font-size: 24px;
-  animation: popup-miss 0.8s ease-in forwards;
-}
-
-/* =========================================
-   設定画面 (CONFIG MODAL) - タイトル拡大・微調整版
-   ========================================= */
-
-/* 1. 画面全体を覆う背景 */
+/* 設定画面 (CONFIG MODAL) */
 .config-overlay {
   position: fixed;
   top: 0;
@@ -2686,7 +2689,7 @@ body {
   width: 100%;
   height: 100%;
   background: rgba(20, 10, 40, 0.75);
-  z-index: 9999;
+  z-index: var(--z-config);
   display: flex;
   justify-content: center;
   align-items: center;
