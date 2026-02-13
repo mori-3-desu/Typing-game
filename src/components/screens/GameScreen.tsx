@@ -88,11 +88,11 @@ export const GameScreen = ({
         FINISH!
       </div>
 
-      <div id="score-container">
-        SCORE: <span id="score">{displayScore}</span>
-        <div id="score-popups">
+      <div className="score-container">
+        SCORE: <span className="score">{displayScore}</span>
+        <div className="score-popups">
           {scorePopups.map((p) => (
-            <div key={p.id} className={`score-popup ${p.type}`}>
+            <div key={p.id} className={`score-popup-item ${p.type}`}>
               {p.text}
             </div>
           ))}

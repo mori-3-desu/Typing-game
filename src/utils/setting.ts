@@ -33,7 +33,7 @@ export const BGM_PATHS = {
 export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   EASY: {
     bg:    "/images/sea.png",
-    time:  10,
+    time:  100,
     chars: "1 ~ 7 文字",
     text:  "初心者の方におすすめ。朝の爽やかな海でいざ練習！",
     bgm:   "/bgm/Secret-Adventure.mp3",
