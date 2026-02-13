@@ -2358,44 +2358,81 @@ body {
   pointer-events: auto;
 }
 
-/* アイコンボックス (ID指定で強制適用) */
 #result-screen .share-icon-box {
-  width: 50px;
-  height: 50px;
+  /* =========================================
+     1. 【材料コーナー】 ここで数値を全部管理！
+     ========================================= */
+
+  /* サイズ */
+  --icon-size: 50px;
+  --icon-radius: 12px;
+
+  /* 色（背景・枠線） */
+  --icon-bg-default: rgba(255, 255, 255, 0.25);
+  --icon-bg-hover: rgba(255, 255, 255, 0.6);
+  --icon-bg-active: rgba(255, 255, 255, 0.4);
+
+  --icon-border-color: rgba(255, 255, 255, 0.6);
+  --icon-border-width: 2px;
+
+  /* 影（Shadow） */
+  --icon-shadow-default: 0 4px 8px rgba(0, 0, 0, 0.2);
+  --icon-shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.3);
+  --icon-shadow-active: 0 2px 3px rgba(0, 0, 0, 0.1);
+
+  /* アニメーション速度 */
+  --icon-transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+
+  /* =========================================
+     2. 【調理コーナー】 変数(var)をはめ込むだけ
+     ========================================= */
+
+  width: var(--icon-size);
+  height: var(--icon-size); /* 正方形なら同じ変数を使えばいい！ */
+
   display: flex;
   justify-content: center;
   align-items: center;
-  background: rgba(255, 255, 255, 0.25);
-  border: 2px solid rgba(255, 255, 255, 0.6);
-  border-radius: 12px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+  background: var(--icon-bg-default);
+  border: var(--icon-border-width) solid var(--icon-border-color);
+  border-radius: var(--icon-radius);
+
+  box-shadow: var(--icon-shadow-default);
   backdrop-filter: blur(4px);
-  transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
-  cursor: pointer !important;
-  pointer-events: auto !important;
+
+  transition: var(--icon-transition);
+
+  cursor: pointer;
+  pointer-events: auto;
   position: relative;
-  text-decoration: none;
 }
 
+/* --- ホバー時 --- */
 #result-screen .share-icon-box:hover {
-  transform: translateY(-5px) scale(1.1) !important;
-  background: rgba(255, 255, 255, 0.6) !important;
-  border-color: #ffffff !important;
-  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3) !important;
+  transform: translateY(-5px) scale(1.1);
+
+  /* 色を変えるだけ！ */
+  background: var(--icon-bg-hover);
+  border-color: var(--color-white); /* ※グローバル変数がある想定 */
+  box-shadow: var(--icon-shadow-hover);
 }
 
+/* --- クリック時 --- */
 #result-screen .share-icon-box:active {
-  transform: translateY(2px) scale(0.95) !important;
-  background: rgba(255, 255, 255, 0.4) !important;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1) !important;
-  transition: transform 0.05s ease !important;
+  transform: translateY(2px) scale(0.95);
+
+  background: var(--icon-bg-active);
+  box-shadow: var(--icon-shadow-active);
+
+  transition: transform 0.05s ease;
 }
 
 #result-screen .share-icon-box img {
-  width: 32px !important;
-  height: 32px !important;
+  width: 32px;
+  height: 32px;
   object-fit: contain;
-  pointer-events: none !important;
+  pointer-events: none;
   filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
   transition: transform 0.2s ease;
 }

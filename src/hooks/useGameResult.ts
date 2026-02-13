@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { DatabaseService } from "../services/database";
 import {
   type DifficultyLevel,
@@ -31,7 +31,7 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
       }
 
       setSaveStatus("saving");
-      hasSaved.current = true; // 二重送信防止
+      hasSaved.current = true; // 二重送信防止(reactのsetstateは非同期のためミリ秒単位の隙間を超えて二回送信されるのを防ぐ)
 
       try {
         // 1. DBへの保存 (Supabase)
@@ -166,6 +166,15 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
       else onBack();
     }
   };
+
+  useEffect(() => {
+  // ★アンマウント時（クリーンアップ）
+  return () => {
+    // 全タイマーを爆破する
+    resultTimersRef.current.forEach(clearTimeout);
+    resultTimersRef.current = [];
+  };
+}, []);
 
   return {
     highScore,
