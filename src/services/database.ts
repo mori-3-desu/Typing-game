@@ -48,8 +48,8 @@ export const DatabaseService = {
 
       const cleanJp = row.jp?.trim();
       const cleanRoma = row.roma?.trim();
-      if(!cleanJp || !cleanRoma) {
-        console.warn('空のJP、または空のROMAをしました', row);
+      if (!cleanJp || !cleanRoma) {
+        console.warn("空のJP、または空のROMAを検出しました", row);
         return;
       }
       // 1. まず掃除だけする（まだ型は string のまま！）
@@ -97,8 +97,9 @@ export const DatabaseService = {
     difficulty: DifficultyLevel,
     isCreator: boolean,
     limit: number,
+    signal?: AbortSignal,
   ): Promise<RankingScore[]> {
-    const { data, error } = await supabase
+    const query = supabase
       .from("scores")
       .select("*")
       .eq("difficulty", difficulty)
@@ -106,7 +107,20 @@ export const DatabaseService = {
       .order("score", { ascending: false })
       .limit(limit);
 
-    if (error) throw error;
+    if (signal) {
+      query.abortSignal(signal);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      if (signal?.aborted) {
+        throw new Error("Aborted");
+      }
+      throw error;
+    }
+
+    if(signal?.aborted) return [];
 
     // 🛡️ 防衛的プログラミング：返ってきたデータが要求した難易度と一致するか念のため確認
     const hasInvalidData = data?.some((row) => row.difficulty !== difficulty);
@@ -123,16 +137,16 @@ export const DatabaseService = {
    * 全国ランキングを取得
    * 共通ロジック(getScores)を呼び出すだけ
    */
-  async getRanking(difficulty: DifficultyLevel): Promise<RankingScore[]> {
-    return this.getScores(difficulty, false, LIMIT_DATA.RANKING_LIMIT);
+  async getRanking(difficulty: DifficultyLevel, signal?: AbortSignal): Promise<RankingScore[]> {
+    return this.getScores(difficulty, false, LIMIT_DATA.RANKING_LIMIT, signal);
   },
 
   /**
    * 開発者スコアを取得
    * 共通ロジック(getScores)を呼び出すだけ
    */
-  async getDevScore(difficulty: DifficultyLevel): Promise<RankingScore[]> {
-    return this.getScores(difficulty, true, 1);
+  async getDevScore(difficulty: DifficultyLevel, signal?: AbortSignal): Promise<RankingScore[]> {
+    return this.getScores(difficulty, true, 1, signal);
   },
 
   /**

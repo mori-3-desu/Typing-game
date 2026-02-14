@@ -43,7 +43,6 @@ import {
   type DifficultyLevel,
   type WordDataMap,
   type GameResultStats,
-  type RankingScore,
   type GameState,
   type PlayPhase,
   type TitlePhase,
@@ -121,7 +120,6 @@ function App() {
   const [enableBounce, setEnableBounce] = useState(false);
   const [isTitleExiting, setIsTitleExiting] = useState(false);
 
-  const [rankingData, setRankingData] = useState<RankingScore[]>([]);
   const [showRanking, setShowRanking] = useState(false);
   const [isDevRankingMode, setIsDevRankingMode] = useState(false);
 
@@ -404,29 +402,15 @@ function App() {
 
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
     playSE("decision");
-    const searchDiff = targetDiff || difficulty;
     if (targetDiff) setDifficulty(targetDiff);
     setIsDevRankingMode(false);
-    setRankingData([]);
-    try {
-      const data = await DatabaseService.getRanking(searchDiff);
-      setRankingData(data);
-      setShowRanking(true);
-    } catch (error) {
-      console.error("Ranking fetch error:", error);
-    }
+    setShowRanking(true);
   };
 
   const handleShowDevScore = async () => {
     playSE("decision");
     if (isDevRankingMode) return;
-    try {
-      const data = await DatabaseService.getDevScore(difficulty);
-      setRankingData(data);
-      setIsDevRankingMode(true);
-    } catch (err) {
-      console.error("Dev Score error", err);
-    }
+    setIsDevRankingMode(true);
   };
 
   const closeRanking = () => {
@@ -650,7 +634,6 @@ function App() {
             {showRanking && (
               <Ranking
                 difficulty={difficulty}
-                rankingData={rankingData}
                 userId={userId}
                 isDevRankingMode={isDevRankingMode}
                 onClose={closeRanking}
@@ -660,8 +643,7 @@ function App() {
             )}
           </div>
         )}
-        ;
-        {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
+        ;{showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
         {showConfig && (
           <Setting
             playerName={playerName}

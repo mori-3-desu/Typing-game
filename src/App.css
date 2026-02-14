@@ -3870,3 +3870,84 @@ body {
   transform: translateY(4px);
   box-shadow: none;
 }
+
+/* =========================================
+   ♿ アクセシビリティ：視差効果を減らす設定
+   ========================================= */
+@media (prefers-reduced-motion: reduce) {
+  
+  /* --------------------------------------
+     1. 【基本】 ロジック保護のための超高速化
+     -------------------------------------- */
+  /* 基本的にすべてのアニメーションを一瞬で終わらせる */
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* --------------------------------------
+     2. 【停止】 画面酔いの原因になる「無限ループ」
+     -------------------------------------- */
+  /* ネコミミ、タイトル、肉球、虹色背景などは完全に止める */
+  .key.cat, 
+  .game-title.bouncing, 
+  .paw, 
+  .rainbow-glow::after,
+  #tmr-text.timer-pinch,
+  .blink-guide {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* --------------------------------------
+     3. 【保護】 ゲームの手応え（フィードバック）
+     -------------------------------------- */
+  /* ここが重要！一瞬で消えると「打てたか」分からないので、
+     「動き」は消すけど「表示時間」と「フェード」は残す */
+     
+  .score-popup-item, 
+  .bonus-pop, 
+  .perfect-item,
+  .error-shake,    /* 揺れは止めるが赤く光る時間は残す */
+  .light-shake,
+  #new-record-badge {
+    /* もとのアニメーション変数を上書き！ */
+    animation-name: reduced-fade-in-out !important; 
+    animation-duration: 0.5s !important; /* 0.5秒だけ表示 */
+    transform: none !important; /* 移動・拡大縮小は禁止 */
+  }
+  
+  /* コンボ演出も拡大縮小を止める */
+  .combo-pop-anim {
+    animation: none !important;
+    transform: none !important;
+  }
+  
+  /* リザルトのランク演出（派手なやつ）も簡易表示に */
+  #res-rank, .res-rank-s, .res-rank-a {
+    animation: reduced-fade-in !important;
+    animation-duration: 0.5s !important;
+    text-shadow: 2px 2px 0 var(--color-gray) !important; /* ギラギラ影も抑える */
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
+/* --------------------------------------
+   専用の「優しい」キーフレーム
+   -------------------------------------- */
+/* ふわっと出て消えるだけ（移動なし） */
+@keyframes reduced-fade-in-out {
+  0% { opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ふわっと出るだけ */
+@keyframes reduced-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
