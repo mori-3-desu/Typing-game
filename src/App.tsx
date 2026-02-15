@@ -50,9 +50,9 @@ import {
 
 const preloadImages = () => {
   const images = [
-    "/images/title.png",
-    "/images/level.png",
-    "/images/cloud.png",
+    "/images/title.jpg",
+    "/images/level.jpg",
+    "/images/cloud.jpg",
     "/images/Ready.jpg",
     "/images/X.jpg",
     "/images/ranking.png",
@@ -470,8 +470,8 @@ function App() {
 
   // --- Render Helpers ---
   const allBackgrounds = [
-    { key: "title", src: "/images/title.png" },
-    { key: "level", src: "/images/level.png" },
+    { key: "title", src: "/images/title.jpg" },
+    { key: "level", src: "/images/level.jpg" },
     ...(["EASY", "NORMAL", "HARD"] as DifficultyLevel[]).map((difficulty) => ({
       key: difficulty,
       src: DIFFICULTY_SETTINGS[difficulty].bg,

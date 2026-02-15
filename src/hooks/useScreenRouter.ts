@@ -75,12 +75,12 @@ export const useScreenRouter = ({
 
   // 背景画像の取得
   const getCurrentBgSrc = useCallback(() => {
-    if (gameState === "title") return "/images/title.png";
+    if (gameState === "title") return "/images/title.jpg";
     if (gameState === "difficulty") {
       if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg;
       return hoverDifficulty
         ? DIFFICULTY_SETTINGS[hoverDifficulty].bg
-        : "/images/level.png";
+        : "/images/level.jpg";
     }
     if (
       gameState === "playing" ||
@@ -89,7 +89,7 @@ export const useScreenRouter = ({
     ) {
       return DIFFICULTY_SETTINGS[difficulty].bg;
     }
-    return "/images/title.png";
+    return "/images/title.jpg";
   }, [gameState, difficulty, hoverDifficulty, isTransitioning]);
 
   // ゲーム制御: Readyに戻る
