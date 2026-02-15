@@ -52,7 +52,7 @@ const preloadImages = () => {
   const images = [
     "/images/title.jpg",
     "/images/level.jpg",
-    "/images/cloud.jpg",
+    "/images/cloud.png",
     "/images/Ready.jpg",
     "/images/X.jpg",
     "/images/ranking.png",
