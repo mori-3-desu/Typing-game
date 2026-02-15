@@ -1,6 +1,4 @@
-/* --- POPなフォントの読み込み --- */
-@import url("https://fonts.googleapis.com/css2?family=Fredoka+One&family=M+PLUS+Rounded+1c:wght@400;700&family=Mochiy+Pop+P+One&display=swap");
-:root {
+:root{
   /* =========================================
      🎨 1. Base Colors & Typography
      ========================================= */
@@ -42,6 +40,7 @@
   --body-bg: #222;
   --pop-bg: #cfd8dc;
   --game-word-bg: #0f26d4;
+  --config-bg: rgba(20, 10, 40, 0.75);
 
   /* =========================================
      📐 2. Layout & Layers
@@ -451,7 +450,7 @@ body {
 .game-title {
   font-size: 115px;
   color: var(--color-lightorange);
-  font-weight: bold;
+  font-weight: 600;
   text-shadow: var(--title-shadow);
 }
 
@@ -2688,7 +2687,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(20, 10, 40, 0.75);
+  background: var(--config-bg);
   z-index: var(--z-config);
   display: flex;
   justify-content: center;
@@ -2704,10 +2703,9 @@ body {
   margin: auto;
 
   /* ウィンドウサイズ */
-  width: min(70vw, 90vh);
-  aspect-ratio: 1 / 1;
-  max-height: 80vh; /* ★追加: 画面からはみ出さないように制限 */
-  padding: 4cqh 5cqw;
+  width: 70%;
+  height: 90%;
+  padding: 2cqh 3cqw;
 
   container-type: size;
 
@@ -2721,8 +2719,7 @@ body {
 
   box-sizing: border-box;
   text-align: center;
-  color: #ffffff;
-  font-family: "M PLUS Rounded 1c", sans-serif;
+  color: var(--color-white);
 
   /* ★変更: hidden を auto に変える */
   /* overflow: hidden; */
@@ -2779,7 +2776,7 @@ body {
 /* 3. タイトル (SETTING) */
 .config-title {
   /* ★変更：文字サイズを6cqhから8cqhへ大きく */
-  font-size: 8cqh;
+  font-size: 9cqh;
 
   margin-bottom: 2cqh;
   font-weight: 800;
@@ -3129,10 +3126,8 @@ body {
   position: fixed;
   inset: 0;
   margin: auto;
-  aspect-ratio: 16 / 9; /* ゲーム画面と同じ比率に固定 */
-  width: min(70vw, 170vh); /* 画面からはみ出さない最大サイズ計算 */
-  height: auto;
-  max-height: 95vh;
+  width: 95%;
+  height: 95%;
 
   /* コンテナクエリ設定：ここを基準に文字サイズを決める */
   container-type: size;

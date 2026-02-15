@@ -32,7 +32,7 @@ export const BGM_PATHS = {
 // 難易度ごとの設定データ
 export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   EASY: {
-    bg:    "/images/sea.png",
+    bg:    "/images/sea.jpg",
     time:  100,
     chars: "1 ~ 7 文字",
     text:  "初心者の方におすすめ。朝の爽やかな海でいざ練習！",
@@ -40,7 +40,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     color: "#3ecfcf", // 水色系
   },
   NORMAL: {
-    bg:    "/images/sunset.png",
+    bg:    "/images/sunset.jpg",
     time:  120,
     chars: "2 ~ 12文字",
     text:  "標準的な難易度。美しい夕焼けの海と共にタイピング！",
@@ -48,7 +48,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     color: "#90ff64", // 緑系
   },
   HARD: {
-    bg:    "/images/star.png",
+    bg:    "/images/star.jpg",
     time:  150,
     chars: "2 ~ 長文多め",
     text:  "上級者向け。満天の星空の海の下、限界に挑戦！",
