@@ -1,4 +1,7 @@
-:root{
+/* fix: ID多すぎるので改善していこう */
+/* todo: root整理、一部gridレイアウトに変更する、勉強して書き方を変えてみる */
+
+:root {
   /* =========================================
      🎨 1. Base Colors & Typography
      ========================================= */
@@ -112,7 +115,17 @@
   --shine-detail-active:
     inset 2px 2px 6px rgba(255, 255, 255, 0.8), 0 0 5px rgba(255, 255, 255, 0.8);
 
-  /* 4. ハイスコア枠用（ダーク枠） */
+  /* 4. scroll-bar */
+  --sb-width: 10px; /* 幅 */
+  --sb-track-color: rgba(0, 0, 0, 0.15); /* レールの色 */
+
+  /* ゴールドのグラデーション */
+  --sb-gold-start: #ffd700;
+  --sb-gold-end: #ffaa00;
+  --sb-gold-hover-start: #fff700;
+  --sb-gold-hover-end: #ffcc00;
+
+  /* 5. ハイスコア枠用（ダーク枠） */
   --shine-darkbox-base:
     inset 1.5px 1.2px 0px rgba(255, 255, 255, 0.9),
     inset -1px -1px 0px rgba(255, 255, 255, 0.6), 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -2689,116 +2702,97 @@ body {
   height: 100%;
   background: var(--config-bg);
   z-index: var(--z-config);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  backdrop-filter: blur(8px);
+  display: grid;
+  place-items: center;
   animation: fadeIn 0.3s ease-out;
-}
 
-/* 2. 設定ウィンドウ本体 */
-.config-modal {
-  position: fixed;
-  inset: 0;
-  margin: auto;
+  /* ▼ 子要素 (.config-modal) をここにネスト！ */
+  & .config-modal {
+    margin: auto;
 
-  /* ウィンドウサイズ */
-  width: 70%;
-  height: 90%;
-  padding: 2cqh 3cqw;
+    /* ウィンドウサイズ */
+    width: 70%;
+    height: 90%;
+    padding: 2cqh 3cqw;
 
-  container-type: size;
+    container-type: size;
 
-  background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
-  border: 0.5cqh solid #ffe0cb;
-  border-radius: 3cqh;
-  box-shadow:
-    0 1cqh 3cqh rgba(0, 0, 0, 0.5),
-    0 0 0 0.8cqh rgba(255, 247, 217, 0.9),
-    0 0 4cqh rgba(255, 196, 125, 0.9);
+    background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
+    border-radius: 30px;
+    box-shadow:
+      0 1cqh 3cqh rgba(0, 0, 0, 0.5),
+      0 0 0 0.4cqh inset rgba(255, 247, 217, 0.9),
+      0 0 4cqh inset rgba(255, 196, 125, 0.9);
 
-  box-sizing: border-box;
-  text-align: center;
-  color: var(--color-white);
+    box-sizing: border-box;
+    text-align: center;
+    color: var(--color-white);
 
-  /* ★変更: hidden を auto に変える */
-  /* overflow: hidden; */
-  overflow-y: auto;
+    overflow: hidden;
+    display: flex; /* 子要素を広げるためにflex推奨 */
+    flex-direction: column;
 
-  display: flex;
-  flex-direction: column;
+    &.config-scroll-area {
+      width: 100%;
+      flex: 1;
+      overflow-y: auto; /* ここでスクロール担当 */
+      padding-right: 15px;
 
-  /* ★追加: おしゃれスクロールバーの設定 (Firefox用) */
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.5) transparent;
-}
+      /* Firefox用 */
+      scrollbar-width: thin;
+      scrollbar-color: #ffd700 rgba(0, 0, 0, 0.15);
 
-/* --- スクロールエリアのレイアウト設定 --- */
-.config-scroll-area {
-  width: 100%;
-  flex: 1;
-  overflow-y: auto; /* 縦スクロール有効 */
-  padding-right: 15px; /* スクロールバーとコンテンツの間の余白 */
+      /* --- ▼▼▼ ここからゴールド・スクロールバー (POPスタイル) ▼▼▼ --- */
+      &::-webkit-scrollbar {
+        width: var(--sb-width);
+      }
 
-  /* Firefox用の設定（Webkitが効かない場合用） */
-  scrollbar-width: thin;
-  scrollbar-color: #ffd700 rgba(0, 0, 0, 0.15);
-}
+      /* 軌道 */
+      &::-webkit-scrollbar-track {
+        background: var(--sb-track-color);
+        border-radius: var(--sb-width);
+        margin: var(--sb-width) 0;
+      }
 
-/* --- ▼▼▼ ここからゴールド・スクロールバー (POPスタイル) ▼▼▼ --- */
+      /* つまみ */
+      &::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+          180deg,
+          var(--sb-gold-start) 0%,
+          var(--sb-gold-end) 100%
+        );
+        border-radius: var(--sb-width);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background-clip: padding-box;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
 
-/* 軌道（背景） */
-.config-scroll-area::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.15); /* 少し暗くして溝を作る */
-  border-radius: 10px;
-  margin: 10px 0; /* 上下の角丸と被らないように余白 */
-}
-
-/* つまみ（ここをゴールドに！） */
-.config-scroll-area::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    #ffd700 0%,
-    #ffaa00 100%
-  ); /* 黄金のグラデーション */
-  border-radius: 10px; /* 丸くする */
-  border: 2px solid rgba(255, 255, 255, 0.3); /* 白い枠線でぷっくり感を出す */
-  background-clip: padding-box; /* 枠線の内側に背景を収める */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* 影をつけて浮き上がらせる */
-}
-
-/* つまみホバー時（キラッと明るく） */
-.config-scroll-area::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(180deg, #fff700 0%, #ffcc00 100%);
-  cursor: pointer;
+      /* ホバー時 */
+      &::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(
+          180deg,
+          var(--sb-gold-hover-start) 0%,
+          var(--sb-gold-hover-end) 100%
+        );
+      }
+    }
+  }
 }
 
 /* 3. タイトル (SETTING) */
 .config-title {
-  /* ★変更：文字サイズを6cqhから8cqhへ大きく */
   font-size: 9cqh;
-
-  margin-bottom: 2cqh;
   font-weight: 800;
-  color: #fff;
+  color: var(--color-white);
   flex-shrink: 0;
 
   text-shadow:
-    0.3cqh 0.3cqh 0px #ff9a9e,
+    0.3cqh 0.3cqh 0px var(--color-hotpink),
     0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
 
   border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
   padding-bottom: 2cqh;
   letter-spacing: 0.1em;
-}
-
-/* 4. 各設定項目エリア */
-.config-content {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 5cqh;
 }
 
 /* 項目の座布団 */
@@ -2807,46 +2801,83 @@ body {
   background: rgba(0, 0, 0, 0.2);
   padding: 2.5cqh 3cqh;
   border-radius: 2cqh;
+  /* 無効化（グレーアウト） */
+  &.disabled {
+    opacity: 0.5;
+    filter: grayscale(80%);
+    pointer-events: none;
+  }
 }
 
 /* 5. チェックボックス周り */
 .config-label {
+  /* =========================================
+     ▼ ここで「見た目」を一括管理！ (設定エリア)
+     ========================================= */
+  --cb-size: 4.5cqh; /* 箱のサイズ */
+  --cb-radius: 1cqh; /* 角丸 */
+
+  /* OFF (未チェック) の時の色 */
+  --cb-bg-off: #fff;
+  --cb-border-off: #ffecd2;
+
+  /* ON (チェック済み) の時の色 */
+  --cb-bg-on: #ff9a9e; /* ピンク */
+  --cb-border-on: #fff; /* 枠線は白に */
+  --cb-tick-color: #fff; /* チェックマークの色 */
+
+  /* ========================================= */
+
   display: flex;
   align-items: center;
+  gap: 1cqh;
   cursor: pointer;
   font-size: 3.2cqh;
   color: #fff;
   font-weight: 700;
-}
 
-.config-label input[type="checkbox"] {
-  appearance: none;
-  -webkit-appearance: none;
+  /* ▼ input要素のスタイル */
+  & input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
 
-  width: 4.5cqh;
-  height: 4.5cqh;
-  background: #fff;
-  border-radius: 1cqh;
-  margin-right: 2.5cqh;
-  cursor: pointer;
-  position: relative;
-  transition: all 0.2s;
-  border: 0.3cqh solid #ffecd2;
-}
+    /* 変数を適用！ */
+    width: var(--cb-size);
+    height: var(--cb-size);
+    border-radius: var(--cb-radius);
+    background: var(--cb-bg-off);
+    border: 0.3cqh solid var(--cb-border-off);
 
-.config-label input[type="checkbox"]:checked {
-  background: #ff9a9e;
-  border-color: #fff;
-}
+    margin-right: 2.5cqh;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s culic-bezier(0.6, 0, 0.2, 1);
 
-.config-label input[type="checkbox"]:checked::after {
-  content: "✔";
-  position: absolute;
-  color: #fff;
-  font-size: 3.5cqh;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    &:active {
+      transform: scale(0.9);
+    }
+
+    /* 1. チェックされた状態 (:checked) */
+    &:checked {
+      background: var(--cb-bg-on);
+      border-color: var(--cb-border-on);
+
+      /* 2. チェックマーク (::after) */
+      &::after {
+        content: "✔";
+        position: absolute;
+
+        color: var(--cb-tick-color);
+        font-size: calc(
+          var(--cb-size) * 0.8
+        ); /* 箱のサイズに合わせて自動調整 */
+
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
 }
 
 /* 6. スライダー周り */
@@ -2896,13 +2927,6 @@ body {
   border: 0.4cqh solid #fff;
   border-radius: 50%;
   cursor: pointer;
-}
-
-/* 無効化（グレーアウト） */
-.config-item.disabled {
-  opacity: 0.5;
-  filter: grayscale(80%);
-  pointer-events: none;
 }
 
 /* 7. 閉じるボタン */
@@ -3870,12 +3894,13 @@ body {
    ♿ アクセシビリティ：視差効果を減らす設定
    ========================================= */
 @media (prefers-reduced-motion: reduce) {
-  
   /* --------------------------------------
      1. 【基本】 ロジック保護のための超高速化
      -------------------------------------- */
   /* 基本的にすべてのアニメーションを一瞬で終わらせる */
-  *, ::before, ::after {
+  *,
+  ::before,
+  ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
@@ -3886,9 +3911,9 @@ body {
      2. 【停止】 画面酔いの原因になる「無限ループ」
      -------------------------------------- */
   /* ネコミミ、タイトル、肉球、虹色背景などは完全に止める */
-  .key.cat, 
-  .game-title.bouncing, 
-  .paw, 
+  .key.cat,
+  .game-title.bouncing,
+  .paw,
   .rainbow-glow::after,
   #tmr-text.timer-pinch,
   .blink-guide {
@@ -3901,7 +3926,7 @@ body {
      -------------------------------------- */
   /* ここが重要！一瞬で消えると「打てたか」分からないので、
      「動き」は消すけど「表示時間」と「フェード」は残す */
-     
+
   .score-popup-item, 
   .bonus-pop, 
   .perfect-item,
@@ -3909,19 +3934,21 @@ body {
   .light-shake,
   #new-record-badge {
     /* もとのアニメーション変数を上書き！ */
-    animation-name: reduced-fade-in-out !important; 
+    animation-name: reduced-fade-in-out !important;
     animation-duration: 0.5s !important; /* 0.5秒だけ表示 */
     transform: none !important; /* 移動・拡大縮小は禁止 */
   }
-  
+
   /* コンボ演出も拡大縮小を止める */
   .combo-pop-anim {
     animation: none !important;
     transform: none !important;
   }
-  
+
   /* リザルトのランク演出（派手なやつ）も簡易表示に */
-  #res-rank, .res-rank-s, .res-rank-a {
+  #res-rank,
+  .res-rank-s,
+  .res-rank-a {
     animation: reduced-fade-in !important;
     animation-duration: 0.5s !important;
     text-shadow: 2px 2px 0 var(--color-gray) !important; /* ギラギラ影も抑える */
@@ -3935,14 +3962,26 @@ body {
    -------------------------------------- */
 /* ふわっと出て消えるだけ（移動なし） */
 @keyframes reduced-fade-in-out {
-  0% { opacity: 0; }
-  20% { opacity: 1; }
-  80% { opacity: 1; }
-  100% { opacity: 0; }
+  0% {
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 /* ふわっと出るだけ */
 @keyframes reduced-fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }

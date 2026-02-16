@@ -1,6 +1,6 @@
 import React from "react";
 // パスは環境に合わせて調整してください
-import { DIFFICULTY_SETTINGS } from "../../utils/setting";
+import { DIFFICULTY_ORDER, DIFFICULTY_SETTINGS } from "../../utils/setting";
 import { getSavedHighScore } from "../../utils/storage";
 import { type DifficultyLevel } from "../../types";
 
@@ -11,7 +11,7 @@ type Props = {
   setHoverDifficulty: (diff: DifficultyLevel | null) => void;
   isInputLocked: boolean;
   isTransitioning: boolean;
-  
+
   // アクション系
   handleSelectDifficulty: (diff: DifficultyLevel) => void;
   backToTitle: () => void;
@@ -33,10 +33,12 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   handleShowHighScoreDetail,
   playDecisionSound,
 }) => {
-
   // 表示用の難易度とハイスコアを計算
   const displayDiff = hoverDifficulty || difficulty;
   const displayHighScore = getSavedHighScore(displayDiff);
+
+  // 設定データ
+  const currentSetting = DIFFICULTY_SETTINGS[displayDiff];
 
   const handleMouseEnter = (diff: DifficultyLevel) => {
     if (!isTransitioning && !isInputLocked) {
@@ -59,7 +61,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
           className={`diff-button-menu ${isInputLocked ? "no-click" : ""}`}
           onMouseLeave={handleMenuLeave}
         >
-          {(["EASY", "NORMAL", "HARD"] as DifficultyLevel[]).map((diff) => (
+          {DIFFICULTY_ORDER.map((diff) => (
             <button
               key={diff}
               className={`diff-btn ${diff.toLowerCase()}`}
@@ -69,11 +71,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
               {diff}
             </button>
           ))}
-          <button
-            id="btn-back"
-            className="diff-btn"
-            onClick={backToTitle}
-          >
+          <button id="btn-back" className="diff-btn" onClick={backToTitle}>
             BACK
           </button>
         </div>
@@ -106,10 +104,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
                 </span>
               </div>
             </div>
-            <h2
-              id="display-diff-name"
-              style={{ color: DIFFICULTY_SETTINGS[displayDiff].color }}
-            >
+            <h2 id="display-diff-name" style={{ color: currentSetting.color }}>
               {displayDiff}
             </h2>
             <p id="display-diff-text">
