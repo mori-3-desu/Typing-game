@@ -15,6 +15,7 @@ import { Setting } from "./components/modals/Setting";
 
 // --- Utils & Hooks ---
 import {
+  ALL_BACKGROUNDSDATA,
   DIFFICULTY_SETTINGS,
   PLAYER_NAME_CHARS,
   UI_TIMINGS,
@@ -164,7 +165,7 @@ function App() {
   // --- Hook 3: Screen Router (画面遷移ロジックの集約) ---
   // ★ ここで一括呼び出し！
   const {
-    getCurrentBgSrc,
+    currentBgSrc,
     resetToReady,
     backToDifficulty,
     retryGame,
@@ -468,16 +469,7 @@ function App() {
     skipAnimation,
   });
 
-  // --- Render Helpers ---
-  const allBackgrounds = [
-    { key: "title", src: "/images/title.jpg" },
-    { key: "level", src: "/images/level.jpg" },
-    ...(["EASY", "NORMAL", "HARD"] as DifficultyLevel[]).map((difficulty) => ({
-      key: difficulty,
-      src: DIFFICULTY_SETTINGS[difficulty].bg,
-    })),
-  ];
-  const targetBgSrc = getCurrentBgSrc(); // Routerから取得
+  const targetBgSrc = currentBgSrc;
 
   // 表示用データ作成
   const sortedWeakWords = [...missedWordsRecord]
@@ -510,14 +502,13 @@ function App() {
           <div className="error-fallback">Error: {error.message}</div>
         ) : (
           <div id="game-wrapper">
-            {allBackgrounds.map((bg) => (
+            {ALL_BACKGROUNDSDATA.map((bg) => (
               <div
                 key={bg.key}
                 className="bg-layer"
                 style={{
                   backgroundImage: `url(${bg.src})`,
                   opacity: targetBgSrc === bg.src ? 1 : 0,
-                  zIndex: targetBgSrc === bg.src ? 1 : 0,
                 }}
               />
             ))}
