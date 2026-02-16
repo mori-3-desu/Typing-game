@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { playSE, stopBGM, startSelectBgm } from "../utils/audio";
 import { DIFFICULTY_SETTINGS, UI_TIMINGS } from "../utils/setting";
 import {
@@ -53,7 +53,7 @@ export const useScreenRouter = ({
 }: UseScreenRouterProps) => {
   // 難易度選択画面に戻るヘルパー関数
   const initiateGame = useCallback(() => {
-    if(isTransitioning) return;
+    if (isTransitioning) return;
     setIsTransitioning(true);
     playSE("decision");
     resetGame();
@@ -74,22 +74,15 @@ export const useScreenRouter = ({
   ]);
 
   // 背景画像の取得
-  const getCurrentBgSrc = useCallback(() => {
-    if (gameState === "title") return "/images/title.jpg";
+  const currentBgSrc = useMemo(() => {
+    if (gameState === "loading" || gameState === "title") return "/images/title.jpg";
     if (gameState === "difficulty") {
       if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg;
       return hoverDifficulty
         ? DIFFICULTY_SETTINGS[hoverDifficulty].bg
         : "/images/level.jpg";
     }
-    if (
-      gameState === "playing" ||
-      gameState === "finishing" ||
-      gameState === "result"
-    ) {
-      return DIFFICULTY_SETTINGS[difficulty].bg;
-    }
-    return "/images/title.jpg";
+    return DIFFICULTY_SETTINGS[difficulty].bg;
   }, [gameState, difficulty, hoverDifficulty, isTransitioning]);
 
   // ゲーム制御: Readyに戻る
@@ -173,7 +166,7 @@ export const useScreenRouter = ({
   ]);
 
   return {
-    getCurrentBgSrc,
+    currentBgSrc,
     resetToReady,
     backToDifficulty,
     retryGame,
