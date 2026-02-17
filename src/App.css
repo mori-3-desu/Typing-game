@@ -818,7 +818,7 @@ body {
   /* クリック時も「ガラス感」だけは残しつつ、影(0 8px 0)を消す */
   box-shadow:
     var(--glass-shine),
-    0 0 0 rgba(0, 0, 0, 0) !important;
+    0 0 0 rgba(0, 0, 0, 0);
 }
 
 /* --- 難易度別の色設定 --- */
@@ -2713,7 +2713,7 @@ body {
     /* ウィンドウサイズ */
     width: 70%;
     height: 90%;
-    padding: 2cqh 3cqw;
+    padding: 8cqh 8cqw;
 
     container-type: size;
 
@@ -2732,7 +2732,57 @@ body {
     display: flex; /* 子要素を広げるためにflex推奨 */
     flex-direction: column;
 
-    &.config-scroll-area {
+    /* 3. タイトル (SETTING) */
+    & .config-title {
+      font-size: 7cqh;
+      font-weight: 800;
+      color: var(--color-white);
+      flex-shrink: 0;
+
+      text-shadow:
+        0.3cqh 0.3cqh 0px var(--color-hotpink),
+        0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
+
+      border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
+      line-height: 1;
+      letter-spacing: 0.1em;
+    }
+
+    /* 7. 閉じるボタン */
+    .config-buttons {
+      margin-top: 2cqh;
+      flex-shrink: 0;
+      & button.pop-btn.primary {
+        background: linear-gradient(
+          135deg,
+          hsl(42, 100%, 65%) 0%,
+          #ffa442 40%,
+          #d8a4ff 100%
+        );
+        color: #fffce0;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+
+        padding: 1.5cqh 6cqh;
+        border-radius: 5cqh;
+        font-size: 2.8cqh;
+
+        box-shadow: 0 0.8cqh 0 var(--color-creamorange);
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+      }
+      &:hover {
+        transform: translateY(-0.3cqh);
+      }
+      &:active {
+        transform: translateY(-0.1cqh);
+        box-shadow: 0 0 0 var(--color-creamorange);
+      }
+    }
+
+    & .config-scroll-area {
       width: 100%;
       flex: 1;
       overflow-y: auto; /* ここでスクロール担当 */
@@ -2779,22 +2829,6 @@ body {
   }
 }
 
-/* 3. タイトル (SETTING) */
-.config-title {
-  font-size: 9cqh;
-  font-weight: 800;
-  color: var(--color-white);
-  flex-shrink: 0;
-
-  text-shadow:
-    0.3cqh 0.3cqh 0px var(--color-hotpink),
-    0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
-
-  border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
-  padding-bottom: 2cqh;
-  letter-spacing: 0.1em;
-}
-
 /* 項目の座布団 */
 .config-item {
   text-align: left;
@@ -2811,9 +2845,7 @@ body {
 
 /* 5. チェックボックス周り */
 .config-label {
-  /* =========================================
-     ▼ ここで「見た目」を一括管理！ (設定エリア)
-     ========================================= */
+  /* 設定エリア */
   --cb-size: 4.5cqh; /* 箱のサイズ */
   --cb-radius: 1cqh; /* 角丸 */
 
@@ -2825,8 +2857,6 @@ body {
   --cb-bg-on: #ff9a9e; /* ピンク */
   --cb-border-on: #fff; /* 枠線は白に */
   --cb-tick-color: #fff; /* チェックマークの色 */
-
-  /* ========================================= */
 
   display: flex;
   align-items: center;
@@ -2851,7 +2881,7 @@ body {
     margin-right: 2.5cqh;
     cursor: pointer;
     position: relative;
-    transition: all 0.2s culic-bezier(0.6, 0, 0.2, 1);
+    transition: all 0.2s cubic-bezier(0.6, 0, 0.2, 1);
 
     &:active {
       transform: scale(0.9);
@@ -2886,97 +2916,80 @@ body {
   justify-content: space-between;
   margin-bottom: 2cqh;
   font-size: 2.8cqh;
-  color: #ffecd2;
+  color: var(--color-lightyellow);
   font-weight: bold;
 }
 
 /* スライダー本体 */
 .volume-slider {
+  /* 設定エリア */
+  --sd-size: 4cqh;
+  --sd-bg: #fbc2eb;
+  --sd-border: 0.4cqh solid var(--color-white);
+  --sd-shadow: 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.3);
+
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+
   width: 100%;
   height: 1.8cqh;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 1cqh;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  cursor: pointer;
   box-shadow: inset 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.2);
-}
-
-/* スライダーの「つまみ」 */
-.volume-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 4cqh;
-  height: 4cqh;
-  background: #fbc2eb;
-  border: 0.4cqh solid #fff;
-  border-radius: 50%;
-  box-shadow: 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.3);
   cursor: pointer;
-  transition: transform 0.1s;
-}
 
-.volume-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
 
-.volume-slider::-moz-range-thumb {
-  width: 4cqh;
-  height: 4cqh;
-  background: #fbc2eb;
-  border: 0.4cqh solid #fff;
-  border-radius: 50%;
-  cursor: pointer;
-}
+    width: var(--sd-size);
+    height: var(--sd-size);
+    background: var(--sd-bg);
 
-/* 7. 閉じるボタン */
-.config-buttons {
-  margin-top: 2cqh;
-  flex-shrink: 0;
-}
+    /* 変数化したボーダーを適用 */
+    border: var(--sd-border);
+    border-radius: 50%;
 
-.config-buttons button.pop-btn.primary {
-  background: linear-gradient(
-    135deg,
-    hsl(42, 100%, 65%) 0%,
-    #ffa442 40%,
-    #d8a4ff 100%
-  );
-  color: #fffce0;
-  font-weight: 800;
-  border: none;
+    box-shadow: var(--sd-shadow);
+    transition: transform 0.1s ease;
+  }
 
-  padding: 1.5cqh 6cqh;
-  border-radius: 5cqh;
-  font-size: 2.8cqh;
+  /* ホバー時 */
+  &::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
 
-  box-shadow: 0 0.6cqh 0.3cqh #ffc9b4;
-  transition:
-    transform 0.1s,
-    box-shadow 0.1s;
-  cursor: pointer;
-}
+  /* ▼ Firefox用 */
+  &::-moz-range-thumb {
+    width: var(--sd-size);
+    height: var(--sd-size);
+    background: var(--sd-bg);
 
-.config-buttons button.pop-btn.primary:active {
-  transform: scale(0.95);
-  box-shadow: 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.2);
+    border: var(--sd-border);
+    border-radius: 50%;
+    box-shadow: var(--sd-shadow);
+
+    transition: transform 0.1s ease;
+  }
+
+  &::-moz-range-thumb:hover {
+    transform: scale(1.2);
+  }
 }
 
 /* 開発者スコアボタン（王冠）の特別色 */
 .close-btn.dev-btn {
-  color: #ffd700; /* 王冠の色 */
-  border-color: #ffd700;
-  background: #fff;
+  border-color: var(--color-gold);
 }
 
 .close-btn.dev-btn:hover {
-  background: #fffbe6;
+  background: var(--color-lightyellow);
 }
 
 /* 地球儀ボタン（通常ランクへ戻る） */
 .close-btn.global-btn {
-  color: #00bfff;
-  border-color: #00bfff;
+  border-color: var(--color-lightblue);
 }
 
 /* --- 製作者スコアPOP（特別カード） --- */
@@ -2984,7 +2997,6 @@ body {
   width: 100%;
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
@@ -3014,63 +3026,54 @@ body {
   width: 90%;
   max-width: 500px;
   text-align: center;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
   position: relative;
   overflow: hidden;
-}
+  & .dev-label {
+    font-size: 1.4rem;
+    color: yellow;
+    font-weight: bold;
+    letter-spacing: 2px;
+    display: inline;
+    border-bottom: 1px solid currentColor;
+  }
 
-.dev-label {
-  font-size: 1.4rem;
-  color: yellow;
-  font-weight: bold;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
-  display: inline-block;
-  border-bottom: 1px solid currentColor;
-  padding-bottom: 5px;
-}
-
-.dev-main-score {
-  font-size: 3rem;
-  font-weight: 900;
-  color: #f5a6ea;
-  letter-spacing: 1px;
-  line-height: 1;
-  margin: 0px 0 10px 0;
-  text-shadow: 2px 2px 0px #ddd;
+  & .dev-main-score {
+    font-size: 3rem;
+    font-weight: 600;
+    color: var(--color-hotpink);
+    letter-spacing: 1px;
+    line-height: 1;
+    margin: 0px 0 10px 0;
+    text-shadow: 2px 2px 0px #ddd;
+  }
 }
 
 /* グリッド自体の調整：1列にして縦に並べる */
 .dev-stats-grid {
   display: grid;
-  grid-template-columns: 1fr; /* ★ここを1frにして縦1列表示に変更 */
-  gap: 10px; /* 縦並びなので間隔を少し調整 */
+  grid-template-columns: 1fr;
+  gap: 12px;
   background: rgba(0, 0, 0, 0.3);
   padding: 15px;
   border-radius: 15px;
-  /* 縦長になりすぎないようスクロール等の調整が必要ならここに追加 */
-}
+  /* 各アイテムを中央揃えにしてポップなシールのように */
+  & .dev-stat-item {
+    display: flex;
+    flex-direction: row; /* ★縦並びリストっぽく、ラベルと数値を横並びに変更 */
+    justify-content: space-between; /* 左右に配置 */
+    align-items: center;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.2); /* 区切り線を追加 */
+    padding-bottom: 5px;
+  }
 
-/* 各アイテムを中央揃えにしてポップなシールのように */
-.dev-stat-item {
-  display: flex;
-  flex-direction: row; /* ★縦並びリストっぽく、ラベルと数値を横並びに変更 */
-  justify-content: space-between; /* 左右に配置 */
-  align-items: center;
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.2); /* 区切り線を追加 */
-  padding-bottom: 5px;
-}
-
-.dev-stat-item:last-child {
-  border-bottom: none;
-}
-
-/* ラベル (Correct, Miss...) の共通設定 */
-.dev-stat-item span:first-child {
-  font-size: 1.4rem; /* 少し大きく */
-  font-weight: 900;
-  letter-spacing: 1px;
-  margin-bottom: 0; /* 横並びにするので下の余白は削除 */
+  /* ラベル (Correct, Miss...) の共通設定 */
+  & .dev-stat-item span:first-child {
+    font-size: 1.4rem; /* 少し大きく */
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin-bottom: 0; /* 横並びにするので下の余白は削除 */
+  }
 }
 
 /* 数値の共通設定 */
@@ -3079,8 +3082,6 @@ body {
   font-weight: 900;
   line-height: 1;
 }
-
-/* --- 色とエフェクトの適用 --- */
 
 /* 1. Correct (Green) */
 .dev-stat-item:nth-child(1) span:first-child,
