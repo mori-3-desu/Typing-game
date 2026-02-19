@@ -47,6 +47,7 @@ import {
   type GameState,
   type PlayPhase,
   type TitlePhase,
+  type RankingScore,
 } from "./types";
 
 const preloadImages = () => {
@@ -121,8 +122,13 @@ function App() {
   const [enableBounce, setEnableBounce] = useState(false);
   const [isTitleExiting, setIsTitleExiting] = useState(false);
 
+  const [rankingData, setIsRankingData] = useState<RankingScore[]>([]);
   const [showRanking, setShowRanking] = useState(false);
   const [isDevRankingMode, setIsDevRankingMode] = useState(false);
+  const [isRankingLoading, setIsRankingLoading] = useState(false);
+  const [rankingDataMode, setIsRankingDataMode] = useState<
+    "global" | "dev" | null
+  >(null);
 
   const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
@@ -194,6 +200,7 @@ function App() {
 
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
+  const rankingRequestIdRef = useRef(0);
 
   const myGameStats = {
     score,
@@ -401,21 +408,95 @@ function App() {
     setGameState("hiscore_review");
   };
 
+// =========================================================================
+  // 🏆 全国ランキング取得処理
+  // =========================================================================
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
     playSE("decision");
+    
+    // 1. 新しい通信用の整理券を発行（連打や通信遅延による「過去データの追い越し」を防止）
+    const requestId = ++rankingRequestIdRef.current;
+    
+    const searchDiff = targetDiff || difficulty;
     if (targetDiff) setDifficulty(targetDiff);
-    setIsDevRankingMode(false);
+
+    // 2. 【超重要】通信を始める「前」に、画面の状態を強制リセット！
+    // ここで一気に State を更新することで、React が「古いデータ」を描画する隙を与えない（チラツキ防止）
     setShowRanking(true);
+    setIsRankingLoading(true); // スピナーON
+    setIsDevRankingMode(false);
+    setIsRankingDataMode(null);
+    setIsRankingData([]);      // 過去のデータ（開発者スコアなど）を完全に破壊
+
+    try {
+      // 3. データベースから全国ランキングを取得
+      const data = await DatabaseService.getRanking(searchDiff);
+      
+      // 4. 通信が終わった時点で、自分が「最新の整理券」を持っているか確認
+      // 違っていれば、それは「古いリクエスト」なので画面に反映せずに捨てる
+      if (requestId !== rankingRequestIdRef.current) return;
+      
+      // 5. 最新のデータだけを安全にセット
+      setIsRankingData(data);
+      setIsRankingDataMode("global");
+    } catch (error) {
+      // エラー時も同様に、古いリクエストのエラーなら無視する
+      if (requestId !== rankingRequestIdRef.current) return;
+      console.error("Ranking fetch error:", error);
+    } finally {
+      // 6. 自分が最新のリクエストだった場合のみ、ローディング（スピナー）を終了する
+      // （古いリクエストが after 処理で勝手にスピナーを消してしまうのを防ぐ）
+      if (requestId === rankingRequestIdRef.current) {
+        setIsRankingLoading(false);
+      }
+    }
   };
 
+  // =========================================================================
+  // 👑 開発者（クリエイター）スコア取得処理
+  // =========================================================================
   const handleShowDevScore = async () => {
     playSE("decision");
-    if (isDevRankingMode) return;
-    setIsDevRankingMode(true);
+    
+    // 既に開発者モードを表示中、または現在何かのデータを読み込み中ならブロック（連打防止）
+    if (isDevRankingMode || isRankingLoading) return;
+
+    // 1. 整理券を発行
+    const requestId = ++rankingRequestIdRef.current;
+    
+    // 2. 【超重要】全国ランキングのデータを破棄して、画面を完全にリセット
+    setIsRankingLoading(true);
+    setIsRankingDataMode(null);
+    setIsRankingData([]);
+
+    try {
+      // 3. データベースから開発者スコアを取得
+      const data = await DatabaseService.getDevScore(difficulty);
+      
+      // 4. 整理券の確認（過去の通信の追い越し防止）
+      if (requestId !== rankingRequestIdRef.current) return;
+      
+      // 5. 最新データのみセットし、モードを「開発者」に切り替える
+      setIsRankingData(data);
+      setIsRankingDataMode("dev");
+      setIsDevRankingMode(true);
+    } catch (error) {
+      if (requestId !== rankingRequestIdRef.current) return;
+      console.error("Ranking fetch error:", error);
+    } finally {
+      // 6. 自分が最新のリクエストだった場合のみローディング終了
+      if (requestId === rankingRequestIdRef.current) {
+        setIsRankingLoading(false);
+      }
+    }
   };
 
   const closeRanking = () => {
+    rankingRequestIdRef.current += 1;
     setShowRanking(false);
+    setIsRankingLoading(false);
+    setIsRankingDataMode(null);
+    setIsRankingData([]);
     playSE("decision");
   };
 
@@ -625,8 +706,11 @@ function App() {
             {showRanking && (
               <Ranking
                 difficulty={difficulty}
+                rankingData={rankingData}
                 userId={userId}
                 isDevRankingMode={isDevRankingMode}
+                rankingDataMode={rankingDataMode}
+                isLoading={isRankingLoading}
                 onClose={closeRanking}
                 onShowDevScore={handleShowDevScore}
                 onFetchRanking={fetchRanking}

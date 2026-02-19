@@ -75,7 +75,8 @@ export const useScreenRouter = ({
 
   // 背景画像の取得
   const currentBgSrc = useMemo(() => {
-    if (gameState === "loading" || gameState === "title") return "/images/title.jpg";
+    if (gameState === "loading" || gameState === "title")
+      return "/images/title.jpg";
     if (gameState === "difficulty") {
       if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg;
       return hoverDifficulty
