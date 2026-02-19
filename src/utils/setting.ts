@@ -54,7 +54,7 @@ export const ALL_BACKGROUNDSDATA = [
 export const AUDIO_PATHS: Record<SoundKey, string> = {
   decision: "/bgm/決定.mp3",
   start: "/bgm/start.mp3",
-  diff: "/bgm/303PM.wav",
+  diff: "/bgm/303PM.mp3",
   type: "/bgm/key.mp3",
   bs: "/bgm/BackSpace.mp3",
   combo: "/bgm/決定ボタンを押す26.mp3",
@@ -73,7 +73,7 @@ export const AUDIO_PATHS: Record<SoundKey, string> = {
 
 // 難易度選択用BGM
 export const BGM_PATHS = {
-  SELECT: "/bgm/303PM.wav",
+  SELECT: "/bgm/303PM.mp3",
 } as const;
 
 // App.t
