@@ -3057,89 +3057,113 @@ body {
   background: rgba(0, 0, 0, 0.3);
   padding: 15px;
   border-radius: 15px;
+
   /* 各アイテムを中央揃えにしてポップなシールのように */
   & .dev-stat-item {
+    --dev-shadow: 1px 1px 0 #fff;
     display: flex;
     flex-direction: row; /* ★縦並びリストっぽく、ラベルと数値を横並びに変更 */
     justify-content: space-between; /* 左右に配置 */
     align-items: center;
     border-bottom: 1px dashed rgba(255, 255, 255, 0.2); /* 区切り線を追加 */
     padding-bottom: 5px;
-  }
 
-  /* ラベル (Correct, Miss...) の共通設定 */
-  & .dev-stat-item span:first-child {
-    font-size: 1.4rem; /* 少し大きく */
-    font-weight: 900;
-    letter-spacing: 1px;
-    margin-bottom: 0; /* 横並びにするので下の余白は削除 */
+    /* ラベル (Correct, Miss...) の共通設定 */
+    & span:first-child {
+      font-size: 1.4rem; /* 少し大きく */
+      font-weight: 900;
+      letter-spacing: 1px;
+      margin-bottom: 0; /* 横並びにするので下の余白は削除 */
+    }
+
+    /* =========================================
+       🎨 ここから色が順番に適用されます
+       ========================================= */
+
+    /* 1. Correct (Green) */
+    &:nth-child(1) span:first-child,
+    &:nth-child(1) .dev-stat-val {
+      color: var(--color-green);
+      text-shadow: var(--dev-shadow);
+    }
+
+    /* 2. Miss (Red) */
+    &:nth-child(2) span:first-child,
+    &:nth-child(2) .dev-stat-val {
+      color: var(--color-red);
+      text-shadow: var(--dev-shadow);
+    }
+
+    /* 3. BackSpace (Blue) */
+    &:nth-child(3) span:first-child,
+    &:nth-child(3) .dev-stat-val {
+      color: var(--color-oceanblue);
+      text-shadow: var(--dev-shadow)
+    }
+
+    /* 4. Speed (Cyan) */
+    &:nth-child(4) span:first-child,
+    &:nth-child(4) .dev-stat-val {
+      color: var(--color-lightblue);
+      text-shadow: var(--dev-shadow);
+    }
+
+    /* Speedの単位(key/s) */
+    &:nth-child(4) .dev-stat-val span {
+      font-size: 1rem;
+      color: var(--color-lightblue);
+      text-shadow: var(--dev-shadow);
+      font-weight: 500;
+    }
+
+    /* 5. MaxCombo (Orange) */
+    &:nth-child(5) span:first-child,
+    &:nth-child(5) .dev-stat-val {
+      background: linear-gradient(45deg, #f1c40f, #e67e22);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      filter: drop-shadow(2px 2px 0px rgba(255, 255, 255, 0.8));
+    }
   }
 }
 
 /* 数値の共通設定 */
 .dev-stat-item .dev-stat-val {
   font-size: 2rem;
-  font-weight: 900;
+  font-weight: 600;
   line-height: 1;
-}
-
-/* 1. Correct (Green) */
-.dev-stat-item:nth-child(1) span:first-child,
-.dev-stat-item:nth-child(1) .dev-stat-val {
-  color: #2ecc71;
-  text-shadow: 1px 1px 0 #fff;
-}
-
-/* 2. Miss (Red) */
-.dev-stat-item:nth-child(2) span:first-child,
-.dev-stat-item:nth-child(2) .dev-stat-val {
-  color: #e74c3c;
-  text-shadow: 1px 1px 0 #fff;
-}
-
-/* 3. BackSpace (Blue) ★ここに追加 */
-.dev-stat-item:nth-child(3) span:first-child,
-.dev-stat-item:nth-child(3) .dev-stat-val {
-  color: #3498db;
-  text-shadow: 1px 1px 0 #fff;
-}
-
-/* 4. Speed (Cyan) ★順番が4番目に */
-.dev-stat-item:nth-child(4) span:first-child,
-.dev-stat-item:nth-child(4) .dev-stat-val {
-  color: #00bcd4;
-  text-shadow: 2px 2px 0 #fff;
-}
-
-/* Speedの単位(key/s) */
-.dev-stat-item:nth-child(4) .dev-stat-val span {
-  font-size: 1rem;
-  color: #00bcd4;
-  text-shadow: 1px 1px 0 #fff;
-  font-weight: 700;
-  margin-left: 5px;
-}
-
-/* 5. MaxCombo (Orange) ★順番が5番目に */
-.dev-stat-item:nth-child(5) span:first-child,
-.dev-stat-item:nth-child(5) .dev-stat-val {
-  background: linear-gradient(45deg, #f1c40f, #e67e22);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  color: transparent;
-  filter: drop-shadow(2px 2px 0px rgba(255, 255, 255, 0.8));
 }
 
 .dev-pop-back-btn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.05);
 }
 
 .dev-pop-back-btn:active {
   transform: translateY(1px);
-  box-shadow: none !important;
-  filter: brightness(0.95);
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(255, 255, 255, 0.2); /* 全体の薄い枠線 */
+  border-top-color: #00bcd4; /* クルクル回る部分の色（SpeedのCyanと同じ色） */
+  border-radius: 50%;
+  animation: spin 1s linear infinite; /* 1秒で1回転を永遠に繰り返す */
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ローディング画面のコンテナ（インラインスタイルをクラス化） */
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  min-height: 200px; /* 領域が潰れないように最低限の高さを確保 */
 }
 
 /* =========================================

@@ -402,20 +402,39 @@ export const useTypingGame = (
     dispatch({ type: "TICK", amount });
   }, []);
 
+  // 画面描画の更新 (UPDATE DISPLAY)
+  // 役割: Class(TypingEngine)の内部状態を、React(View)用のデータに変換して渡す
   const updateDisplay = useCallback(() => {
+    // 【1. ガード節】
+    // エンジンが初期化されていない(null)時は何もしない
+    // ※非同期読み込み中などに呼ばれてクラッシュするのを防ぐ
     if (!engineRef.current) return;
+
     const engine = engineRef.current;
+
+    // 【2. ログのフラット化 (Flattening)】
+    // エンジン内では「セグメントごと」にログを持っているが、
+    // 画面表示用には「全履歴を一直線の配列」にしたいので、ここで結合する。
     const newTypedLog: TypedLog[] = [];
     engine.segments.forEach((seg) => {
       seg.typedLog.forEach((log) => newTypedLog.push(log));
     });
+
+    // 【3. 現在位置の特定】
+    // segIndexが配列の長さを超えてしまった場合（ゲームクリア直後など）のエラー防止。
+    // Math.min を使うことで、必ず「最後のセグメント」で止まるようにする。
     const currentSegIndex = Math.min(
       engine.segIndex,
       engine.segments.length - 1,
     );
     const currentSeg = engine.segments[currentSegIndex];
+    
+    // 実際に全文字打ち終わっているかどうかのフラグ
     const isActuallyFinished = engine.segIndex >= engine.segments.length;
 
+    // 【4. スナップショットの作成 (Snapshot)】
+    // Reactは「オブジェクトの中身が変わった」だけでは再描画しないため、
+    // Classから現在の値を吸い出して、新しいオブジェクト(nextRomaState)を作る。
     const nextRomaState = {
       typedLog: newTypedLog,
       current:
@@ -423,70 +442,69 @@ export const useTypingGame = (
       remaining:
         !isActuallyFinished && currentSeg ? currentSeg.getRemaining() : "",
     };
+
+    // 【5. Reactへの通知 (Dispatch)】
     dispatch({
       type: "UPDATE_DISPLAY",
       romaState: nextRomaState,
+      // ★重要テクニック:
+      // engine.segments をそのまま渡すと「参照」が変わらないためReactが変更を無視する可能性がある。
+      // [...Array] (スプレッド構文) で「新しい配列」としてコピーして渡すことで、
+      // 確実に再レンダリング（色が変わるなど）をトリガーさせる。
       segments: [...engine.segments],
     });
   }, []);
 
+  // 次の単語を抽選してロード (LOAD RANDOM WORD)
   const loadRandomWord = useCallback(() => {
-    // 【1. ガード節】
-    // データがまだ読み込まれていない、または空の場合は何もしない（エラー防止）
+    // データ未ロード時の安全策
     if (!wordData) return;
-    const list = wordData[difficulty]; // 現在の難易度のリストを取得
+    const list = wordData[difficulty];
     if (!list || list.length === 0) return;
 
     let nextWord;
 
-    // 【2. 要素数が1つしかない場合の処理】
-    // フィルターをかけると空になってしまうため、特例としてそのまま使う
+    // 【2. 重複排除ロジック (Deduplication)】
+    // 「さっき打った単語がまた出てきた」というUX低下を防ぐ処理
     if (list.length === 1) {
+      // リストが1個しかないなら、それを使うしかない
       nextWord = list[0];
     } else {
-      // NOTE: 重複排除のロジック (Deduplication Logic)
-      // 直前の単語（prevWordRef.current）以外のリストを新しく作る。
-      // これにより、ランダム抽選の候補から物理的に「前の単語」を消す。
-
-      // TODO: 将来的なパフォーマンス改善 (Performance Optimization)
-      // 現在は Array.filter を使用しているため、計算量は O(N) です。
-      // 現在の単語数（数千件）では問題ありませんが、将来的に単語数が10万件を超える場合、
-      // 処理落ち（フレームドロップ）の原因になる可能性があります。
-      // その際は、「Bag System（テトリス方式）」や「インデックス管理」への移行を検討してください。
+      // 直前の単語 (prevWordRef) と同じものを候補から外す
+      // filter計算量は O(N)。単語数が数千件レベルなら一瞬なので問題なし。
       const candidates = list.filter((word) => word.jp !== prevWordRef.current);
 
-      // (保険) もし何らかのバグで候補が空なら、元のリストを使う
+      // (保険) バグ等で候補が空になったら元のリストを使う
       const targetList = candidates.length > 0 ? candidates : list;
 
-      // 【4. ランダム抽選】
-      // 0 〜 (リストの長さ - 1) の乱数を生成し、それを使って単語を取得
+      // 【3. ランダム抽選】
       const randomIndex = Math.floor(Math.random() * targetList.length);
       nextWord = targetList[randomIndex];
     }
 
-    // 【5. 履歴の更新】
-    // 選ばれた単語を「前回の単語」として記録（次回の除外対象になる）
+    // 【4. 履歴の更新】
+    // 今選んだ単語を記録しておき、次回の抽選で除外できるようにする
     prevWordRef.current = nextWord.jp;
 
-    // 【6. タイピングエンジンの初期化】
-    // 選ばれた単語のローマ字データを使って、判定ロジック（Class）を生成
+    // 【5. エンジンの再インスタンス化 (Re-instantiation)】
+    // 新しい単語のローマ字を渡し、判定ロジック(Class)を新品にする。
+    // これにより、前の単語の入力履歴などはすべてリセットされる。
     engineRef.current = new TypingEngine(nextWord.roma);
 
-    // 【7. 初期表示データの作成】
-    // エンジンから最初の文字情報を取得し、Reactのstateに渡す準備
-    // （まだ一文字も打っていない状態を作る）
+    // 【6. 初期状態の作成】
+    // まだ一文字も打っていない状態（1文字目がターゲット）のデータを作る
     let initialRomaState = { typedLog: [], current: "", remaining: "" };
     if (engineRef.current.segments.length > 0) {
       const firstSeg = engineRef.current.segments[0];
       initialRomaState = {
         typedLog: [],
-        current: firstSeg.getCurrentChar(),
-        remaining: firstSeg.getRemaining(),
+        current: firstSeg.getCurrentChar(), // 例: "k"
+        remaining: firstSeg.getRemaining(), // 例: "a"
       };
     }
 
-    // 【8. 画面更新（Dispatch）】
-    // Reducerに対して「新しい単語をロードせよ」と命令を送る
+    // 【7. 画面への反映】
+    // Reducerに「新しい単語になったよ！初期状態はこれだよ！」と伝える
     dispatch({
       type: "LOAD_WORD",
       jp: nextWord.jp,

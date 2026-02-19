@@ -56,7 +56,9 @@ let seVolume = 0.5;
 const ensureContextResumed = () => {
   if (audioCtx.state === "suspended") {
     // 非同期で復帰を試みる（失敗してもログだけ出して落ちないようにcatchする）
-    audioCtx.resume().catch((e) => console.warn("AudioContext resume failed:", e));
+    audioCtx
+      .resume()
+      .catch((e) => console.warn("AudioContext resume failed:", e));
   }
 };
 
@@ -153,6 +155,9 @@ export const initAudio = async () => {
  * 効果音(SE)の再生
  */
 export const playSE = (key: SoundKey) => {
+  // タブが裏にある時は処理をしない
+  if (document.hidden) return;
+
   if (isSystemMuted || seVolume <= 0) return;
 
   // 再生直前にも念のため「起きろ！」と命令
@@ -177,7 +182,7 @@ export const playSE = (key: SoundKey) => {
 
   // 0秒後(今すぐ)再生開始
   source.start(0);
-  
+
   // ※再生が終わったNodeは自動的にガベージコレクション(メモリ破棄)されるので、
   //  手動での後始末は不要です。
 };
@@ -192,8 +197,10 @@ export const stopBGM = () => {
   if (bgmSource) {
     try {
       bgmSource.stop();
-    } catch { /* 既に止まっていた場合のエラーは無視 */ }
-    
+    } catch {
+      /* 既に止まっていた場合のエラーは無視 */
+    }
+
     // ■ 学習ポイント: 切断 (disconnect)
     // 停止したノードをスピーカーから切り離します。
     // これをしないとメモリリーク（メモリのゴミが溜まる）の原因になります。
@@ -293,3 +300,16 @@ export const playBGM = async (path: string) => {
 export const startSelectBgm = () => {
   playBGM(BGM_PATHS.SELECT);
 };
+
+// ユーザーが他のタブを見てた時、無駄な音声処理を防ぐことでCPUの節約になる
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    if (audioCtx.state === "running") {
+      audioCtx.suspend().catch(() => {});
+    }
+  } else {
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume().catch((err) => console.error("Resume failed:", err));
+    }
+  }
+});
