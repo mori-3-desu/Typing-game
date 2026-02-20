@@ -8,7 +8,7 @@ export const HowToPlay: FC<Props> = ({ onClose }) => {
   return (
     <div className="config-overlay" onClick={onClose}>
       <div
-        className="config-modal howto-modal"
+        className="config-modal how-to-modal"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="config-title">遊び方</h2>
@@ -31,7 +31,7 @@ export const HowToPlay: FC<Props> = ({ onClose }) => {
                   ミスタイプなく単語入力すると
                   <span className="highlight-gold">ボーナス得点</span>GET！
                   <br />
-                  <span className="note">
+                  <span className="note red-note">
                     ※1回でもミスタイプすると加算されません
                   </span>
                 </span>
@@ -84,22 +84,19 @@ export const HowToPlay: FC<Props> = ({ onClose }) => {
             <div className="howto-section">
               <p className="howto-text">
                 中央に表示されている単語をタイピング！
-                <br />
                 <span className="highlight-green">EASY</span>・
                 <span className="highlight-blue">NORMAL</span>・
                 <span className="highlight-red">HARD</span>
                 <br />
                 3つの難易度があり、出題傾向が変わります。
-                <br />
                 お好きな難易度で挑戦してください！
               </p>
             </div>
             <div
               className="howto-section"
-              style={{ display: "flex", flexDirection: "column" }}
             >
-              <h3 className="howto-heading_sub">ローマ字対応</h3>
-              <p className="howto-text note">
+              <h3 className="howto-heading-sub">ローマ字対応</h3>
+              <p className="howto-text">
                 様々な入力分岐に対応しています。
               </p>
               <div className="key-example-box">
