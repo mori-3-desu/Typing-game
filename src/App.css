@@ -2713,7 +2713,7 @@ body {
     /* ウィンドウサイズ */
     width: 70%;
     height: 90%;
-    padding: 8cqh 8cqw;
+    padding: 5cqh 5cqw;
 
     container-type: size;
 
@@ -3098,7 +3098,7 @@ body {
     &:nth-child(3) span:first-child,
     &:nth-child(3) .dev-stat-val {
       color: var(--color-oceanblue);
-      text-shadow: var(--dev-shadow)
+      text-shadow: var(--dev-shadow);
     }
 
     /* 4. Speed (Cyan) */
@@ -3143,6 +3143,7 @@ body {
   transform: translateY(1px);
 }
 
+/* 表示待機用スピナー仮 */
 .loading-spinner {
   width: 40px;
   height: 40px;
@@ -3153,8 +3154,12 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* ローディング画面のコンテナ（インラインスタイルをクラス化） */
@@ -3166,15 +3171,17 @@ body {
   min-height: 200px; /* 領域が潰れないように最低限の高さを確保 */
 }
 
-/* =========================================
-   遊び方画面：左の画像を完璧に再現するスタイル
-   ========================================= */
+/* 全体の文字サイズ基準設定 */
+.config-modal * {
+  box-sizing: border-box;
+}
 
-/* 1. モーダル全体（外枠）- アスペクト比固定コンテナ */
-.config-modal.howto-modal {
-  position: fixed;
+/* 1. モーダル全体（外枠）*/
+.config-modal.how-to-modal {
+  position: absolute;
   inset: 0;
   margin: auto;
+
   width: 95%;
   height: 95%;
 
@@ -3184,124 +3191,115 @@ body {
   /* デザイン */
   background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
   border: 0.4cqh solid #ffe0cb;
+  box-shadow: var(--glass-bg-dark);
   border-radius: 2cqh;
-  box-shadow: 0 0 5cqh rgba(0, 0, 0, 0.5);
-  padding: 3cqh 4cqw;
-  box-sizing: border-box;
-  overflow: hidden;
-  color: #fff;
-  font-family: "M PLUS Rounded 1c", sans-serif;
-  display: flex;
-  flex-direction: column;
-}
 
-/* 全体の文字サイズ基準設定 */
-.config-modal.howto-modal * {
-  box-sizing: border-box;
+  padding: 2cqh 3cqw;
+  overflow: hidden;
 }
 
 /* タイトル */
 .config-title {
-  text-align: center;
   font-size: 5cqh;
   margin-bottom: 2cqh;
   font-weight: 800;
-  text-shadow: 0.2cqh 0.2cqh 0 #ff9a9e;
+  text-shadow: 0.2cqh 0.2cqh 0 var(--color-pink);
   border-bottom: 0.3cqh dashed rgba(255, 255, 255, 0.5);
   padding-bottom: 1cqh;
-  flex-shrink: 0;
 }
 
 /* 2カラムレイアウト */
 .howto-grid-container {
+  --htp-base-size: 2.5cqh;
+  --htp-size: 3cqh;
+  --how-to-color: var(--color-lightorange);
+  --bd-bottom: 0.2cqh dashed rgba(255, 255, 255, 0.4);
+
   display: grid;
   grid-template-columns: 1.1fr 0.9fr; /* 左を少し広めに */
   gap: 3cqw;
   flex: 1;
-  min-height: 0;
-}
 
-/* カラム共通 */
-.howto-col {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5cqh;
-}
+  /* カラム共通 */
+  & .howto-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5cqh;
+  }
 
-/* 見出し（ルール、操作方法） */
-.howto-heading {
-  font-size: 3cqh;
-  font-weight: bold;
-  color: #ffecd2;
-  text-align: center;
-  border-bottom: 0.2cqh dashed rgba(255, 255, 255, 0.4);
-  padding-bottom: 0.5cqh;
-  margin-bottom: 0.5cqh;
-}
+  & .right-col {
+    gap: 3cqh;
+  }
 
-.howto-heading_sub {
-  font-size: 2.5cqh;
-  font-weight: bold;
-  color: #ffecd2;
-  margin-bottom: 0.5cqh;
-}
+  /* 見出し（ルール、操作方法） */
+  & .howto-heading {
+    font-size: var(--htp-size);
+    font-weight: bold;
+    color: var(--how-to-color);
+    border-bottom: var(--bd-bottom);
+  }
 
-/* --- 左側：リストスタイル --- */
-.howto-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 1.2cqh; /* リスト間の隙間 */
-}
+  & .howto-heading-sub {
+    font-size: var(--htp-size);
+    font-weight: bold;
+    color: var(--color-lightyellow);
+    border-bottom: var(--bd-bottom);
+    margin: 0.5cqh;
+  }
 
-.howto-list li {
-  font-size: 2.5cqh;
-  line-height: 1.5;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 1cqh;
-  border-radius: 1cqh;
-  display: flex;
-  align-items: flex-start; /* アイコンとテキストの上揃え */
-  text-align: left;
-}
+  /* --- 左側：リストスタイル --- */
+  & .howto-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2cqh;
+  }
 
-/* アイコン */
-.howto-list .icon {
-  font-size: 2.5cqh;
-  margin-right: 1cqh;
-  flex-shrink: 0;
-  width: 3cqh;
-  text-align: center;
-  line-height: 1;
-}
+  & li {
+    font-size: var(--htp-base-size);
+    background: rgba(0, 0, 0, 0.2);
+    padding: 8px;
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    text-align: left;
+  }
 
-/* 注釈 */
-.note {
-  display: block;
-  font-size: 2cqh;
-  opacity: 0.9;
-  margin-top: 0.2cqh;
-  line-height: 1.2;
-}
+  /* アイコン */
+  & .icon {
+    font-size: var(--htp-base-size);
+    margin-right: 1cqh;
+    flex-shrink: 0;
+    text-align: center;
+  }
 
-/* --- 右側：テキストと表 --- */
-.howto-text {
-  font-size: 3cqh;
-  line-height: 1.6;
-  text-align: center;
-}
+  /* 注釈 */
+  & .note {
+    display: block;
+    font-size: 2cqh;
+    opacity: 0.9;
+  }
+  & .red-note {
+    color: var(--color-redpink);
+  }
 
-/* ローマ字表ボックス */
-.key-example-box {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 1.5cqh;
-  padding: 1.5cqh 2cqh;
-  border: 0.2cqh solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  /* --- 右側：テキストと表 --- */
+  & .howto-text {
+    font-size: var(--htp-size);
+    line-height: 1.4;
+  }
+
+  /* ローマ字表ボックス */
+  & .key-example-box {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 12px 16px;
+    border: 0.2cqh solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .key-row {
@@ -3350,10 +3348,6 @@ body {
   color: #ff5252;
   font-weight: bold;
   text-shadow: 0 0 0.5cqh rgba(255, 82, 82, 0.5);
-}
-
-.red-note {
-  color: #ff8a80;
 }
 
 /* 閉じるボタンエリア */
