@@ -408,15 +408,15 @@ function App() {
     setGameState("hiscore_review");
   };
 
-// =========================================================================
+  // =========================================================================
   // 🏆 全国ランキング取得処理
   // =========================================================================
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
     playSE("decision");
-    
+
     // 1. 新しい通信用の整理券を発行（連打や通信遅延による「過去データの追い越し」を防止）
     const requestId = ++rankingRequestIdRef.current;
-    
+
     const searchDiff = targetDiff || difficulty;
     if (targetDiff) setDifficulty(targetDiff);
 
@@ -426,16 +426,16 @@ function App() {
     setIsRankingLoading(true); // スピナーON
     setIsDevRankingMode(false);
     setIsRankingDataMode(null);
-    setIsRankingData([]);      // 過去のデータ（開発者スコアなど）を完全に破壊
+    setIsRankingData([]); // 過去のデータ（開発者スコアなど）を完全に破壊
 
     try {
       // 3. データベースから全国ランキングを取得
       const data = await DatabaseService.getRanking(searchDiff);
-      
+
       // 4. 通信が終わった時点で、自分が「最新の整理券」を持っているか確認
       // 違っていれば、それは「古いリクエスト」なので画面に反映せずに捨てる
       if (requestId !== rankingRequestIdRef.current) return;
-      
+
       // 5. 最新のデータだけを安全にセット
       setIsRankingData(data);
       setIsRankingDataMode("global");
@@ -457,13 +457,13 @@ function App() {
   // =========================================================================
   const handleShowDevScore = async () => {
     playSE("decision");
-    
+
     // 既に開発者モードを表示中、または現在何かのデータを読み込み中ならブロック（連打防止）
     if (isDevRankingMode || isRankingLoading) return;
 
     // 1. 整理券を発行
     const requestId = ++rankingRequestIdRef.current;
-    
+
     // 2. 【超重要】全国ランキングのデータを破棄して、画面を完全にリセット
     setIsRankingLoading(true);
     setIsRankingDataMode(null);
@@ -472,10 +472,10 @@ function App() {
     try {
       // 3. データベースから開発者スコアを取得
       const data = await DatabaseService.getDevScore(difficulty);
-      
+
       // 4. 整理券の確認（過去の通信の追い越し防止）
       if (requestId !== rankingRequestIdRef.current) return;
-      
+
       // 5. 最新データのみセットし、モードを「開発者」に切り替える
       setIsRankingData(data);
       setIsRankingDataMode("dev");
@@ -503,32 +503,28 @@ function App() {
   // リサイズ
   const scalerRef = useRef<HTMLDivElement>(null);
 
+  // アニメーションからResizeObserverに変えてみる
   useEffect(() => {
-    let animationFrameId: number;
+    const scaler = scalerRef.current;
+    if (!scaler) return;
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        // ブラウザの計算し終わったデータを使う
+        const { inlineSize, blockSize } = entry.contentBoxSize[0];
+        const scale = Math.min(
+          inlineSize / DISPLAY_SCALE.WIDTH,
+          blockSize / DISPLAY_SCALE.HEIGHT,
+        );
+        scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      }
+    });
 
-    const handleResize = () => {
-      // 描画タイミングに合わせて実行（二重実行を防止）
-      if (animationFrameId) return;
+    // 監視対象を指定
+    observer.observe(document.documentElement);
 
-      animationFrameId = window.requestAnimationFrame(() => {
-        const scaler = scalerRef.current;
-        if (scaler) {
-          const scale = Math.min(
-            window.innerWidth / DISPLAY_SCALE.WIDTH,
-            window.innerHeight / DISPLAY_SCALE.HEIGHT,
-          );
-          scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
-        }
-        animationFrameId = 0; // リセット
-      });
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize(); // 初回実行
-
+    // クリーンアップ
     return () => {
-      window.removeEventListener("resize", handleResize);
-      if (animationFrameId) window.cancelAnimationFrame(animationFrameId);
+      observer.disconnect();
     };
   }, []);
 
