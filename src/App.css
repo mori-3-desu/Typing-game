@@ -3444,13 +3444,11 @@ body {
 .ranking-overlay {
   position: fixed;
 
-  width: 100%;
-  height: 100%;
-  
   inset: 0;
 
-  display: grid;
-  place-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   background: rgba(255, 255, 255, 0.8);
 
