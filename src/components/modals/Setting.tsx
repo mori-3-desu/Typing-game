@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useId, useEffect, useState } from "react";
 import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/setting";
 import { playSE } from "../../utils/audio";
 
@@ -40,6 +40,8 @@ export const Setting = ({
   const [tempPlayerName, setTempPlayerName] = useState(playerName);
   const [nameError, setNameError] = useState("");
   const [isNameChange, setIsNameChange] = useState("");
+
+  const nameInputId = useId();
 
   // モーダルが開いた時に現在の名前をセット
   useEffect(() => {
@@ -85,63 +87,45 @@ export const Setting = ({
       <div className="config-modal" onClick={(e) => e.stopPropagation()}>
         <h2
           className="config-title"
-          style={{ marginBottom: "10px", flexShrink: 0 }}
+          style={{ flexShrink: 0 }}
         >
           SETTING
         </h2>
 
         <div className="config-scroll-area">
           {/* 名前変更エリア */}
-          <div
-            className="config-item"
-            style={{
-              flexDirection: "column",
-              alignItems: "flex-start",
-              gap: "5px",
-              marginBottom: "20px",
-              width: "100%",
-              padding: "0 20px",
-            }}
-          >
-            <div
+          <div className="config-item">
+            <label htmlFor="{nameInputId}"
               style={{
                 display: "flex",
-                width: "100%",
-                alignItems: "flex-end",
+                cursor: "pointer",
+                marginBottom: "5px"
               }}
             >
-              <label
+              Player Name
+            </label>
+            {nameError && (
+              <span
+                className="error-fade-in"
                 style={{
                   fontSize: "0.9rem",
-                  color: "#ccc",
-                  marginLeft: "5px",
+                  marginLeft: "auto",
+                  marginRight: "5px",
                 }}
               >
-                Player Name
-              </label>
-              {nameError && (
-                <span
-                  className="error-fade-in"
-                  style={{
-                    fontSize: "0.9rem",
-                    marginLeft: "auto",
-                    marginRight: "5px",
-                  }}
-                >
-                  ⚠ ERROR
-                </span>
-              )}
-            </div>
+                ⚠ ERROR
+              </span>
+            )}
 
             <div
               style={{
                 display: "flex",
-                width: "100%",
-                gap: "10px",
+                gap: "20px",
                 alignItems: "center",
               }}
             >
               <input
+              id={nameInputId}
                 type="text"
                 className={`pop-input-field ${
                   nameError ? "input-error-shake" : ""
@@ -156,8 +140,7 @@ export const Setting = ({
                 style={{
                   flex: 1,
                   margin: 0,
-                  fontSize: "1.1rem",
-                  padding: "8px 20px",
+                  fontSize: "18px",
                   textAlign: "left",
                   transition: "all 0.3s",
                 }}

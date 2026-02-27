@@ -117,8 +117,7 @@ export const HowToPlay: FC<Props> = ({ onClose }) => {
                   <span className="key-val">n / nn</span>
                 </div>
                 <p
-                  className="note"
-                  style={{ textAlign: "right", marginTop: "0.5cqh" }}
+                  className="warning"
                 >
                   ※母音の前や末尾は{" "}
                   <span className="highlight-gold">nn</span> 必須
