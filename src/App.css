@@ -3440,7 +3440,6 @@ body {
   --hl-shadow: rgba(255, 82, 82, 0.5);
 }
 
-
 /* --- ランキングモーダル全体 --- */
 .ranking-overlay {
   position: fixed;
@@ -3474,8 +3473,9 @@ body {
 /* モーダル本体（さらに大きく！） */
 .ranking-modal {
   width: 90%; /* ほぼ画面いっぱい */
-  height: 90%;
   max-width: 1200px;
+  max-height: 90vh;
+
   /* 背景色は難易度クラスで指定するため削除 */
   backdrop-filter: blur(15px); /* すりガラスを強く */
   border-radius: 25px;
@@ -3484,8 +3484,9 @@ body {
   padding: 25px 35px;
   position: relative;
   transition: all 0.3s ease;
-}
 
+  overflow: hidden;
+}
 
 @keyframes fadeIn {
   from {
@@ -3556,7 +3557,9 @@ body {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   padding: 20px 25px;
+  min-height: 0;
 }
 
 .ranking-list::-webkit-scrollbar {
