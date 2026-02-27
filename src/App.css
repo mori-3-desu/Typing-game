@@ -65,6 +65,7 @@
   --z-game-score: 100;
   --z-game-render: 999;
   --z-game-finish: 1000;
+  --z-ranking-overlay: 1200;
   --z-fade-overlay: 1500;
   --z-config: 9999;
 
@@ -2676,307 +2677,6 @@ body {
   }
 }
 
-/* アニメーション用クラス */
-.fade-target {
-  opacity: 0;
-  transform: translateY(20px);
-  transition:
-    opacity 0.5s ease-out,
-    transform 0.5s ease-out;
-  visibility: hidden;
-}
-
-.fade-target.visible {
-  opacity: 1;
-  transform: translateY(0);
-  visibility: visible;
-}
-
-/* 設定画面 (CONFIG MODAL) */
-.config-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: var(--config-bg);
-  z-index: var(--z-config);
-  display: grid;
-  place-items: center;
-  animation: fadeIn 0.3s ease-out;
-
-  /* ▼ 子要素 (.config-modal) をここにネスト！ */
-  & .config-modal {
-    margin: auto;
-
-    /* ウィンドウサイズ */
-    width: 70%;
-    height: 90%;
-    padding: 5cqh 5cqw;
-
-    container-type: size;
-
-    background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
-    border-radius: 30px;
-    box-shadow:
-      0 1cqh 3cqh rgba(0, 0, 0, 0.5),
-      0 0 0 0.4cqh inset rgba(255, 247, 217, 0.9),
-      0 0 4cqh inset rgba(255, 196, 125, 0.9);
-
-    box-sizing: border-box;
-    text-align: center;
-    color: var(--color-white);
-
-    overflow: hidden;
-    display: flex; /* 子要素を広げるためにflex推奨 */
-    flex-direction: column;
-
-    /* 3. タイトル (SETTING) */
-    & .config-title {
-      font-size: 7cqh;
-      font-weight: 800;
-      color: var(--color-white);
-      flex-shrink: 0;
-
-      text-shadow:
-        0.3cqh 0.3cqh 0px var(--color-hotpink),
-        0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
-
-      border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
-      line-height: 1;
-      letter-spacing: 0.1em;
-    }
-
-    /* 7. 閉じるボタン */
-    .config-buttons {
-      margin-top: 2cqh;
-      flex-shrink: 0;
-      & button.pop-btn.primary {
-        background: linear-gradient(
-          135deg,
-          hsl(42, 100%, 65%) 0%,
-          #ffa442 40%,
-          #d8a4ff 100%
-        );
-        color: #fffce0;
-        font-weight: 800;
-        border: none;
-        cursor: pointer;
-
-        padding: 1.5cqh 6cqh;
-        border-radius: 5cqh;
-        font-size: 2.8cqh;
-
-        box-shadow: 0 0.8cqh 0 var(--color-creamorange);
-        transition:
-          transform 0.3s,
-          box-shadow 0.3s;
-      }
-      &:hover {
-        transform: translateY(-0.3cqh);
-      }
-      &:active {
-        transform: translateY(-0.1cqh);
-        box-shadow: 0 0 0 var(--color-creamorange);
-      }
-    }
-
-    & .config-scroll-area {
-      width: 100%;
-      flex: 1;
-      overflow-y: auto; /* ここでスクロール担当 */
-      padding-right: 15px;
-
-      /* Firefox用 */
-      scrollbar-width: thin;
-      scrollbar-color: #ffd700 rgba(0, 0, 0, 0.15);
-
-      /* --- ▼▼▼ ここからゴールド・スクロールバー (POPスタイル) ▼▼▼ --- */
-      &::-webkit-scrollbar {
-        width: var(--sb-width);
-      }
-
-      /* 軌道 */
-      &::-webkit-scrollbar-track {
-        background: var(--sb-track-color);
-        border-radius: var(--sb-width);
-        margin: var(--sb-width) 0;
-      }
-
-      /* つまみ */
-      &::-webkit-scrollbar-thumb {
-        background: linear-gradient(
-          180deg,
-          var(--sb-gold-start) 0%,
-          var(--sb-gold-end) 100%
-        );
-        border-radius: var(--sb-width);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        background-clip: padding-box;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      }
-
-      /* ホバー時 */
-      &::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(
-          180deg,
-          var(--sb-gold-hover-start) 0%,
-          var(--sb-gold-hover-end) 100%
-        );
-      }
-    }
-  }
-}
-
-/* 項目の座布団 */
-.config-item {
-  text-align: left;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 2.5cqh 3cqh;
-  border-radius: 2cqh;
-  /* 無効化（グレーアウト） */
-  &.disabled {
-    opacity: 0.5;
-    filter: grayscale(80%);
-    pointer-events: none;
-  }
-}
-
-/* 5. チェックボックス周り */
-.config-label {
-  /* 設定エリア */
-  --cb-size: 4.5cqh; /* 箱のサイズ */
-  --cb-radius: 1cqh; /* 角丸 */
-
-  /* OFF (未チェック) の時の色 */
-  --cb-bg-off: #fff;
-  --cb-border-off: #ffecd2;
-
-  /* ON (チェック済み) の時の色 */
-  --cb-bg-on: #ff9a9e; /* ピンク */
-  --cb-border-on: #fff; /* 枠線は白に */
-  --cb-tick-color: #fff; /* チェックマークの色 */
-
-  display: flex;
-  align-items: center;
-  gap: 1cqh;
-  cursor: pointer;
-  font-size: 3.2cqh;
-  color: #fff;
-  font-weight: 700;
-
-  /* ▼ input要素のスタイル */
-  & input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-
-    /* 変数を適用！ */
-    width: var(--cb-size);
-    height: var(--cb-size);
-    border-radius: var(--cb-radius);
-    background: var(--cb-bg-off);
-    border: 0.3cqh solid var(--cb-border-off);
-
-    margin-right: 2.5cqh;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.2s cubic-bezier(0.6, 0, 0.2, 1);
-
-    &:active {
-      transform: scale(0.9);
-    }
-
-    /* 1. チェックされた状態 (:checked) */
-    &:checked {
-      background: var(--cb-bg-on);
-      border-color: var(--cb-border-on);
-
-      /* 2. チェックマーク (::after) */
-      &::after {
-        content: "✔";
-        position: absolute;
-
-        color: var(--cb-tick-color);
-        font-size: calc(
-          var(--cb-size) * 0.8
-        ); /* 箱のサイズに合わせて自動調整 */
-
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-      }
-    }
-  }
-}
-
-/* 6. スライダー周り */
-.slider-label-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 2cqh;
-  font-size: 2.8cqh;
-  color: var(--color-lightyellow);
-  font-weight: bold;
-}
-
-/* スライダー本体 */
-.volume-slider {
-  /* 設定エリア */
-  --sd-size: 4cqh;
-  --sd-bg: #fbc2eb;
-  --sd-border: 0.4cqh solid var(--color-white);
-  --sd-shadow: 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.3);
-
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-
-  width: 100%;
-  height: 1.8cqh;
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 1cqh;
-  box-shadow: inset 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-
-  &::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-
-    width: var(--sd-size);
-    height: var(--sd-size);
-    background: var(--sd-bg);
-
-    /* 変数化したボーダーを適用 */
-    border: var(--sd-border);
-    border-radius: 50%;
-
-    box-shadow: var(--sd-shadow);
-    transition: transform 0.1s ease;
-  }
-
-  /* ホバー時 */
-  &::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-  }
-
-  /* ▼ Firefox用 */
-  &::-moz-range-thumb {
-    width: var(--sd-size);
-    height: var(--sd-size);
-    background: var(--sd-bg);
-
-    border: var(--sd-border);
-    border-radius: 50%;
-    box-shadow: var(--sd-shadow);
-
-    transition: transform 0.1s ease;
-  }
-
-  &::-moz-range-thumb:hover {
-    transform: scale(1.2);
-  }
-}
-
 /* 開発者スコアボタン（王冠）の特別色 */
 .close-btn.dev-btn {
   border-color: var(--color-gold);
@@ -3142,6 +2842,22 @@ body {
   transform: translateY(1px);
 }
 
+/* アニメーション用クラス */
+.fade-target {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.5s ease-out,
+    transform 0.5s ease-out;
+  visibility: hidden;
+}
+
+.fade-target.visible {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+
 /* 表示待機用スピナー仮 */
 .loading-spinner {
   width: 40px;
@@ -3150,6 +2866,380 @@ body {
   border-top-color: #00bcd4; /* クルクル回る部分の色（SpeedのCyanと同じ色） */
   border-radius: 50%;
   animation: spin 1s linear infinite; /* 1秒で1回転を永遠に繰り返す */
+}
+
+/* 設定画面 (CONFIG MODAL) */
+.config-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--config-bg);
+  z-index: var(--z-config);
+  display: grid;
+  place-items: center;
+  animation: fadeIn 0.3s ease-out;
+
+  /* ▼ 子要素 (.config-modal) をここにネスト！ */
+  & .config-modal {
+    margin: auto;
+
+    /* ウィンドウサイズ */
+    width: 70%;
+    height: 90%;
+    padding: 5cqh 5cqw;
+
+    container-type: size;
+
+    background: linear-gradient(160deg, #4535b2 0%, #ae4868 100%);
+    border-radius: 30px;
+    box-shadow:
+      0 1cqh 3cqh rgba(0, 0, 0, 0.5),
+      0 0 0 0.4cqh inset rgba(255, 247, 217, 0.9),
+      0 0 4cqh inset rgba(255, 196, 125, 0.9);
+
+    box-sizing: border-box;
+    text-align: center;
+    color: var(--color-white);
+
+    overflow: hidden;
+    display: flex; /* 子要素を広げるためにflex推奨 */
+    flex-direction: column;
+
+    /* 3. タイトル (SETTING) */
+    & .config-title {
+      font-size: 7cqh;
+      font-weight: 800;
+      color: var(--color-white);
+      flex-shrink: 0;
+
+      text-shadow:
+        0.3cqh 0.3cqh 0px var(--color-hotpink),
+        0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
+
+      border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
+      line-height: 1;
+      letter-spacing: 0.1em;
+    }
+
+    /* 7. 閉じるボタン */
+    .config-buttons {
+      margin-top: 2cqh;
+      flex-shrink: 0;
+      & button.pop-btn.primary {
+        background: linear-gradient(
+          135deg,
+          hsl(42, 100%, 65%) 0%,
+          #ffa442 40%,
+          #d8a4ff 100%
+        );
+        color: #fffce0;
+        font-weight: 800;
+        border: none;
+        cursor: pointer;
+
+        border-radius: 5cqh;
+        font-size: 2.8cqh;
+
+        box-shadow: 0 0.8cqh 0 var(--color-creamorange);
+        transition:
+          transform 0.3s,
+          box-shadow 0.3s;
+
+        &:hover {
+          transform: translateY(-0.3cqh);
+        }
+        &:active {
+          transform: translateY(-0.1cqh);
+          box-shadow: 0 0 0 var(--color-creamorange);
+        }
+      }
+    }
+
+    & .config-scroll-area {
+      width: 100%;
+      flex: 1;
+      overflow-y: auto; /* ここでスクロール担当 */
+      padding-right: 15px;
+
+      /* Firefox用 */
+      scrollbar-width: thin;
+      scrollbar-color: #ffd700 rgba(0, 0, 0, 0.15);
+
+      /* --- ▼▼▼ ここからゴールド・スクロールバー (POPスタイル) ▼▼▼ --- */
+      &::-webkit-scrollbar {
+        width: var(--sb-width);
+      }
+
+      /* 軌道 */
+      &::-webkit-scrollbar-track {
+        background: var(--sb-track-color);
+        border-radius: var(--sb-width);
+        margin: var(--sb-width) 0;
+      }
+
+      /* つまみ */
+      &::-webkit-scrollbar-thumb {
+        background: linear-gradient(
+          180deg,
+          var(--sb-gold-start) 0%,
+          var(--sb-gold-end) 100%
+        );
+        border-radius: var(--sb-width);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background-clip: padding-box;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      /* ホバー時 */
+      &::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(
+          180deg,
+          var(--sb-gold-hover-start) 0%,
+          var(--sb-gold-hover-end) 100%
+        );
+      }
+    }
+  }
+}
+
+/* 入力フォームをポップに */
+.pop-input-field {
+  font-size: 1.2rem;
+  font-weight: bold;
+
+  width: 80%;
+  margin-top: 15px; /* 上の余白 */
+  margin-bottom: 20px; /* 下の余白（狭めました） */
+
+  color: var(--color-darkgray);
+  background: rgba(255, 255, 255, 0.9);
+
+  border: 2px solid var(--color-lightblue);
+  border-radius: 1lh;
+
+  padding: 10px 20px;
+  text-align: center;
+  outline: none;
+  box-shadow: 0 4px 0 rgba(0, 210, 255, 0.5); /* 立体感 */
+  transition: translate 0.2s;
+
+  &:focus {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(0, 210, 255, 0.5);
+  }
+}
+
+.btn-change-name {
+  background: linear-gradient(to bottom, #ffeb3b, #fbc02d);
+  color: #5a4a00;
+  font-weight: bold;
+  border: 2px solid #fff;
+  border-radius: 20px;
+  padding: 5px 15px;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #f57f17;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
+
+  &:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 #f57f17;
+  }
+}
+
+.error-fade-in {
+  color: #ff4444;
+  font-weight: bold;
+  animation: fadeInError 0.4s ease forwards;
+}
+
+.input-error-shake {
+  animation: shake 0.3s;
+  border-color: #ff4444;
+  background: rgba(50, 0, 0, 0.3);
+  box-shadow: 0 0 10px rgba(255, 68, 68, 0.4);
+}
+
+@keyframes fadeInError {
+  from {
+    opacity: 0;
+    transform: translateY(-5px); /* 少し上から降りてくる感じ */
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-5px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+/* 項目の座布団 */
+.config-item {
+  text-align: left;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px 20px;
+  margin: 10px;
+  border-radius: 0.5lh;
+  /* 無効化（グレーアウト） */
+  &.disabled {
+    opacity: 0.5;
+    filter: grayscale(80%);
+    pointer-events: none;
+  }
+}
+
+/* 5. チェックボックス周り */
+.config-label {
+  /* 設定エリア */
+  --cb-size: 4.5cqh; /* 箱のサイズ */
+  --cb-radius: 1cqh; /* 角丸 */
+
+  /* OFF (未チェック) の時の色 */
+  --cb-bg-off: #fff;
+  --cb-border-off: #ffecd2;
+
+  /* ON (チェック済み) の時の色 */
+  --cb-bg-on: #ff9a9e; /* ピンク */
+  --cb-border-on: #fff; /* 枠線は白に */
+  --cb-tick-color: #fff; /* チェックマークの色 */
+
+  display: flex;
+  align-items: center;
+  gap: 1cqh;
+  cursor: pointer;
+  font-size: 3.2cqh;
+  color: #fff;
+  font-weight: 700;
+
+  /* ▼ input要素のスタイル */
+  & input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+
+    /* 変数を適用！ */
+    width: var(--cb-size);
+    height: var(--cb-size);
+    border-radius: var(--cb-radius);
+    background: var(--cb-bg-off);
+    border: 0.3cqh solid var(--cb-border-off);
+
+    margin-right: 2.5cqh;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s cubic-bezier(0.6, 0, 0.2, 1);
+
+    &:active {
+      transform: scale(0.9);
+    }
+
+    /* 1. チェックされた状態 (:checked) */
+    &:checked {
+      background: var(--cb-bg-on);
+      border-color: var(--cb-border-on);
+
+      /* 2. チェックマーク (::after) */
+      &::after {
+        content: "✔";
+        position: absolute;
+
+        color: var(--cb-tick-color);
+        font-size: calc(
+          var(--cb-size) * 0.8
+        ); /* 箱のサイズに合わせて自動調整 */
+
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+    }
+  }
+}
+
+/* 6. スライダー周り */
+.slider-label-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2cqh;
+  font-size: 2.8cqh;
+  color: var(--color-lightyellow);
+  font-weight: bold;
+}
+
+/* スライダー本体 */
+.volume-slider {
+  /* 設定エリア */
+  --sd-size: 4cqh;
+  --sd-bg: #fbc2eb;
+  --sd-border: 0.4cqh solid var(--color-white);
+  --sd-shadow: 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.3);
+
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+
+  width: 100%;
+  height: 1.8cqh;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 1cqh;
+  box-shadow: inset 0 0.3cqh 0.6cqh rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+
+    width: var(--sd-size);
+    height: var(--sd-size);
+    background: var(--sd-bg);
+
+    /* 変数化したボーダーを適用 */
+    border: var(--sd-border);
+    border-radius: 50%;
+
+    box-shadow: var(--sd-shadow);
+    transition: transform 0.1s ease;
+  }
+
+  /* ホバー時 */
+  &::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  /* ▼ Firefox用 */
+  &::-moz-range-thumb {
+    width: var(--sd-size);
+    height: var(--sd-size);
+    background: var(--sd-bg);
+
+    border: var(--sd-border);
+    border-radius: 50%;
+    box-shadow: var(--sd-shadow);
+
+    transition: transform 0.1s ease;
+  }
+
+  &::-moz-range-thumb:hover {
+    transform: scale(1.2);
+  }
 }
 
 @keyframes spin {
@@ -3298,189 +3388,89 @@ body {
     border: 0.2cqh solid rgba(255, 255, 255, 0.2);
     display: flex;
     flex-direction: column;
+
+    & .key-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.6cqh 0;
+    }
+
+    & .key-char {
+      font-size: var(--htp-base-size);
+      font-weight: 600;
+    }
+
+    & .key-val {
+      font-size: var(--htp-base-size);
+      color: #ff9a9e;
+    }
+
+    & .warning {
+      text-align: right;
+    }
   }
-}
-
-.key-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 0.6cqh 0;
-}
-
-.key-row:last-of-type {
-  border-bottom: none;
-}
-
-.key-char {
-  font-size: 2.5cqh;
-  font-weight: bold;
-}
-
-.key-val {
-  font-size: 2.2cqh;
-  font-family: monospace;
-  color: #ff9a9e;
 }
 
 /* --- ハイライト色定義（画像の通りに再現） --- */
-.highlight-gold {
-  color: #ffd700;
+[class^="highlight-"] {
   font-weight: bold;
-  text-shadow: 0 0 0.5cqh rgba(255, 215, 0, 0.5);
+  color: var(--hl-color);
+  text-shadow: 0 0 0.5cqh var(--hl-shadow);
+}
+
+.highlight-gold {
+  --hl-color: #ffd700;
+  --hl-shadow: rgba(255, 215, 0, 0.5);
 }
 
 .highlight-blue {
-  color: #40c4ff;
-  font-weight: bold;
-  text-shadow: 0 0 0.5cqh rgba(64, 196, 255, 0.5);
+  --hl-color: #40c4ff;
+  --hl-shadow: rgba(64, 196, 255, 0.5);
 }
 
 .highlight-green {
-  color: #69f0ae;
-  font-weight: bold;
-  text-shadow: 0 0 0.5cqh rgba(105, 240, 174, 0.5);
+  --hl-color: #69f0ae;
+  --hl-shadow: rgba(105, 240, 174, 0.5);
 }
 
 .highlight-red {
-  color: #ff5252;
-  font-weight: bold;
-  text-shadow: 0 0 0.5cqh rgba(255, 82, 82, 0.5);
-}
-
-/* 閉じるボタンエリア */
-.config-buttons {
-  margin-top: 1.5cqh;
-  text-align: center;
-  flex-shrink: 0;
-}
-
-.config-buttons button.pop-btn.primary {
-  font-size: 3cqh;
-  padding: 2cqh 4cqh;
-  border-radius: 5cqh;
-  border: none;
-  background: linear-gradient(
-    135deg,
-    hsl(42, 100%, 65%) 0%,
-    #ffa442 40%,
-    #d8a4ff 100%
-  );
-  color: #fffce0;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 0.4cqh 0.2cqh #ffc9b4;
-}
-
-/* 入力フォームをポップに */
-.pop-input-field {
-  background: rgba(255, 255, 255, 0.9);
-  border: 2px solid #00d2ff;
-  border-radius: 50px; /* 丸くする */
-  padding: 10px 20px;
-  font-size: 1.2rem;
-  color: #330066;
-  font-weight: bold;
-  text-align: center;
-  outline: none;
-  width: 80%;
-  margin-top: 15px; /* 上の余白 */
-  margin-bottom: 20px; /* 下の余白（狭めました） */
-  box-shadow: 0 4px 0 rgba(0, 210, 255, 0.5); /* 立体感 */
-  transition: all 0.2s;
-}
-
-.pop-input-field:focus {
-  transform: translateY(2px);
-  box-shadow: 0 2px 0 rgba(0, 210, 255, 0.5);
-}
-
-/* 設定内の名前変更ボタンもポップに */
-.btn-change-name {
-  background: linear-gradient(to bottom, #ffeb3b, #fbc02d);
-  color: #5a4a00;
-  font-weight: bold;
-  border: 2px solid #fff;
-  border-radius: 20px;
-  padding: 5px 15px;
-  cursor: pointer;
-  box-shadow: 0 4px 0 #f57f17;
-  transition:
-    transform 0.1s,
-    box-shadow 0.1s;
-}
-
-.btn-change-name:active {
-  transform: translateY(4px);
-  box-shadow: 0 0 0 #f57f17;
-}
-
-/* エラーメッセージのふわっと表示アニメーション */
-.error-fade-in {
-  color: #ff4444;
-  font-weight: bold;
-  animation: fadeInError 0.4s ease forwards;
-}
-
-@keyframes fadeInError {
-  from {
-    opacity: 0;
-    transform: translateY(-5px); /* 少し上から降りてくる感じ */
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* エラー時の入力フォームの揺れ（任意） */
-.input-error-shake {
-  animation: shake 0.3s;
-  border-color: #ff4444 !important; /* 強制的に赤枠 */
-  background: rgba(50, 0, 0, 0.3) !important; /* 薄い赤背景 */
-  box-shadow: 0 0 10px rgba(255, 68, 68, 0.4) !important;
-}
-
-@keyframes shake {
-  0% {
-    transform: translateX(0);
-  }
-  25% {
-    transform: translateX(-5px);
-  }
-  50% {
-    transform: translateX(5px);
-  }
-  75% {
-    transform: translateX(-5px);
-  }
-  100% {
-    transform: translateX(0);
-  }
+  --hl-color: #ff5252;
+  --hl-shadow: rgba(255, 82, 82, 0.5);
 }
 
 /* --- ランキングモーダル全体 --- */
 .ranking-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(
-    255,
-    255,
-    255,
-    0.8
-  ); /* 背景を少し暗くしてモーダルを目立たせる */
-  z-index: 1000;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+  inset: 0;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255, 255, 255, 0.8);
+
+  z-index: var(--z-ranking-overlay);
   opacity: 0;
   animation: fadeIn 0.3s forwards;
-  font-family:
-    "Arial Rounded MT Bold", "M PLUS Rounded 1c", "Varela Round", sans-serif;
+}
+
+/* モーダル本体（さらに大きく！） */
+.ranking-modal {
+  position: relative;
+
+  width: 90%; /* ほぼ画面いっぱい */
+  height: 90%;
+
+  background-color: var(--color-white);
+  backdrop-filter: blur(15px);
+
+  border-radius: 25px;
+  display: flex;
+  flex-direction: column;
+  padding: 25px 35px;
+  transition: opacity 0.3s ease;
 }
 
 @keyframes fadeIn {
@@ -3491,23 +3481,6 @@ body {
     opacity: 1;
   }
 }
-
-/* モーダル本体（さらに大きく！） */
-.ranking-modal {
-  width: 90%; /* ほぼ画面いっぱい */
-  height: 90%;
-  max-width: 1200px;
-  /* 背景色は難易度クラスで指定するため削除 */
-  backdrop-filter: blur(15px); /* すりガラスを強く */
-  border-radius: 25px;
-  display: flex;
-  flex-direction: column;
-  padding: 25px 35px;
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-/* --- 難易度別テーマ --- */
 
 /* EASY: さわやかな海の海岸（エメラルドグリーン〜青のグラデーション） */
 .ranking-modal.rank-theme-easy {

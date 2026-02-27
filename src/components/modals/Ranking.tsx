@@ -90,11 +90,10 @@ export const Ranking = ({
                         border: "2px solid rgba(255,255,255,0.5)",
                         background: "rgba(0,0,0,0.3)",
                         color: "#fff",
-                        fontSize: "1.2rem",
+                        fontSize: "1rem",
                         cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
+                        display: "grid",
+                        placeItems: "center"
                       }}
                     >
                       ↩
@@ -105,7 +104,7 @@ export const Ranking = ({
                       style={{
                         justifyContent: "center",
                         gap: "10px",
-                        marginBottom: "5px",
+                        marginTop: "5px",
                       }}
                     >
                       <span style={{ fontSize: "1.2rem" }}>👑 {item.name}</span>
