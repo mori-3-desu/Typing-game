@@ -3473,8 +3473,7 @@ body {
 /* モーダル本体（さらに大きく！） */
 .ranking-modal {
   width: 90%; /* ほぼ画面いっぱい */
-  max-width: 1200px;
-  max-height: 90vh;
+  height: 90%;
 
   /* 背景色は難易度クラスで指定するため削除 */
   backdrop-filter: blur(15px); /* すりガラスを強く */
