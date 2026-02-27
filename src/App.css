@@ -65,7 +65,7 @@
   --z-game-score: 100;
   --z-game-render: 999;
   --z-game-finish: 1000;
-  --z-ranking-overlay: 1200;
+  --z-ranking-overlay: 1000;
   --z-fade-overlay: 1500;
   --z-config: 9999;
 
@@ -3459,10 +3459,11 @@ body {
 /* モーダル本体（さらに大きく！） */
 .ranking-modal {
   position: relative;
-  overflow-y: auto;
 
   width: 90%; /* ほぼ画面いっぱい */
   height: 90%;
+
+  max-width: 1200px;
 
   background-color: var(--color-white);
   -webkit-backdrop-filter: blur(15px);
