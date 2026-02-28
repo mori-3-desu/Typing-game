@@ -3445,8 +3445,13 @@ body {
   position: fixed;
   top: 0;
   left: 0;
+
+  display: grid;
+  place-items: center;
+
   width: 100%;
   height: 100%;
+
   background: rgba(
     255,
     255,
@@ -3454,9 +3459,7 @@ body {
     0.8
   ); /* 背景を少し暗くしてモーダルを目立たせる */
   z-index: var(--z-ranking-overlay);
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
   opacity: 0;
   animation: fadeIn 0.3s forwards;
 }
@@ -3472,19 +3475,84 @@ body {
 
 /* モーダル本体（さらに大きく！） */
 .ranking-modal {
+  /* 変数エリア */
+  background: var(--theme-bg);
+  border: 4px solid var(--theme-bd);
+  box-shadow: 0 0 30px var(--theme-sd);
+
+  position: relative;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
   width: 90%; /* ほぼ画面いっぱい */
   height: 90%;
 
   /* 背景色は難易度クラスで指定するため削除 */
   backdrop-filter: blur(15px); /* すりガラスを強く */
+
   border-radius: 25px;
-  display: flex;
-  flex-direction: column;
+
   padding: 25px 35px;
-  position: relative;
   transition: all 0.3s ease;
 
-  overflow: hidden;
+  & .ranking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    width: 100%;
+    border-bottom: 3px dashed rgba(255, 255, 255, 0.3);
+  }
+
+  & .ranking-header-buttons {
+    display: flex;
+    gap: 15px; /* ボタン同士の間隔 */
+    align-items: center;
+  }
+
+  & .ranking-title {
+    font-size: 4rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
+    margin: 0;
+    letter-spacing: 7px;
+    text-transform: uppercase;
+  }
+
+  &.rank-theme-easy {
+    --theme-bg: linear-gradient(
+      150deg,
+      rgba(122, 228, 255, 0.9) 0%,
+      rgba(149, 213, 255, 0.7) 45%,
+      rgba(184, 255, 255, 0.4) 100%
+    );
+    --theme-bd: rgba(255, 255, 255, 0.8);
+    --theme-sd: 0 0 30px rgba(0, 200, 255, 0.4);
+  }
+
+  &.rank-theme-normal {
+    --theme-bg: linear-gradient(
+      85deg,
+      rgba(255, 102, 26, 0.9) 0%,
+      rgba(255, 223, 150, 0.9) 100%
+    );
+    --theme-bd: rgba(255, 200, 180, 0.8);
+    --theme-sd: rgba(255, 100, 100, 0.5);
+  }
+
+  &.rank-theme-hard {
+    --theme-bg: linear-gradient(
+      to bottom,
+      rgba(15, 32, 39, 0.95) 0%,
+      rgba(32, 58, 67, 0.95) 50%,
+      rgba(44, 83, 100, 0.9) 100%
+    );
+    --theme-bd: rgba(255, 215, 0, 0.7);
+    --theme-sd: rgba(255, 215, 0, 0.3);
+  }
 }
 
 @keyframes fadeIn {
@@ -3496,85 +3564,28 @@ body {
   }
 }
 
-/* EASY: さわやかな海の海岸（エメラルドグリーン〜青のグラデーション） */
-.ranking-modal.rank-theme-easy {
-  background: linear-gradient(
-    150deg,
-    rgba(122, 228, 255, 0.9) 0%,
-    rgba(149, 213, 255, 0.7) 45%,
-    rgba(184, 255, 255, 0.4) 100%
-  );
-  border: 4px solid rgba(255, 255, 255, 0.8); /* 白い波のような枠線 */
-  box-shadow: 0 0 30px rgba(0, 200, 255, 0.4);
-}
-
-/* NORMAL: 夕焼け（オレンジ〜紫のグラデーション） */
-.ranking-modal.rank-theme-normal {
-  background: linear-gradient(
-    85deg,
-    rgba(255, 102, 26, 0.9) 0%,
-    rgba(255, 223, 150, 0.9) 100%
-  );
-  border: 4px solid rgba(255, 200, 180, 0.8); /* 夕日の光のような枠線 */
-  box-shadow: 0 0 30px rgba(255, 100, 100, 0.5);
-}
-
-/* HARD: 七夕の星空（深い群青色〜夜空のグラデーション + 金色の枠） */
-.ranking-modal.rank-theme-hard {
-  background: linear-gradient(
-    to bottom,
-    rgba(15, 32, 39, 0.95) 0%,
-    rgba(32, 58, 67, 0.95) 50%,
-    rgba(44, 83, 100, 0.9) 100%
-  );
-  border: 4px solid rgba(255, 215, 0, 0.7); /* 星や短冊をイメージした金色の枠 */
-  box-shadow: 0 0 30px rgba(255, 215, 0, 0.3); /* ほんのり金色の光 */
-}
-
-/* ヘッダー */
-.ranking-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  border-bottom: 3px dashed rgba(255, 255, 255, 0.3);
-  padding-bottom: 10px;
-}
-
-.ranking-title {
-  font-size: 4rem; /* タイトルさらに大きく */
-  font-weight: bold;
-  color: #fff; /* 背景が濃いので白文字 */
-  text-shadow: 3px 3px 0px rgba(0, 0, 0, 0.2);
-  margin: 0;
-  letter-spacing: 7px;
-  text-transform: uppercase;
-}
-
 /* リストエリア */
 .ranking-list {
   flex: 1;
-  min-height: 0;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 20px 25px;
   min-height: 0;
-}
 
-.ranking-list::-webkit-scrollbar {
-  width: 12px;
-}
+  &::-webkit-scrollbar {
+    width: 12px;
+  }
 
-.ranking-list::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-}
-
-.ranking-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 6px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 6px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
 }
 
 /* --- カードのデザイン --- */
@@ -3597,33 +3608,39 @@ body {
   margin-right: 25px;
 }
 
+/* --- ベース --- */
+/* var(--変数名, デフォルト値) と書くことで、変数が無い場合（4位以下など）の安全網を作れます！ */
 .rank-num {
-  font-size: 3.2rem;
+  font-size: var(--rank-size, 3.2rem);
+  color: var(--rank-color, inherit);
+  text-shadow: var(--rank-shadow, 2px 2px 0px rgba(0, 0, 0, 0.1));
   line-height: 1;
   font-weight: 800;
-  text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.1);
 }
 
-/* 1位〜3位 */
-.rank-1 .rank-num {
-  color: #ffd700;
-  text-shadow: 3px 3px 0 #d4d9a3;
-  font-size: 4.5rem;
+/* --- 1位〜3位：変数の「中身」だけを注入！ --- */
+/* ※親である .rank-1 等に定義すれば、子の .rank-num に自動で変数が伝わります */
+.rank-1 {
+  --rank-color: var(--color-gold);
+  --rank-shadow: 3px 3px 0 #d4d9a3;
+  --rank-size: 4.5rem;
 }
 
-.rank-2 .rank-num {
-  color: #c0c0c0;
-  text-shadow: 3px 3px 0 #a5a39f;
-  font-size: 4rem;
+.rank-2 {
+  --rank-color: var(--color-offwhite);
+  --rank-shadow: 3px 3px 0 #a5a39f;
+  --rank-size: 4rem;
 }
 
-.rank-3 .rank-num {
-  color: #cd7f32;
-  text-shadow: 3px 3px 0 #dbb5a7;
-  font-size: 3.5rem;
+.rank-3 {
+  --rank-color: #cd7f32; /* 💡 余力があればここも var(--color-bronze) のようにすると完璧です！ */
+  --rank-shadow: 3px 3px 0 #dbb5a7;
+  --rank-size: 3.5rem;
 }
 
-/* ★ 4位以降：斜めに薄くグラデーション ★ */
+/* --- 4位以降：特殊ルール --- */
+/* ここは「文字色」ではなく「背景のグラデーションで文字を切り抜く」という
+   特殊なCSSの必殺技を使っているので、変数は使わずにこのまま独立させておくのが正解です！ */
 .ranking-card:not(.rank-1):not(.rank-2):not(.rank-3) .rank-num {
   background: linear-gradient(
     135deg,
@@ -3633,14 +3650,10 @@ body {
   );
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent; /* 文字色を透明にして背景のグラデを見せる */
-  text-shadow: none; /* グラデーションを見せるため影は消すか薄く */
+  color: transparent;
+  text-shadow: none;
   opacity: 0.9;
 }
-
-/* =========================================
-   順位の装飾 (静的キラキラ・調整版)
-   ========================================= */
 
 /* 共通設定 */
 .rank-1 .rank-num,
@@ -3842,24 +3855,6 @@ body {
   100% {
     transform: scale(1);
   }
-}
-
-/* --- ランキング画面のヘッダーボタン修正 --- */
-
-/* ヘッダー内のタイトルとボタン群を横並びにするコンテナ */
-.ranking-header {
-  display: flex;
-  justify-content: space-between; /* タイトル左、ボタン右 */
-  align-items: center;
-  padding: 10px 20px;
-  width: 100%;
-}
-
-/* ボタンを横並びにするラッパー */
-.ranking-header-buttons {
-  display: flex;
-  gap: 15px; /* ボタン同士の間隔 */
-  align-items: center;
 }
 
 /* 閉じるボタン (頂いたコードを適用) */
