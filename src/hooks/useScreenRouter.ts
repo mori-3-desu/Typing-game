@@ -1,12 +1,12 @@
 import { useCallback, useMemo } from "react";
-import { playSE, stopBGM, startSelectBgm } from "../utils/audio";
-import { DIFFICULTY_SETTINGS, UI_TIMINGS } from "../utils/setting";
 import {
   type DifficultyLevel,
   type GameState,
   type PlayPhase,
   type TitlePhase,
 } from "../types";
+import { playSE, startSelectBgm, stopBGM } from "../utils/audio";
+import { DIFFICULTY_SETTINGS, UI_TIMINGS } from "../utils/setting";
 
 type UseScreenRouterProps = {
   // State Values
@@ -81,7 +81,7 @@ export const useScreenRouter = ({
       if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg;
       return hoverDifficulty
         ? DIFFICULTY_SETTINGS[hoverDifficulty].bg
-        : "/images/level.jpg";
+        : "/images/level.webp";
     }
     return DIFFICULTY_SETTINGS[difficulty].bg;
   }, [gameState, difficulty, hoverDifficulty, isTransitioning]);
