@@ -1,6 +1,10 @@
 /* fix: ID多すぎるので改善していこう */
 /* todo: root整理、一部gridレイアウトに変更する、勉強して書き方を変えてみる */
 
+* {
+  user-select: none;
+}
+
 :root {
   /* =========================================
      🎨 1. Base Colors & Typography

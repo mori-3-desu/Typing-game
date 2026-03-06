@@ -1,8 +1,8 @@
 // 規模が多くなったらファイル分けを検討
 import { useEffect, useRef } from "react"; // useCallbackは削除
-import { DISPLAY_SCALE, READY_GO_ANIMATION } from "../../utils/setting";
-import { drawReadyAnimation, drawGoAnimation } from "../../utils/canvas";
 import { type GameState, type PlayPhase } from "../../types";
+import { drawGoAnimation, drawReadyAnimation } from "../../utils/canvas";
+import { DISPLAY_SCALE, READY_GO_ANIMATION } from "../../utils/setting";
 
 type Props = {
   gameState: GameState;
@@ -26,7 +26,7 @@ export const GameCanvas = ({ gameState, playPhase }: Props) => {
   // 画像プリロード
   useEffect(() => {
     const img = new Image();
-    img.src = "/images/Ready.jpg";
+    img.src = "/images/Ready.webp";
     img.onload = () => {
       readyImageRef.current = img;
     };

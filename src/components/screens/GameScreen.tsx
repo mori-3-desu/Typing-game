@@ -1,9 +1,9 @@
 import {
   type DifficultyLevel,
-  type RomaState,
-  type Segment,
   type Popup,
+  type RomaState,
   type ScorePopup,
+  type Segment,
   type TimePopup,
 } from "../../types";
 
@@ -198,7 +198,7 @@ export const GameScreen = ({
       </div>
 
       <div id="tmr-box">
-        <img src="/images/cloud.png" id="tmr-img" alt="雲" />
+        <img src="/images/cloud.webp" id="tmr-img" alt="雲" />
         <span
           id="tmr-text"
           className={
