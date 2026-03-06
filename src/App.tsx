@@ -52,7 +52,6 @@ import {
 
 const preloadImages = () => {
   const images = [
-    "/images/title.jpg",
     "/images/level.webp",
     "/images/cloud.webp",
     "/images/Ready.webp",
