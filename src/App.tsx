@@ -1,61 +1,61 @@
-import { useState, useEffect, useRef } from "react";
-import { DatabaseService } from "./services/database";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import { DatabaseService } from "./services/database";
 
 // --- Components ---
-import { GameCanvas } from "./components/screens/GameCanvas";
-import { LoadingScreen } from "./components/screens/LoadingScreen";
-import { TitleScreen } from "./components/screens/TitleScreen";
-import { DifficultySelectScreen } from "./components/screens/Difficulty";
-import { GameScreen } from "./components/screens/GameScreen";
-import { ResultScreen } from "./components/screens/ResultScreen";
-import { Ranking } from "./components/modals/Ranking";
 import { HowToPlay } from "./components/modals/HowToPlay";
+import { Ranking } from "./components/modals/Ranking";
 import { Setting } from "./components/modals/Setting";
+import { DifficultySelectScreen } from "./components/screens/Difficulty";
+import { GameCanvas } from "./components/screens/GameCanvas";
+import { GameScreen } from "./components/screens/GameScreen";
+import { LoadingScreen } from "./components/screens/LoadingScreen";
+import { ResultScreen } from "./components/screens/ResultScreen";
+import { TitleScreen } from "./components/screens/TitleScreen";
 
 // --- Utils & Hooks ---
 import {
   ALL_BACKGROUNDSDATA,
   DIFFICULTY_SETTINGS,
-  PLAYER_NAME_CHARS,
-  UI_TIMINGS,
   DISPLAY_SCALE,
-  STORAGE_KEYS,
   LIMIT_DATA,
+  PLAYER_NAME_CHARS,
+  STORAGE_KEYS,
+  UI_TIMINGS,
 } from "./utils/setting";
 
 // 計算ロジック (分離済み)
 import { createGameStats } from "./utils/gameUtils";
 
 // ★ 画面遷移ロジック (今回導入！)
-import { useScreenRouter } from "./hooks/useScreenRouter";
-import { useGameControl } from "./hooks/useGameControl";
 import { useAuth } from "./hooks/useAuth";
+import { useGameControl } from "./hooks/useGameControl";
+import { useScreenRouter } from "./hooks/useScreenRouter";
 
-import { playSE, startSelectBgm, setVolumes, initAudio } from "./utils/audio";
+import { initAudio, playSE, setVolumes, startSelectBgm } from "./utils/audio";
 
 import { useConfig } from "./hooks/useConfig";
-import { useTypingGame } from "./hooks/useTypingGame";
-import { useGameResult } from "./hooks/useGameResult";
 import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
+import { useGameResult } from "./hooks/useGameResult";
+import { useTypingGame } from "./hooks/useTypingGame";
 import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 
 import {
   type DifficultyLevel,
-  type WordDataMap,
   type GameResultStats,
   type GameState,
   type PlayPhase,
-  type TitlePhase,
   type RankingScore,
+  type TitlePhase,
+  type WordDataMap,
 } from "./types";
 
 const preloadImages = () => {
   const images = [
     "/images/title.jpg",
-    "/images/level.jpg",
-    "/images/cloud.png",
-    "/images/Ready.jpg",
+    "/images/level.webp",
+    "/images/cloud.webp",
+    "/images/Ready.webp",
     "/images/X.jpg",
     "/images/ranking.png",
     "/images/X.jpg",
@@ -685,34 +685,36 @@ function App() {
               />
             )}
 
-            {(gameState === "playing" || gameState === "finishing") && (
-              <GameScreen
-                gameState={gameState}
-                playPhase={playPhase}
-                difficulty={difficulty}
-                score={score}
-                displayScore={displayScore}
-                combo={combo}
-                comboClass={comboClass}
-                timeLeft={timeLeft}
-                gaugeValue={gaugeValue}
-                gaugeMax={gaugeMax}
-                completedWords={completedWords}
-                currentSpeed={currentSpeed}
-                jpText={jpText}
-                romaState={romaState}
-                showRomaji={showRomaji}
-                allSegments={allSegments}
-                shakeStatus={shakeStatus}
-                rank={rank}
-                bonusPopups={bonusPopups}
-                perfectPopups={perfectPopups}
-                scorePopups={scorePopups}
-                timePopups={timePopups}
-                isRainbowMode={isRainbowMode}
-                isFinishExit={isFinishExit}
-              />
-            )}
+            <main>
+              {(gameState === "playing" || gameState === "finishing") && (
+                <GameScreen
+                  gameState={gameState}
+                  playPhase={playPhase}
+                  difficulty={difficulty}
+                  score={score}
+                  displayScore={displayScore}
+                  combo={combo}
+                  comboClass={comboClass}
+                  timeLeft={timeLeft}
+                  gaugeValue={gaugeValue}
+                  gaugeMax={gaugeMax}
+                  completedWords={completedWords}
+                  currentSpeed={currentSpeed}
+                  jpText={jpText}
+                  romaState={romaState}
+                  showRomaji={showRomaji}
+                  allSegments={allSegments}
+                  shakeStatus={shakeStatus}
+                  rank={rank}
+                  bonusPopups={bonusPopups}
+                  perfectPopups={perfectPopups}
+                  scorePopups={scorePopups}
+                  timePopups={timePopups}
+                  isRainbowMode={isRainbowMode}
+                  isFinishExit={isFinishExit}
+                />
+              )}
+            </main>
 
             {(gameState === "result" || gameState === "hiscore_review") && (
               <ResultScreen
@@ -753,7 +755,8 @@ function App() {
             )}
           </div>
         )}
-        ;{showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
+
+        {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
         {showConfig && (
           <Setting
             playerName={playerName}
