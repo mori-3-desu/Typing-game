@@ -5,31 +5,31 @@
  * コードの意図や技術選定の理由を明確にするため、また未来の自分への備忘録として、
  * あえて詳細にコメントを残しています。
  */
-import { useState, useRef, useCallback, useEffect, useReducer } from "react";
-import { TypingEngine, Segment } from "./useTypingEngine";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { playSE } from "../utils/audio";
 import {
+  COMBO_THRESHOLDS,
+  COMBO_TIME_BONUS,
   DIFFICULTY_SETTINGS,
-  UI_ANIMATION_CONFIG,
+  GAUGE_CONFIG,
   JUDGE_COLOR,
+  RANK_THRESHOLDS,
+  SCORE_COMBO_MULTIPLIER,
   SCORE_CONFIG,
   SCORE_DIRECTION,
-  GAUGE_CONFIG,
-  RANK_THRESHOLDS,
-  COMBO_THRESHOLDS,
-  SCORE_COMBO_MULTIPLIER,
-  COMBO_TIME_BONUS,
-} from "../utils/setting";
-import { playSE } from "../utils/audio";
+  UI_ANIMATION_CONFIG,
+} from "../utils/constants";
+import { Segment, TypingEngine } from "./useTypingEngine";
 
 import {
-  type DifficultyLevel,
-  type ScorePopup,
   type BonusPopup,
+  type DifficultyLevel,
+  type MissedWord,
+  type PerfectPopup,
+  type RomaState,
+  type ScorePopup,
   type TimePopup,
   type TypedLog,
-  type RomaState,
-  type PerfectPopup,
-  type MissedWord,
   type WordDataMap,
 } from "../types";
 
@@ -357,7 +357,7 @@ export const useTypingGame = (
       popupIdRef.current += 1;
       const newId = popupIdRef.current;
       dispatch({ type: "ADD_POPUP", popup: { id: newId, text, type } });
-      
+
       scheduleTrackedTimeout(() => {
         dispatch({ type: "REMOVE_POPUP", id: newId });
       }, UI_ANIMATION_CONFIG.POPUP_DURATION_MS);
@@ -376,7 +376,11 @@ export const useTypingGame = (
 
       dispatch({
         type: "ADD_SCORE_POPUP",
-        popup: { id: newId, text: amount > 0 ? `+${amount}` : `${amount}`, type },
+        popup: {
+          id: newId,
+          text: amount > 0 ? `+${amount}` : `${amount}`,
+          type,
+        },
       });
 
       scheduleTrackedTimeout(() => {
@@ -458,8 +462,10 @@ export const useTypingGame = (
     // Classから現在の値を吸い出して、新しいオブジェクト(nextRomaState)を作る。
     const nextRomaState = {
       typedLog: newTypedLog,
-      current: !isActuallyFinished && currentSeg ? currentSeg.getCurrentChar() : "",
-      remaining: !isActuallyFinished && currentSeg ? currentSeg.getRemaining() : "",
+      current:
+        !isActuallyFinished && currentSeg ? currentSeg.getCurrentChar() : "",
+      remaining:
+        !isActuallyFinished && currentSeg ? currentSeg.getRemaining() : "",
     };
 
     // 【5. Reactへの通知 (Dispatch)】
@@ -561,7 +567,7 @@ export const useTypingGame = (
   const processMiss = useCallback(
     (missType: "INPUT" | "COMPLETION", charStr?: string) => {
       playSE("miss");
-      
+
       scheduleTrackedTimeout(
         () => {
           dispatch({ type: "SET_SHAKE", status: "none" });

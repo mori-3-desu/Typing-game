@@ -1,5 +1,5 @@
 import { type GameResultStats } from "../types";
-import { LIMIT_DATA } from "./setting";
+import { LIMIT_DATA } from "./constants";
 
 export const createGameStats = (
   overrides: Partial<GameResultStats> = {},
@@ -60,7 +60,7 @@ export const calculateFinalStats = (
 
   // --- 3. 現在データの救出 (Refの値を使用) ---
   if (currentWordMiss > 0 && jpText) {
-    weakWordMap.set(jpText, (weakWordMap.get(jpText)) || 0 + currentWordMiss);
+    weakWordMap.set(jpText, weakWordMap.get(jpText) || 0 + currentWordMiss);
   }
 
   // --- 4. 配列化・ソート・フィルタリング ---

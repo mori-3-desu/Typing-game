@@ -3,7 +3,7 @@ import {
   type GameResultStats,
   type WeakWord,
 } from "../../types";
-import { LIMIT_DATA } from "../../utils/setting";
+import { LIMIT_DATA } from "../../utils/constants";
 
 type Props = {
   gameState: "result" | "hiscore_review";

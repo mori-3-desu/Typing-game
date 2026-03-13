@@ -33,6 +33,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     color: "#ffff00", // 黄色系
   },
 } as const;
+
 // 画像データ
 export const STATIC_BACKGROUNDS = [
   { key: "title", src: "/images/title.webp" },
@@ -151,12 +152,14 @@ export const STORAGE_KEYS = {
   VOLUME_BGM: "typing_bgm_vol",
   VOLUME_SE: "typing_se_vol",
   VOLUME_MUTE: "typing_is_muted",
+  BRIGHTNESS: "typing_is_bright",
   SHOW_ROMAJI: "typing_show_romaji",
 } as const;
 
 // 初期値（デフォルト値）は別のオブジェクトにまとめると分かりやすいです
 export const DEFAULT_CONFIG = {
   VOLUME_BGM_SE: 0.5,
+  BASE_BRIGHTNESS: 1.0,
   IS_MUTED: false,
   D_SHOW_ROMAJI: true,
 } as const;
