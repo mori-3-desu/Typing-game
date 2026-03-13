@@ -1,12 +1,12 @@
 import { useEffect, useRef, type MutableRefObject } from "react";
-import { DIFFICULTY_SETTINGS } from "../utils/setting";
-import { playSE, playBGM } from "../utils/audio";
 import {
-  type GameState,
-  type PlayPhase,
   type DifficultyLevel,
   type GameResultStats,
+  type GameState,
+  type PlayPhase,
 } from "../types";
+import { playBGM, playSE } from "../utils/audio";
+import { DIFFICULTY_SETTINGS } from "../utils/constants";
 
 // ■ 無視するキーのリスト
 // ShiftやControlなどの修飾キー単体での入力を無視します
