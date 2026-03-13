@@ -2966,44 +2966,6 @@ body {
       flex: 1;
       overflow-y: auto; /* ここでスクロール担当 */
       padding-right: 15px;
-
-      /* Firefox用 */
-      scrollbar-width: thin;
-      scrollbar-color: #ffd700 rgba(0, 0, 0, 0.15);
-
-      /* --- ▼▼▼ ここからゴールド・スクロールバー (POPスタイル) ▼▼▼ --- */
-      &::-webkit-scrollbar {
-        width: var(--sb-width);
-      }
-
-      /* 軌道 */
-      &::-webkit-scrollbar-track {
-        background: var(--sb-track-color);
-        border-radius: var(--sb-width);
-        margin: var(--sb-width) 0;
-      }
-
-      /* つまみ */
-      &::-webkit-scrollbar-thumb {
-        background: linear-gradient(
-          180deg,
-          var(--sb-gold-start) 0%,
-          var(--sb-gold-end) 100%
-        );
-        border-radius: var(--sb-width);
-        border: 2px solid rgba(255, 255, 255, 0.3);
-        background-clip: padding-box;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-      }
-
-      /* ホバー時 */
-      &::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(
-          180deg,
-          var(--sb-gold-hover-start) 0%,
-          var(--sb-gold-hover-end) 100%
-        );
-      }
     }
   }
 }

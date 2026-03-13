@@ -1,5 +1,5 @@
-import { AUDIO_PATHS, BGM_PATHS } from "./setting";
 import { type SoundKey } from "../types";
+import { AUDIO_PATHS, BGM_PATHS } from "./constants";
 
 /**
  * ■ 学習ポイント: 型定義の拡張 (Global Augmentation)
