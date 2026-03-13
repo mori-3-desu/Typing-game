@@ -1,8 +1,8 @@
 import React from "react";
 // パスは環境に合わせて調整してください
-import { DIFFICULTY_ORDER, DIFFICULTY_SETTINGS } from "../../utils/setting";
-import { getSavedHighScore } from "../../utils/storage";
 import { type DifficultyLevel } from "../../types";
+import { DIFFICULTY_ORDER, DIFFICULTY_SETTINGS } from "../../utils/constants";
+import { getSavedHighScore } from "../../utils/storage";
 
 type Props = {
   difficulty: DifficultyLevel;
@@ -54,7 +54,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   };
 
   return (
-    <div id="difficulty-view" style={{ position: "relative", zIndex: 5 }}>
+    <div id="difficulty-view" style={{ position: "absolute", zIndex: 5 }}>
       <h1 className="diff-view-title">SELECT DIFFICULTY</h1>
       <div className="diff-main-container">
         <div

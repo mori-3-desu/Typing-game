@@ -6,8 +6,8 @@
  * - TypingEngine: 文章全体を管理し、どの作業員にキーを渡すか指示する「現場監督」
  */
 
+import { JUDGE_COLOR } from "../utils/constants";
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
-import { JUDGE_COLOR } from "../utils/setting";
 
 // 静的ソート（アプリ起動時に1回だけ実行）
 // 長い文字（"shi" など）から先にマッチさせるため、文字数の多い順にソートしておく
@@ -99,12 +99,18 @@ export class Segment {
    * コア処理：ユーザーが打ったキーを受け取って、判定結果を返す
    */
   handleKey(key: string): string {
-    let inputChar = key;
     const nextExpected = this.getCurrentChar();
+    let inputChar = key;
 
-    // 句読点のゆらぎ吸収（カンマでも読点として許容する親切設計）
-    if (nextExpected === "、" && key === ",") inputChar = "、";
-    if (nextExpected === "。" && key === ".") inputChar = "。";
+    // 1. 次に打つべき文字（nextExpected）の許容キーリストを取得
+    // （将来的な記号追加やプログラマー向け拡張を考えているため、if文の連続を避ける設計）
+    const allowedKeys = ROMA_VARIATIONS[nextExpected];
+
+    // 2. 入力キーが許容リストに含まれていれば、内部の文字を nextExpected にすり替える
+    // （例: ',' を打っても '、' として処理し、お題の見た目や判定が崩れるのを防ぐ）
+    if (allowedKeys && allowedKeys.includes(key)) {
+      inputChar = nextExpected;
+    }
 
     const nextBuffer = this.inputBuffer + inputChar;
 

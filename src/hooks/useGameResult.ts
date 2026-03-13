@@ -1,12 +1,12 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { DatabaseService } from "../services/database";
 import {
   type DifficultyLevel,
-  type UpdateHighscoreParams,
   type GameResultStats,
+  type UpdateHighscoreParams,
 } from "../types";
-import { STORAGE_KEYS, UI_TIMINGS } from "../utils/setting";
 import { playSE } from "../utils/audio";
+import { STORAGE_KEYS, UI_TIMINGS } from "../utils/constants";
 
 export const useGameResult = (difficulty: DifficultyLevel) => {
   const [highScore, setHighScore] = useState(0);
@@ -168,13 +168,13 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
   };
 
   useEffect(() => {
-  // ★アンマウント時（クリーンアップ）
-  return () => {
-    // 全タイマーを爆破する
-    resultTimersRef.current.forEach(clearTimeout);
-    resultTimersRef.current = [];
-  };
-}, []);
+    // ★アンマウント時（クリーンアップ）
+    return () => {
+      // 全タイマーを爆破する
+      resultTimersRef.current.forEach(clearTimeout);
+      resultTimersRef.current = [];
+    };
+  }, []);
 
   return {
     highScore,

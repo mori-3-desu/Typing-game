@@ -6,7 +6,7 @@ import {
   type TitlePhase,
 } from "../types";
 import { playSE, startSelectBgm, stopBGM } from "../utils/audio";
-import { DIFFICULTY_SETTINGS, UI_TIMINGS } from "../utils/setting";
+import { DIFFICULTY_SETTINGS, UI_TIMINGS } from "../utils/constants";
 
 type UseScreenRouterProps = {
   // State Values
