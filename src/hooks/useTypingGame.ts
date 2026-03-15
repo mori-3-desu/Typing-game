@@ -511,10 +511,14 @@ export const useTypingGame = (
     // 今選んだ単語を記録しておき、次回の抽選で除外できるようにする
     prevWordRef.current = nextWord.jp;
 
+    const currentConfig = DIFFICULTY_SETTINGS[difficulty]; // 先ずは設定を取り出す
+    const isEnglishMode = currentConfig.isEnglish ?? false; // 上記のイングリッシュフラグを代入する
+
     // 【5. エンジンの再インスタンス化 (Re-instantiation)】
     // 新しい単語のローマ字を渡し、判定ロジック(Class)を新品にする。
     // これにより、前の単語の入力履歴などはすべてリセットされる。
-    engineRef.current = new TypingEngine(nextWord.roma);
+    // 更に上記のisEnglishモードでtrueなら英語(ローマ字判定解除)モードに
+    engineRef.current = new TypingEngine(nextWord.roma, isEnglishMode);
 
     // 【6. 初期状態の作成】
     // まだ一文字も打っていない状態（1文字目がターゲット）のデータを作る

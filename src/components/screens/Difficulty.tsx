@@ -71,7 +71,10 @@ export const DifficultySelectScreen: React.FC<Props> = ({
               {diff}
             </button>
           ))}
-          <button id="btn-back" className="diff-btn" onClick={backToTitle}>
+        </div>
+
+        <div className="diff-btn-wrapper">
+          <button className="btn-back diff-btn" onClick={backToTitle}>
             BACK
           </button>
         </div>
@@ -107,9 +110,32 @@ export const DifficultySelectScreen: React.FC<Props> = ({
             <h2 id="display-diff-name" style={{ color: currentSetting.color }}>
               {displayDiff}
             </h2>
-            <p id="display-diff-text">
-              {DIFFICULTY_SETTINGS[displayDiff].text}
+
+            {/* TODO: マジックナンバーを修正する */}
+            <p className="display-diff-text">
+              {DIFFICULTY_SETTINGS[displayDiff].text
+                .split("\n")
+                .map((line, index, array) => {
+                  // 行の先頭が「※」で始まっているか判定
+                  const isWarning = line.startsWith("※");
+
+                  return (
+                    <span
+                      key={index}
+                      style={{
+                        color: isWarning ? "#ffff00" : "inherit",
+                        // ちょっと文字を小さくして注釈っぽくするのもアリです
+                        fontSize: isWarning ? "0.85em" : "inherit",
+                      }}
+                    >
+                      {line}
+                      {/* 最後の行以外には <br /> を入れて改行する */}
+                      {index < array.length - 1 && <br />}
+                    </span>
+                  );
+                })}
             </p>
+            
             <div className="diff-info-footer">
               <div className="status-item" id="display-diff-time">
                 {DIFFICULTY_SETTINGS[displayDiff].time}s
