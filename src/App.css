@@ -786,8 +786,15 @@ body {
   gap: 40px;
 }
 
+.diff-btn-wrapper {
+  position: absolute;
+  right: 125px;
+  bottom: 30px;
+}
+
 /* ベースのボタン設定 */
 .diff-btn {
+  /* 共通の光沢感 */
   --glass-shine:
     inset 5px 5px 15px rgba(255, 255, 255, 0.8),
     inset -3px -3px 8px rgba(255, 255, 255, 0.4);
@@ -795,7 +802,6 @@ body {
   position: relative;
   overflow: hidden;
   width: 270px;
-  padding: 12px 0;
   font-family: var(--font-pop);
   font-size: 1.8rem;
   color: var(--color-white);
@@ -807,56 +813,60 @@ body {
   line-height: 1;
   cursor: pointer;
 
-  /* ベースの状態でも変数を適用しておく */
+  /* 変数を使って、ベース側で一括適用！ */
+  background: var(--btn-bg);
   box-shadow:
     var(--glass-shine),
-    0 5px 15px rgba(0, 0, 0, 0.15);
-}
+    0 8px 0 var(--btn-edge),
+    0 15px 20px var(--btn-glow);
 
-.diff-btn:hover {
-  transform: translateY(-4px);
-}
+  &:hover {
+    transform: translateY(-4px);
+  }
 
-.diff-btn:active {
-  transform: translateY(4px);
-  /* クリック時も「ガラス感」だけは残しつつ、影(0 8px 0)を消す */
-  box-shadow:
-    var(--glass-shine),
-    0 0 0 rgba(0, 0, 0, 0);
+  &:active {
+    /* 沈み込む分、Y軸を下に */
+    transform: translateY(4px);
+
+    /* 縁（8px）を 0 にすることで、完璧に沈み込む！ */
+    /* 背景色や光沢感は維持したまま、影だけを消せる！ */
+    box-shadow:
+      var(--glass-shine),
+      0 0 0 var(--btn-edge),
+      0 5px 10px rgba(0, 0, 0, 0.1); /* 少しだけ落ち影を残すとリアル */
+  }
 }
 
 /* --- 難易度別の色設定 --- */
 .diff-btn.easy {
-  background: linear-gradient(135deg, #74ebd5 0%, #aee8ff 100%);
-  box-shadow:
-    var(--glass-shine),
-    0 8px 0 #3ecfcf,
-    0 15px 20px rgba(255, 255, 255, 0.2);
+  --btn-bg: linear-gradient(135deg, #74ebd5 0%, #aee8ff 100%);
+  --btn-edge: #3ecfcf;
+  --btn-glow: rgba(255, 255, 255, 0.2);
 }
 
 .diff-btn.normal {
-  background: linear-gradient(135deg, #90ff64 0%, #c1ffb2 100%);
-  box-shadow:
-    var(--glass-shine),
-    0 8px 0 #54d618,
-    0 15px 20px rgba(255, 255, 255, 0.2);
+  --btn-bg: linear-gradient(135deg, #90ff64 0%, #c1ffb2 100%);
+  --btn-edge: #54d618;
+  --btn-glow: rgba(255, 255, 255, 0.2);
 }
 
 .diff-btn.hard {
-  background: linear-gradient(135deg, #ffff00 0%, #fff891 100%);
-  box-shadow:
-    var(--glass-shine),
-    0 8px 0 #d4d600,
-    0 15px 20px rgba(255, 255, 255, 0.2);
-  color: #5c5c00;
+  --btn-bg: linear-gradient(135deg, #ffff00 0%, #fff891 100%);
+  --btn-edge: #d4d600;
+  --btn-glow: rgba(255, 255, 255, 0.2);
+  color: #5c5c00; /* ハードだけ文字色を変える特例 */
 }
 
-.diff-btn#btn-back {
-  background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-  box-shadow:
-    var(--glass-shine),
-    0 8px 0 #ff758c,
-    0 15px 20px rgba(255, 255, 255, 0.2);
+.diff-btn.extra {
+  --btn-bg: linear-gradient(135deg, #ff4e4e 0%, #ff00bb 100%);
+  --btn-edge: #ff0088;
+  --btn-glow: rgba(255, 0, 0, 0.2);
+}
+
+.diff-btn.btn-back {
+  --btn-bg: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
+  --btn-edge: #ff758c;
+  --btn-glow: rgba(255, 255, 255, 0.2);
 }
 
 /* --- メイン情報パネル --- */
@@ -867,6 +877,7 @@ body {
   height: 400px;
   display: flex;
   flex-direction: column;
+  gap: 20px;
 
   /* ガラス設定 */
   background: var(--glass-bg-light);
@@ -874,12 +885,12 @@ body {
   border-radius: 40px;
   border: none;
   box-shadow: var(--shine-panel-base); /* ★変数適用 */
-
+  
   transition: opacity 0.2s ease;
-}
 
-.diff-info-panel:not(.visible) {
-  opacity: 0;
+  &:not(.visible) {
+    opacity: 0;
+  }
 }
 
 /* --- ヘッダーグループ --- */
@@ -1006,10 +1017,10 @@ body {
     0px 0px 10px rgba(0, 0, 0, 0.5);
 }
 
-#display-diff-text {
+.display-diff-text {
   flex-grow: 1;
   font-size: 1.2rem;
-  line-height: 6;
+
   color: rgba(255, 255, 255, 0.95);
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
   scrollbar-width: none;
@@ -1634,7 +1645,7 @@ body {
 }
 
 /* ベース：構造と共通変数を定義 */
-#combo-meter {
+.combo-meter {
   position: absolute;
   top: 50px;
   right: 70px;
@@ -1656,22 +1667,28 @@ body {
 }
 
 /* 各テーマ：中身の「色」だけを注入する */
-#combo-meter.theme-easy {
+.combo-meter.theme-easy {
   --meter-bg: rgba(100, 200, 255, 0.85);
   --meter-border: var(--color-aquablue);
   --meter-shadow: rgba(100, 230, 255, 0.5);
 }
 
-#combo-meter.theme-normal {
+.combo-meter.theme-normal {
   --meter-bg: rgba(244, 156, 105, 0.85);
   --meter-border: var(--color-lightorange);
   --meter-shadow: rgba(255, 150, 50, 0.4);
 }
 
-#combo-meter.theme-hard {
+.combo-meter.theme-hard {
   --meter-bg: rgba(65, 36, 149, 0.85);
   --meter-border: var(--color-lightpurple);
   --meter-shadow: rgba(200, 50, 255, 0.5);
+}
+
+.combo-meter.theme-extra {
+  --meter-bg: rgba(187, 127, 180, 0.85);
+  --meter-border: rgb(236, 156, 209);
+  --meter-shadow: rgba(255, 50, 221, 0.5);
 }
 
 .meter-header {
@@ -1696,6 +1713,11 @@ body {
 .theme-hard .meter-header {
   color: var(--color-lightblue);
   text-shadow: 0 0 8px rgba(0, 255, 255, 0.8);
+}
+
+.theme-extra .meter-header {
+  color: rgb(255, 227, 250);
+  text-shadow: 0 0 8px rgba(255, 0, 174, 0.8);
 }
 
 #meter-bar {
@@ -1990,6 +2012,14 @@ body {
   --theme-bg-bot: rgba(60, 40, 100, 0.7);
   --theme-border: rgba(255, 215, 0, 0.4);
   --theme-glow: rgba(100, 80, 255, 0.4);
+}
+
+/* --- HARD テーマ --- */
+.res-theme-extra {
+  --theme-bg-top: rgba(252, 214, 255, 0.8);
+  --theme-bg-bot: rgba(255, 181, 222, 0.7);
+  --theme-border: rgba(255, 136, 207, 0.8);
+  --theme-glow: rgba(255, 230, 0, 0.5);
 }
 
 .result-title {
@@ -3518,6 +3548,17 @@ body {
     );
     --theme-bd: rgba(255, 215, 0, 0.7);
     --theme-sd: rgba(255, 215, 0, 0.3);
+  }
+
+    &.rank-theme-extra {
+    --theme-bg: linear-gradient(
+      to bottom,
+      rgba(255, 221, 255, 0.95) 0%,
+      rgba(255, 182, 251, 0.95) 50%,
+      rgba(255, 129, 219, 0.9) 100%
+    );
+    --theme-bd: rgba(162, 117, 182, 0.7);
+    --theme-sd: rgba(255, 0, 157, 0.6);
   }
 }
 

@@ -20,7 +20,7 @@ export type SoundKey =
 // タイトルの画面状態
 export type TitlePhase = "normal" | "input" | "confirm";
 
-export type DifficultyLevel = "EASY" | "NORMAL" | "HARD";
+export type DifficultyLevel = "EASY" | "NORMAL" | "HARD" | "EXTRA";
 
 export type DifficultyConfig = {
   bg: string; // 難易度ごとの画像パス
@@ -29,6 +29,7 @@ export type DifficultyConfig = {
   text: string; // 難易度毎の説明文
   bgm: string; // 曲
   color: string; // 難易度ごとのテーマカラー
+  isEnglish?: boolean // EXTRAのみ付与
 };
 
 // ---------------------------------------------------------
@@ -68,7 +69,7 @@ export type GameControlProps = {
 };
 
 export type UpdateHighscoreParams = {
-  p_difficulty: DifficultyLevel; // "EASY" | "NORMAL" | "HARD" しか許さない！
+  p_difficulty: DifficultyLevel; // "EASY" | "NORMAL" | "HARD" | "EXTRA"しか許さない！
   p_score: number;
   p_data: {
     name: string;

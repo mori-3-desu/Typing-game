@@ -26,10 +26,15 @@ export class Segment {
   typedLog: { char: string; color: string }[]; // 画面の色分け用の履歴
   isExpanded: boolean; // 「ん」が "n" から "nn" に拡張されたかどうかのフラグ
 
-  constructor(canonical: string) {
+  constructor(canonical: string, isEnglish: boolean = false) {
     this.canonical = canonical;
-    // 辞書にない記号などは、そのままの文字をパターンとして登録
-    this.patterns = ROMA_VARIATIONS[canonical] || [canonical];
+
+    // EXTRAモードなら辞書を引かずにその文字だけを正解にする
+    const initialPatterns = isEnglish
+      ? [canonical]
+      : ROMA_VARIATIONS[canonical] || [canonical];
+
+    this.patterns = initialPatterns;
     this.inputBuffer = "";
     this.typedLog = [];
     this.isExpanded = false;
@@ -178,8 +183,10 @@ export class Segment {
 export class TypingEngine {
   segments: Segment[]; // 文章を構成するブロックの配列
   segIndex: number; // 今、何番目のブロックを入力しているか（現在地）
+  isEnglish: boolean; // 英語モードかローマ字か
 
-  constructor(romaText: string) {
+  constructor(romaText: string, isEnglish: boolean = false) {
+    this.isEnglish = isEnglish;
     this.segments = this.segmentize(romaText);
     this.segIndex = 0;
   }
@@ -189,7 +196,12 @@ export class TypingEngine {
    * 例：「かいしゃ」 -> ["か", "い", "しゃ"] というSegmentの配列に変換する
    */
   segmentize(roma: string): Segment[] {
+    // 英単語モードなら即座に変換して返す
+    if (this.isEnglish) return [...roma].map((c) => new Segment(c, true));
+
+    // ここから日本語(ローマ字)モード
     const out: Segment[] = [];
+
     let i = 0;
     while (i < roma.length) {
       // 現在地(i)から始まる文字が、辞書のキー（"sha"など）と一致するか長い順に探す
@@ -213,17 +225,20 @@ export class TypingEngine {
     const segment = this.segments[this.segIndex]; // 今担当しているブロック
     const prevSegment = this.segments[this.segIndex - 1]; // 1つ前のブロック
 
-    // --- 日本語タイピングの鬼門：「ん」の拡張チェック ---
-    // 「ん」を "n" 1文字で済ませた直後に、母音(a,i,u,e,o)ではなく "n" が打たれた場合の処理
-    if (key === "n" && this.segIndex > 0 && prevSegment) {
-      // 1. まず、今のブロック（例："か"）が "n" を受け入れるか確認
-      const isCorrectForCurrent = segment ? segment.canAccept(key) : false;
+    // EXTRAはn分岐をさせない
+    if (!this.isEnglish) {
+      // --- 日本語タイピングの鬼門：「ん」の拡張チェック ---
+      // 「ん」を "n" 1文字で済ませた直後に、母音(a,i,u,e,o)ではなく "n" が打たれた場合の処理
+      if (key === "n" && this.segIndex > 0 && prevSegment) {
+        // 1. まず、今のブロック（例："か"）が "n" を受け入れるか確認
+        const isCorrectForCurrent = segment?.canAccept(key) ?? false;
 
-      // 2. 今のブロックは "n" なんて求めていない。
-      // かつ、前のブロックが "n" 1文字で無理やり終わっている（「ん」の入力）場合
-      if (!isCorrectForCurrent && prevSegment.isSingleN()) {
-        prevSegment.expandToDoubleN(); // 前のブロックに「やっぱり "nn" にしといて！」と命令
-        return { status: "EXPANDED" }; // 拡張成功として処理終了
+        // 2. 今のブロックは "n" なんて求めていない。
+        // かつ、前のブロックが "n" 1文字で無理やり終わっている（「ん」の入力）場合
+        if (!isCorrectForCurrent && prevSegment.isSingleN()) {
+          prevSegment.expandToDoubleN(); // 前のブロックに「やっぱり "nn" にしといて！」と命令
+          return { status: "EXPANDED" }; // 拡張成功として処理終了
+        }
       }
     }
 

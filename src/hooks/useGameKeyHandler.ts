@@ -196,10 +196,17 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
               return;
             }
 
+            // 難易度からフラグを取得しておく
+            const currentConfig = DIFFICULTY_SETTINGS[difficulty];
+            const isEnglishMode = currentConfig.isEnglish ?? false;
+
             // 単一文字入力（a-zなど）のみ通す
             if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-              handleKeyInputRef.current(e.key.toLowerCase());
+              // 英語モードなら入力されたキーをそのまま渡す、日本語モードならローマ字モードで小文字に変換
+              const inputChar = isEnglishMode ? e.key : e.key.toLowerCase();
+              handleKeyInputRef.current(inputChar);
             }
+            
             return;
           }
           break;
