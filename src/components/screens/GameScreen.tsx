@@ -129,18 +129,18 @@ export const GameScreen = ({
             }}
           >
             <div id="romaji-line">
-              {romaState.typedLog.map((log, i) => (
-                <span key={i} style={{ color: log.color }}>
-                  {log.char}
+              {romaState.typedLog.map((log, index) => (
+                <span key={index} style={{ color: log.color }}>
+                  {log.char === " " ? "␣" : log.char}
                 </span>
               ))}
               <span
                 className="text-yellow"
                 style={{ textDecoration: "underline" }}
               >
-                {romaState.current}
+                {romaState.current === " " ? "␣" : romaState.current}
               </span>
-              <span style={{ color: "white" }}>{romaState.remaining}</span>
+              <span style={{ color: "white" }}>{romaState.remaining.replaceAll(" ", "␣")}</span>
             </div>
 
             <div
@@ -227,7 +227,7 @@ export const GameScreen = ({
       ))}
       {/* ▲▲▲ ここまで ▲▲▲ */}
 
-      <div id="combo-meter" className={`theme-${difficulty.toLowerCase()}`}>
+      <div className={`combo-meter theme-${difficulty.toLowerCase()}`}>
         <div className="meter-header">
           <span>連打メーター</span>
           <span>+10秒</span>

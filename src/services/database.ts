@@ -9,11 +9,11 @@ import {
 import { LIMIT_DATA } from "../utils/constants";
 
 // 🛡️ 型ガード関数（Type Guard）
-// 文字列が本当に "EASY" | "NORMAL" | "HARD" のいずれかかチェックする守衛さん
+// 文字列が本当に "EASY" | "NORMAL" | "HARD" | "EXTRA"のいずれかかチェックする守衛さん
 // これを通れば、TypeScriptは安心して DifficultyLevel 型として扱ってくれます
 function isDifficultyLevel(value: unknown): value is DifficultyLevel {
   return (
-    typeof value === "string" && ["EASY", "NORMAL", "HARD"].includes(value)
+    typeof value === "string" && ["EASY", "NORMAL", "HARD", "EXTRA"].includes(value)
   );
 }
 
@@ -41,7 +41,7 @@ export const DatabaseService = {
     if (ngError) throw ngError;
 
     // 3. データの整形とバリデーション
-    const formattedData: WordDataMap = { EASY: [], NORMAL: [], HARD: [] };
+    const formattedData: WordDataMap = { EASY: [], NORMAL: [], HARD: [], EXTRA: [] };
 
     wordsData?.forEach((row: WordRow) => {
       if (!row.difficulty) return;
@@ -57,7 +57,6 @@ export const DatabaseService = {
       const cleanLevel = row.difficulty.trim().toUpperCase();
 
       // 2. 守衛さん（isDifficultyLevel）を呼び出す！
-      // 以前のコード: if (["EASY", "NORMAL", "HARD"].includes(cleanLevel)) {
       if (isDifficultyLevel(cleanLevel)) {
         // ★ ここに入った瞬間、TypeScriptは
         // 「cleanLevel はただの string ではなく DifficultyLevel だ」と認識します。

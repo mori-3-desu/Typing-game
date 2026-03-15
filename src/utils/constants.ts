@@ -4,7 +4,7 @@ import {
   type SoundKey,
 } from "../types";
 
-export const DIFFICULTY_ORDER = ["EASY", "NORMAL", "HARD"] as const;
+export const DIFFICULTY_ORDER = ["EASY", "NORMAL", "HARD", "EXTRA"] as const;
 
 // 難易度ごとの設定データ
 export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
@@ -15,6 +15,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     text: "初心者の方におすすめ。朝の爽やかな海でいざ練習！",
     bgm: "/bgm/Secret-Adventure.mp3",
     color: "#3ecfcf", // 水色系
+    isEnglish: false,
   },
   NORMAL: {
     bg: "/images/sunset.webp",
@@ -23,6 +24,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     text: "標準的な難易度。美しい夕焼けの海と共にタイピング！",
     bgm: "/bgm/アトリエと電脳世界_2.mp3",
     color: "#90ff64", // 緑系
+    isEnglish: true,
   },
   HARD: {
     bg: "/images/star.webp",
@@ -31,7 +33,17 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     text: "上級者向け。満天の星空の海の下、限界に挑戦！",
     bgm: "/bgm/Stardust.mp3",
     color: "#ffff00", // 黄色系
+    isEnglish: false,
   },
+  EXTRA: {
+    bg: "/images/extra.webp",
+    time: 150,
+    chars: "特殊",
+    text: "プログラミング用語や英語等なんでも出てきます\n※␣は空文字です!\n※CAPS LOCK等のボタンも反応します",
+    bgm: "/bgm/ぽかぽか日和.mp3",
+    color: "#ff0000",
+    isEnglish: true,
+  }
 } as const;
 
 // 画像データ
@@ -41,7 +53,7 @@ export const STATIC_BACKGROUNDS = [
 ] as const;
 
 export const DIFFICULTY_BACKGROUNDS = (
-  ["EASY", "NORMAL", "HARD"] as DifficultyLevel[]
+  ["EASY", "NORMAL", "HARD", "EXTRA"] as DifficultyLevel[]
 ).map((difficulty) => ({
   key: difficulty,
   src: DIFFICULTY_SETTINGS[difficulty].bg,
@@ -253,4 +265,5 @@ export const RANK_THRESHOLDS = {
   EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
   NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
   HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
+  EXTRA: { S: 1500000, A: 1000000, B: 750000, C: 400000},
 } as const;

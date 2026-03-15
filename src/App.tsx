@@ -493,7 +493,7 @@ function App() {
   };
 
   const closeRanking = () => {
-    rankingRequestIdRef.current += 1;
+    rankingRequestIdRef.current += 1; // ID被り防止の数字
     setShowRanking(false);
     setIsRankingLoading(false);
     setIsRankingDataMode(null);
