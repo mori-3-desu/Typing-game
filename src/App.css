@@ -885,7 +885,7 @@ body {
   border-radius: 40px;
   border: none;
   box-shadow: var(--shine-panel-base); /* ★変数適用 */
-  
+
   transition: opacity 0.2s ease;
 
   &:not(.visible) {
@@ -1410,113 +1410,101 @@ body {
   }
 }
 
-#center-area {
+.center-container {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  padding-top: 60px; /* テキストエリアを中心より下にオフセット */
+  box-sizing: border-box;
+
+  &.font-extra {
+    font-family: "Nunito", sans-serif; /* I と l が明確に区別できる */
+  }
+
+  & .text-word {
+    display: grid;
+    place-items: center;
+    border: 7px solid var(--color-aquablue);
+    border-radius: 40px;
+    background: var(--game-word-bg);
+    padding: 15px 35px;
+    gap: 8px;
+    white-space: nowrap;
+
+    & .romaji-line {
+      font-size: 32px;
+      letter-spacing: 0.08rem;
+      font-weight: 600;
+      text-shadow: 2px 2px 4px var(--color-black);
+      line-height: 1.2;
+
+      & .text-yellow {
+        color: var(--color-yellow);
+        text-shadow: 0 0 5px var(--color-darkorange);
+        text-decoration: underline;
+        text-underline-offset: 6px;
+        text-decoration-thickness: 3px;
+        text-decoration-skip-ink: none;
+      }
+    }
+
+    & .jp-line {
+      font-family: var(--font-main);
+      font-size: 41px;
+      font-weight: 600;
+      color: var(--color-milkywhite);
+      line-height: 1.2;
+      text-shadow: 2px 2px 0 var(--color-black);
+      letter-spacing: 0.05rem;
+    }
+
+    & .full-roma {
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--color-aquablue);
+      letter-spacing: 0.08rem;
+      line-height: 1;
+    }
+  }
 }
 
-#text-word-wrapper {
-  display: inline-block;
-  position: relative;
-}
-
-#text-word {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  border: 7px solid var(--color-aquablue);
-  border-radius: 40px;
-  background: var(--game-word-bg);
-  gap: 8px;
-  white-space: nowrap;
-}
-
-#romaji-line {
-  font-size: 35px;
-  letter-spacing: 0.08rem;
-  font-weight: 650;
-  text-shadow: 2px 2px 4px var(--color-black);
-  line-height: 1.2;
-}
-
-#jp-line {
-  font-family: var(--font-main);
-  font-size: 43px;
-  font-weight: 750;
-  color: var(--color-milkywhite);
-  line-height: 1.2;
-  text-shadow: 2px 2px 0 var(--color-black);
-  letter-spacing: 0.05rem;
-}
-
-#full-roma {
-  font-size: 35px;
-  font-weight: 650;
-  color: var(--color-aquablue);
-  letter-spacing: 0.08rem;
-  line-height: 1;
-}
-
-.text-yellow {
-  color: var(--color-yellow);
-  text-shadow: 0 0 5px var(--color-darkorange);
-  text-decoration: underline;
-  text-underline-offset: 6px;
-  text-decoration-thickness: 3px;
-  text-decoration-skip-ink: none;
-}
-
-.text-red {
-  color: var(--color-red);
-  text-shadow: 0 0 5px var(--color-red);
-}
-
-#rank-monitor {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+.rank-monitor {
   font-family: var(--font-pop-fredoka);
   font-size: 35px;
-  color: var(--color-white);
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+  color: var(--theme-color);
+  text-shadow: var(--theme-shadow);
   white-space: nowrap;
-}
-
-#rank-monitor .rank-s {
-  color: var(--color-gold);
-  text-shadow: 0 0 15px var(--color-gold);
-}
-
-#rank-monitor .rank-a {
-  color: var(--color-red);
-  text-shadow: 0 0 10px;
-}
-
-#rank-monitor .rank-b {
-  color: var(--color-oceanblue);
-  text-shadow: 0 0 10px var(--color-aquablue);
-}
-
-#rank-monitor .rank-c {
-  color: var(--color-green);
-  text-shadow: 0 0 10px var(--color-green);
-}
-
-#rank-monitor .rank-d {
-  color: var(--color-gray);
-  text-shadow: 2px 2px 0 var(--color-black);
-}
-
-#rank-value {
-  font-size: 55px;
-  font-weight: 900;
-  margin-left: 10px;
-  transition:
-    transform 0.2s ease,
-    color 0.2s;
+  &.rank-s {
+    --theme-color: var(--color-gold);
+    --theme-shadow: 0 0 15px var(--color-gold);
+  }
+  &.rank-a {
+    --theme-color: var(--color-red);
+    --theme-shadow: 0 0 10px;
+  }
+  &.rank-b {
+    --theme-color: var(--color-oceanblue);
+    --theme-shadow: 0 0 10px var(--color-aquablue);
+  }
+  &.rank-c {
+    --theme-color: var(--color-green);
+    --theme-shadow: 0 0 10px var(--color-green);
+  }
+  &.rank-d {
+    --theme-color: var(--color-gray);
+    --theme-shadow: 2px 2px 0 var(--color-black);
+  }
+  & .rank-value {
+    font-size: 55px;
+    font-weight: 900;
+    margin-left: 10px;
+    transition:
+      transform 0.2s ease,
+      color 0.2s;
+  }
 }
 
 /* ラッパークラス (変更なし) */
@@ -3550,7 +3538,7 @@ body {
     --theme-sd: rgba(255, 215, 0, 0.3);
   }
 
-    &.rank-theme-extra {
+  &.rank-theme-extra {
     --theme-bg: linear-gradient(
       to bottom,
       rgba(255, 221, 255, 0.95) 0%,

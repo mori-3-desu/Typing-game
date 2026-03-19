@@ -108,80 +108,72 @@ export const GameScreen = ({
       </div>
 
       <div
-        id="center-area"
+        className={`center-container ${difficulty === "EXTRA" ? "font-extra" : ""}`}
         style={{
           opacity: playPhase === "game" && gameState !== "finishing" ? 1 : 0,
           transition: "opacity 0.2s",
         }}
       >
-        <div id="text-word-wrapper" key={jpText}>
-          <div
-            id="text-word"
-            className={
+        <div
+          key={jpText}
+          className={`text-word
+            ${
               shakeStatus === "light"
                 ? "light-shake"
                 : shakeStatus === "error"
                   ? "error-shake"
                   : ""
-            }
-            style={{
-              padding: "20px 45px",
-            }}
-          >
-            <div id="romaji-line">
-              {romaState.typedLog.map((log, index) => (
-                <span key={index} style={{ color: log.color }}>
-                  {log.char === " " ? "␣" : log.char}
-                </span>
-              ))}
-              <span
-                className="text-yellow"
-                style={{ textDecoration: "underline" }}
-              >
-                {romaState.current === " " ? "␣" : romaState.current}
+            }`}
+        >
+          <div className="romaji-line">
+            {romaState.typedLog.map((log, index) => (
+              <span key={index} style={{ color: log.color }}>
+                {log.char === " " ? "␣" : log.char}
               </span>
-              <span style={{ color: "white" }}>{romaState.remaining.replaceAll(" ", "␣")}</span>
-            </div>
-
-            <div
-              id="jp-line"
-              className={hasPunctuation ? "has-punctuation" : ""}
+            ))}
+            <span
+              className="text-yellow"
+              style={{ textDecoration: "underline" }}
             >
-              {jpText}
-            </div>
-
-            <div
-              id="full-roma"
-              className={hasPunctuation ? "has-punctuation" : ""}
-              style={{ display: showRomaji ? "block" : "none" }}
-            >
-              {allSegments.map((seg, i) => (
-                <span key={i} className="segment-group">
-                  {seg.display.split("").map((char, charIdx) => (
-                    <span
-                      key={charIdx}
-                      style={{
-                        opacity: charIdx < seg.inputBuffer.length ? 0.3 : 1,
-                      }}
-                    >
-                      {char}
-                    </span>
-                  ))}
-                </span>
-              ))}
-            </div>
-          </div>
-          {bonusPopups.map((p) => (
-            <div key={p.id} className={`bonus-pop ${p.type}`}>
-              {p.text}
-            </div>
-          ))}
-          <div id="rank-monitor" style={{ whiteSpace: "nowrap" }}>
-            RANK{" "}
-            <span id="rank-value" className={`rank-${rank.toLowerCase()}`}>
-              {rank}
+              {romaState.current === " " ? "␣" : romaState.current}
+            </span>
+            <span style={{ color: "white" }}>
+              {romaState.remaining.replaceAll(" ", "␣")}
             </span>
           </div>
+
+          <div className={`jp-line ${hasPunctuation ? "has-punctuation" : ""}`}>
+            {jpText}
+          </div>
+
+          <div
+            className={`full-roma ${hasPunctuation ? "has-punctuation" : ""}`}
+            style={{ display: showRomaji ? "block" : "none" }}
+          >
+            {allSegments.map((seg, i) => (
+              <span key={i} className="segment-group">
+                {seg.display.split("").map((char, charIdx) => (
+                  <span
+                    key={charIdx}
+                    style={{
+                      opacity: charIdx < seg.inputBuffer.length ? 0.3 : 1,
+                    }}
+                  >
+                    {char}
+                  </span>
+                ))}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {bonusPopups.map((p) => (
+          <div key={p.id} className={`bonus-pop ${p.type}`}>
+            {p.text}
+          </div>
+        ))}
+        <div className={`rank-monitor rank-${rank.toLowerCase()}`}>
+          RANK <span className="rank-value">{rank}</span>
         </div>
       </div>
 
