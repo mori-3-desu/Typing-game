@@ -24,7 +24,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
     text: "標準的な難易度。美しい夕焼けの海と共にタイピング！",
     bgm: "/bgm/アトリエと電脳世界_2.mp3",
     color: "#90ff64", // 緑系
-    isEnglish: true,
+    isEnglish: false,
   },
   HARD: {
     bg: "/images/star.webp",
