@@ -1,4 +1,5 @@
-import { useEffect, useRef, type MutableRefObject } from "react";
+import { type MutableRefObject, useEffect, useRef } from "react";
+
 import {
   type DifficultyLevel,
   type GameResultStats,
@@ -174,6 +175,7 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
               // タイマーが動いていたらキャンセル（ゾンビタイマー防止）
               if (startTimerId) clearTimeout(startTimerId);
               isStartingRef.current = false; // 鍵を強制解除
+              playSE("decision");
               backToDifficulty();
             }
             return;
@@ -206,13 +208,12 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
               const inputChar = isEnglishMode ? e.key : e.key.toLowerCase();
               handleKeyInputRef.current(inputChar);
             }
-            
+
             return;
           }
           break;
 
         case "result": {
-          // ■ リザルト画面
           const currentRank = lastGameStats ? lastGameStats.rank : rank;
 
           if (e.key === "Enter" || e.key === "Escape") {
@@ -231,12 +232,13 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
               return;
             }
 
-            // アニメ終了後、かつクールダウン明けなら遷移処理へ
             if (!isResultSkipCoolDownRef.current) {
               if (e.key === "Enter") {
-                retryGame(); // リトライ
+                playSE("decision");
+                retryGame();
               } else {
-                backToDifficulty(); // 戻る
+                playSE("decision");
+                backToDifficulty();
               }
             }
           }
@@ -247,16 +249,10 @@ export const useGameKeyHandler = (props: UseGameKeyHandlerProps) => {
       }
     };
 
-    // -------------------------------------------------------------
-    // イベントリスナーの登録
-    // -------------------------------------------------------------
     window.addEventListener("keydown", handleKeyDown, true);
     window.addEventListener("compositionstart", handleCompositionStart, true);
     window.addEventListener("compositionend", handleCompositionEnd, true);
 
-    // -------------------------------------------------------------
-    // クリーンアップ（コンポーネントが消える時に実行）
-    // -------------------------------------------------------------
     return () => {
       window.removeEventListener("keydown", handleKeyDown, true);
       window.removeEventListener(

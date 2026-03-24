@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+
 import { type WordDataMap } from "../../types";
 import { useTypingGame } from "../useTypingGame";
 
@@ -11,7 +12,7 @@ vi.mock("../../utils/audio", () => ({
   playSE: vi.fn(),
 }));
 
-vi.mock("../../utils/setting", async (importOriginal) => {
+vi.mock("../../utils/constants", async (importOriginal) => {
   // 1. 本物のファイルを全部持ってくる
   const actual = await importOriginal<typeof import("../../utils/constants")>();
 

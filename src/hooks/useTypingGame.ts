@@ -6,6 +6,18 @@
  * あえて詳細にコメントを残しています。
  */
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+
+import {
+  type BonusPopup,
+  type DifficultyLevel,
+  type MissedWord,
+  type PerfectPopup,
+  type RomaState,
+  type ScorePopup,
+  type TimePopup,
+  type TypedLog,
+  type WordDataMap,
+} from "../types";
 import { playSE } from "../utils/audio";
 import {
   COMBO_THRESHOLDS,
@@ -20,18 +32,6 @@ import {
   UI_ANIMATION_CONFIG,
 } from "../utils/constants";
 import { Segment, TypingEngine } from "./useTypingEngine";
-
-import {
-  type BonusPopup,
-  type DifficultyLevel,
-  type MissedWord,
-  type PerfectPopup,
-  type RomaState,
-  type ScorePopup,
-  type TimePopup,
-  type TypedLog,
-  type WordDataMap,
-} from "../types";
 
 // --- Helper Functions ---
 export const calculateRank = (
@@ -336,7 +336,7 @@ export const useTypingGame = (
   const comboClass = getComboClass(combo);
   const isRainbowMode = combo >= COMBO_THRESHOLDS.RAINBOW;
   const currentSpeed =
-    elapsedTime > 0.1 ? (correctCount / elapsedTime).toFixed(2) : "0.00";
+    elapsedTime > 0.1 ? (correctCount / elapsedTime) : 0;
 
   // ★ タイムアウトを安全にスケジュール・管理する共通関数
   const scheduleTrackedTimeout = useCallback(
@@ -543,7 +543,6 @@ export const useTypingGame = (
   }, [difficulty, wordData]); // 難易度かデータが変わった時だけ関数を作り直す
 
   const resetGame = useCallback(() => {
-    // ★ リセット時に現在走っているタイムアウト（ポップアップ消去など）をすべてキャンセル
     timeoutIdsRef.current.forEach(clearTimeout);
     timeoutIdsRef.current.clear();
 

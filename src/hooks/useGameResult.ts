@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { DatabaseService } from "../services/database";
 import {
   type DifficultyLevel,
@@ -158,12 +159,17 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
     onRetry: () => void,
     onBack: () => void,
   ) => {
+    if (resultAnimStep < 5) {
+      if (key === "Enter" || key === "Escape") {
+        skipAnimation(rank);
+      }
+      return;
+    }
+
     if (key === "Enter") {
-      if (resultAnimStep < 5) skipAnimation(rank);
-      else onRetry();
+      onRetry();
     } else if (key === "Escape") {
-      if (resultAnimStep < 5) skipAnimation(rank);
-      else onBack();
+      onBack();
     }
   };
 
@@ -182,8 +188,8 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
     scoreDiff,
     saveStatus,
     resultAnimStep,
-    saveScore, // 関数として外に出す
-    processResult, // ローカル保存計算
+    saveScore,
+    processResult,
     playResultAnimation,
     skipAnimation,
     resetResultState,

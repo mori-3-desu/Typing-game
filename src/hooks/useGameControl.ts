@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { type GameControlProps, type GameResultStats } from "../types";
 import { playSE, stopBGM } from "../utils/audio";
 import { UI_TIMINGS } from "../utils/constants";
@@ -75,7 +76,7 @@ export const useGameControl = (props: GameControlProps) => {
 
     const finalStats = calculateFinalStats({
       ...stats,
-      currentSpeed: Number(stats.currentSpeed),
+      currentSpeed: stats.currentSpeed,
     });
 
     setLastGameStats(finalStats);

@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useConfig } from "../useConfig";
+import { act,renderHook } from "@testing-library/react";
+import { beforeEach,describe, expect, it, vi } from "vitest";
+
 import * as audioUtils from "../../utils/audio";
+import { useConfig } from "../useConfig";
 
 // 1. 音を鳴らす関数などをモック化（テスト中に実際の音を出さないため）
 // ※パスが ../../utils/audio で合っているか確認してください
