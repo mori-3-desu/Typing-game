@@ -1,11 +1,12 @@
 // src/main.tsx
-import { StrictMode } from "react";
-import { createRoot } from "react-dom/client";
 import "./index.css";
-import App from "./App.tsx";
 
 // Sentryをインポート
 import * as Sentry from "@sentry/react";
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+
+import App from "./App.tsx";
 
 // Sentryを初期化
 Sentry.init({

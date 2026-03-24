@@ -1,8 +1,9 @@
 import React from "react";
-// パスは環境に合わせて調整してください
+
 import { type DifficultyLevel } from "../../types";
 import { DIFFICULTY_ORDER, DIFFICULTY_SETTINGS } from "../../utils/constants";
 import { getSavedHighScore } from "../../utils/storage";
+import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {
   difficulty: DifficultyLevel;
@@ -17,7 +18,6 @@ type Props = {
   backToTitle: () => void;
   fetchRanking: (diff: DifficultyLevel) => void;
   handleShowHighScoreDetail: () => void;
-  playDecisionSound: () => void;
 };
 
 export const DifficultySelectScreen: React.FC<Props> = ({
@@ -31,7 +31,6 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   backToTitle,
   fetchRanking,
   handleShowHighScoreDetail,
-  playDecisionSound,
 }) => {
   // 表示用の難易度とハイスコアを計算
   const displayDiff = hoverDifficulty || difficulty;
@@ -62,21 +61,21 @@ export const DifficultySelectScreen: React.FC<Props> = ({
           onMouseLeave={handleMenuLeave}
         >
           {DIFFICULTY_ORDER.map((diff) => (
-            <button
+            <SoundBtn
               key={diff}
               className={`diff-btn ${diff.toLowerCase()}`}
               onMouseEnter={() => handleMouseEnter(diff)}
               onClick={() => handleSelectDifficulty(diff)}
             >
               {diff}
-            </button>
+            </SoundBtn>
           ))}
         </div>
 
         <div className="diff-btn-wrapper">
-          <button className="btn-back diff-btn" onClick={backToTitle}>
+          <SoundBtn className="btn-back diff-btn" onClick={backToTitle}>
             BACK
-          </button>
+          </SoundBtn>
         </div>
 
         <div className={`diff-info-panel visible`}>
@@ -90,16 +89,15 @@ export const DifficultySelectScreen: React.FC<Props> = ({
               />
               <div className="diff-hiscore-box">
                 <div className="hiscore-label-group">
-                  <button
+                  <SoundBtn
                     className="hiscore-detail-btn"
                     onClick={() => {
-                      playDecisionSound();
                       handleShowHighScoreDetail();
                     }}
                     title="詳細リザルトを見る"
                   >
                     📄
-                  </button>
+                  </SoundBtn>
                   <span className="label">HI-SCORE</span>
                 </div>
                 <span id="menu-hiscore-val">

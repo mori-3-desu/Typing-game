@@ -1,5 +1,7 @@
 import { useEffect, useId, useState } from "react";
+
 import { playSE } from "../../utils/audio";
+import { SoundBtn } from "../../common/SoundBtn";
 import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/constants";
 
 type Props = {
@@ -81,8 +83,6 @@ export const Setting = ({
     setTimeout(() => {
       setIsNameChange("");
     }, UI_TIMINGS.MESSAGE_AUTO_CLOSE);
-
-    playSE("decision");
   };
 
   return (
@@ -146,7 +146,7 @@ export const Setting = ({
                   transition: "all 0.3s",
                 }}
               />
-              <button
+              <SoundBtn
                 className="btn-change-name"
                 onClick={handleSubmit}
                 style={{
@@ -157,7 +157,7 @@ export const Setting = ({
                 }}
               >
                 変更
-              </button>
+              </SoundBtn>
             </div>
             <div
               style={{
@@ -288,12 +288,7 @@ export const Setting = ({
               step="0.05"
               value={seVol}
               onChange={(e) => setSeVol(parseFloat(e.target.value))}
-              // ★ここを追加！指（マウス）を離した瞬間に音を鳴らす
-              onMouseUp={() => {
-                if (!isMuted) playSE("decision");
-              }}
-              // ★スマホ（タッチ操作）対応もするならこれも追加
-              onTouchEnd={() => {
+              onPointerUp={() => {
                 if (!isMuted) playSE("decision");
               }}
               disabled={isMuted}
@@ -302,9 +297,9 @@ export const Setting = ({
           </div>
 
           <div className="config-buttons" style={{ marginTop: "30px" }}>
-            <button className="pop-btn primary" onClick={onClose}>
+            <SoundBtn className="pop-btn primary" onClick={onClose}>
               閉じる
-            </button>
+            </SoundBtn>
           </div>
         </div>
       </div>

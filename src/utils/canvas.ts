@@ -102,7 +102,7 @@ export const drawReadyAnimation = (
     ctx.drawImage(readyStaticTextCache, 0, readyY + READY_DESIGN.STATIC_OFFSET_Y);
 
     // 3. 点滅パーツ描画 (ここだけ動的計算)
-    const blinkAlpha = (Math.sin(Date.now() / READY_DESIGN.BLINK_SPEED) + 1) / 2;
+    const blinkAlpha = (Math.sin(performance.now() / READY_DESIGN.BLINK_SPEED) + 1) / 2;
 
     ctx.textAlign = "center";
     ctx.lineJoin = "round";

@@ -42,7 +42,7 @@ export type GameStats = {
   missCount: number;
   backspaceCount: number;
   maxCombo: number;
-  currentSpeed: string | number;
+  currentSpeed: number;
   rank: string;
   missedWordsRecord: { word: string; misses: number }[];
   missedCharsRecord: { [key: string]: number };
@@ -102,7 +102,6 @@ export type WordRow = {
   roma: string;
 };
 
-// ■ 苦手な単語（MissedWord と同じなのでこれを使います）
 export type WeakWord = {
   word: string;
   misses: number;
