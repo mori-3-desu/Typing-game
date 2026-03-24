@@ -81,12 +81,11 @@ export const DifficultySelectScreen: React.FC<Props> = ({
         <div className={`diff-info-panel visible`}>
           <>
             <div className="diff-header-group">
-              <SoundBtn>
+              <SoundBtn onClick={() => fetchRanking(displayDiff)}>
                 <img
                   src="/images/ranking.png"
                   alt="Ranking"
                   className="crown-icon-only"
-                  onClick={() => fetchRanking(displayDiff)}
                 />
               </SoundBtn>
               
