@@ -5,7 +5,6 @@ import {
 } from "../../types";
 import { LIMIT_DATA } from "../../utils/constants";
 import { SoundBtn } from "../../common/SoundBtn";
-import { playSE } from "../../utils/audio";
 
 type Props = {
   gameState: "result" | "hiscore_review";
