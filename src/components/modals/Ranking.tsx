@@ -1,4 +1,5 @@
 import { type DifficultyLevel, type RankingScore } from "../../types";
+import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {
   difficulty: DifficultyLevel;
@@ -25,7 +26,7 @@ export const Ranking = ({
 }: Props) => {
   const expectedMode = isDevRankingMode ? "dev" : "global";
   const canShowRankingData = !isLoading && rankingDataMode === expectedMode;
-
+  
   return (
     <div className="ranking-overlay" onClick={onClose}>
       <div
@@ -42,26 +43,26 @@ export const Ranking = ({
           </h2>
           <div className="ranking-header-buttons">
             {!isDevRankingMode && (
-              <button
+              <SoundBtn
                 className="close-btn dev-btn"
                 onClick={onShowDevScore}
                 title="製作者スコアを見る"
               >
                 👑
-              </button>
+              </SoundBtn>
             )}
             {isDevRankingMode && (
-              <button
+              <SoundBtn
                 className="close-btn global-btn"
-                onClick={() => onFetchRanking(difficulty)}
+                onClick={() => { onFetchRanking(difficulty); }}
                 title="全国ランキングに戻る"
               >
                 🌏
-              </button>
+              </SoundBtn>
             )}
-            <button className="close-btn" onClick={onClose} title="閉じる">
+            <SoundBtn className="close-btn" onClick={onClose} title="閉じる">
               ↩
-            </button>
+            </SoundBtn>
           </div>
         </div>
 
@@ -76,7 +77,7 @@ export const Ranking = ({
               rankingData.map((item) => (
                 <div key={item.id} className="dev-score-pop-container">
                   <div className="dev-score-card" style={{ color: "inherit" }}>
-                    <button
+                    <SoundBtn
                       className="dev-pop-back-btn"
                       onClick={() => onFetchRanking(difficulty)}
                       title="ランキングに戻る"
@@ -97,7 +98,7 @@ export const Ranking = ({
                       }}
                     >
                       ↩
-                    </button>
+                    </SoundBtn>
                     <div className="dev-label">CREATOR'S RECORD</div>
                     <div
                       className="rank-name-row"

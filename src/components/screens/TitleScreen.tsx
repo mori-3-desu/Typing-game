@@ -1,5 +1,7 @@
 import React from "react";
+
 import { type TitlePhase } from "../../types";
+import { SoundBtn } from "../../common/SoundBtn";
 
 type TitleScreenProps = {
   // 表示制御系
@@ -42,7 +44,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   handleFinalConfirm,
 }) => {
   return (
-    <div className="title-screen">
+    <div className={"title-screen"}>
       <div
         className={`title-content-wrapper ${
           titlePhase !== "normal" ? "exit" : "enter"
@@ -61,9 +63,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
         <div
           className={`main-menu-buttons fade-element ${
             showTitle ? "visible" : ""
-          } ${titlePhase !== "normal" || isTitleExiting ? "exit-down" : ""}`}
+          } ${titlePhase !== "normal" || isTitleExiting ? "exit-down" : ""}
+            ${!enableBounce ? "no-click" : ""}`}
         >
-          <button
+          <SoundBtn
             className="menu-btn"
             onClick={(e) => {
               e.stopPropagation();
@@ -71,8 +74,8 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             }}
           >
             ゲームスタート
-          </button>
-          <button
+          </SoundBtn>
+          <SoundBtn
             className="menu-btn"
             onClick={(e) => {
               e.stopPropagation();
@@ -80,11 +83,11 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             }}
           >
             遊び方
-          </button>
+          </SoundBtn>
           {isNameConfirmed && (
-            <button className="menu-btn" onClick={handleOpenConfig}>
+            <SoundBtn className="menu-btn" onClick={handleOpenConfig}>
               設定
-            </button>
+            </SoundBtn>
           )}
         </div>
       </div>
@@ -96,6 +99,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           onClick={(e) => e.stopPropagation()}
         >
           <label
+            htmlFor="player-name-input"
             className="pop-label"
             style={{ textAlign: "center", width: "100%", margin: 0 }}
           >
@@ -104,6 +108,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
 
           <input
             type="text"
+            id="player-name-input"
             className={`pop-input ${nameError ? "input-error-shake" : ""}`}
             value={playerName}
             onChange={(e) => {
@@ -126,6 +131,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           >
             {nameError ? (
               <p
+                role="alert"
                 className="error-fade-in"
                 style={{
                   fontSize: "0.85rem",
@@ -151,12 +157,12 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               justifyContent: "center",
             }}
           >
-            <button className="pop-btn" onClick={handleCancelInput}>
+            <SoundBtn className="pop-btn" onClick={handleCancelInput}>
               キャンセル
-            </button>
-            <button className="pop-btn primary" onClick={handleNameSubmit}>
+            </SoundBtn>
+            <SoundBtn className="pop-btn primary" onClick={handleNameSubmit}>
               OK
-            </button>
+            </SoundBtn>
           </div>
         </div>
       )}
@@ -180,12 +186,12 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               justifyContent: "center",
             }}
           >
-            <button className="pop-btn" onClick={handleBackToInput}>
+            <SoundBtn className="pop-btn" onClick={handleBackToInput}>
               戻る
-            </button>
-            <button className="pop-btn primary" onClick={handleFinalConfirm}>
+            </SoundBtn>
+            <SoundBtn className="pop-btn primary" onClick={handleFinalConfirm}>
               はい
-            </button>
+            </SoundBtn>
           </div>
           <p className="pop-note">※名前は後からでも変更できます。</p>
         </div>

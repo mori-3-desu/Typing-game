@@ -8,6 +8,7 @@
  * 3. Cross-Tab Sync: StorageEventを利用し、別タブでの設定変更をリアルタイム同期
  */
 import { useCallback, useEffect, useReducer } from "react";
+
 import { setSystemMute, setVolumes } from "../utils/audio";
 import { DEFAULT_CONFIG, STORAGE_KEYS } from "../utils/constants";
 

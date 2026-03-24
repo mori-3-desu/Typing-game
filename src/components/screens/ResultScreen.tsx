@@ -4,6 +4,7 @@ import {
   type WeakWord,
 } from "../../types";
 import { LIMIT_DATA } from "../../utils/constants";
+import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {
   gameState: "result" | "hiscore_review";
@@ -159,7 +160,7 @@ export const ResultScreen = ({
               <span className="stat-label c-cyan">Speed</span>
               <div className="stat-val-group" style={{ textAlign: "right" }}>
                 <span className="stat-val c-cyan" id="res-speed">
-                  {targetResultData.speed}
+                  {targetResultData.speed.toFixed(2)}
                 </span>
                 <span className="stat-unit">key/s</span>
               </div>
@@ -248,7 +249,7 @@ export const ResultScreen = ({
         {gameState === "result" ? (
           <>
             <div className="result-buttons">
-              <button
+              <SoundBtn
                 id="btn-retry"
                 className="res-btn primary"
                 onClick={(e) => {
@@ -257,8 +258,8 @@ export const ResultScreen = ({
                 }}
               >
                 もう一度 (Enter)
-              </button>
-              <button
+              </SoundBtn>
+              <SoundBtn
                 id="btn-Esc-to-difficulty"
                 className="res-btn secondary"
                 onClick={(e) => {
@@ -267,8 +268,8 @@ export const ResultScreen = ({
                 }}
               >
                 難易度選択へ (Esc)
-              </button>
-              <button
+              </SoundBtn>
+              <SoundBtn
                 id="btn-back-to-title"
                 className="res-btn secondary"
                 onClick={(e) => {
@@ -277,7 +278,7 @@ export const ResultScreen = ({
                 }}
               >
                 タイトルへ
-              </button>
+              </SoundBtn>
             </div>
             <div className="result-share-group">
               <div
@@ -316,7 +317,7 @@ export const ResultScreen = ({
               className="result-share-group"
               style={{ position: "absolute", right: "10px" }}
             >
-              <button
+              <SoundBtn
                 className="share-icon-box"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -338,7 +339,7 @@ export const ResultScreen = ({
                 }}
               >
                 ↩
-              </button>
+              </SoundBtn>
             </div>
           </>
         )}

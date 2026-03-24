@@ -1,5 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
+
 import { type WordDataMap } from "../../types";
 import { useTypingGame } from "../useTypingGame";
 
@@ -58,6 +59,6 @@ describe("入力速度(Speed)の計算テスト", () => {
     act(() => result.current.handleBackspace());
 
     // 計算式: correctCount(1) / elapsedTime(1.0) = 1.00 key/s
-    expect(result.current.currentSpeed).toBe("1.00");
+    expect(result.current.currentSpeed).toBe(1.00);
   });
 });

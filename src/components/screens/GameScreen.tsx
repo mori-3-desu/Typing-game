@@ -19,7 +19,7 @@ type Props = {
   gaugeValue: number;
   gaugeMax: number;
   completedWords: number;
-  currentSpeed: string;
+  currentSpeed: number;
   jpText: string;
   romaState: RomaState;
   showRomaji: boolean;
@@ -244,7 +244,7 @@ export const GameScreen = ({
       <div id="hud-stats">
         <span className="speed-label">Speed: </span>
         <span id="stat-speed">
-          {currentSpeed} <span className="stat-unit">key/s</span>
+          {currentSpeed.toFixed(2)} <span className="stat-unit">key/s</span>
         </span>
       </div>
     </div>
