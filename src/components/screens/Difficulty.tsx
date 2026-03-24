@@ -81,12 +81,15 @@ export const DifficultySelectScreen: React.FC<Props> = ({
         <div className={`diff-info-panel visible`}>
           <>
             <div className="diff-header-group">
-              <img
-                src="/images/ranking.png"
-                alt="Ranking"
-                className="crown-icon-only"
-                onClick={() => fetchRanking(displayDiff)}
-              />
+              <SoundBtn>
+                <img
+                  src="/images/ranking.png"
+                  alt="Ranking"
+                  className="crown-icon-only"
+                  onClick={() => fetchRanking(displayDiff)}
+                />
+              </SoundBtn>
+              
               <div className="diff-hiscore-box">
                 <div className="hiscore-label-group">
                   <SoundBtn
@@ -133,7 +136,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
                   );
                 })}
             </p>
-            
+
             <div className="diff-info-footer">
               <div className="status-item" id="display-diff-time">
                 {DIFFICULTY_SETTINGS[displayDiff].time}s

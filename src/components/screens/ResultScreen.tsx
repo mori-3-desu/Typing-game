@@ -5,6 +5,7 @@ import {
 } from "../../types";
 import { LIMIT_DATA } from "../../utils/constants";
 import { SoundBtn } from "../../common/SoundBtn";
+import { playSE } from "../../utils/audio";
 
 type Props = {
   gameState: "result" | "hiscore_review";
@@ -30,7 +31,7 @@ type Props = {
 export const ResultScreen = ({
   gameState,
   difficulty,
-  resultData, // <--- これを使います
+  resultData,
   highScore,
   scoreDiff,
   isNewRecord,
@@ -281,7 +282,7 @@ export const ResultScreen = ({
               </SoundBtn>
             </div>
             <div className="result-share-group">
-              <div
+              <SoundBtn
                 className="share-icon-box crown-box"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -289,7 +290,7 @@ export const ResultScreen = ({
                 }}
               >
                 <img src="/images/ranking.png" alt="Ranking" />
-              </div>
+              </SoundBtn>
               <a
                 href={onTweet()}
                 target="_blank"
