@@ -47,12 +47,12 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
 } as const;
 
 // 画像データ
-export const STATIC_BACKGROUNDS = [
+const STATIC_BACKGROUNDS = [
   { key: "title", src: "/images/title.webp" },
   { key: "level", src: "/images/level.webp" },
 ] as const;
 
-export const DIFFICULTY_BACKGROUNDS = (
+const DIFFICULTY_BACKGROUNDS = (
   ["EASY", "NORMAL", "HARD", "EXTRA"] as DifficultyLevel[]
 ).map((difficulty) => ({
   key: difficulty,
