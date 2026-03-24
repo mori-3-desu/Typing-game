@@ -160,7 +160,7 @@ export const ResultScreen = ({
               <span className="stat-label c-cyan">Speed</span>
               <div className="stat-val-group" style={{ textAlign: "right" }}>
                 <span className="stat-val c-cyan" id="res-speed">
-                  {targetResultData.speed.toFixed(2)}
+                  {Number(targetResultData.speed).toFixed(2)}
                 </span>
                 <span className="stat-unit">key/s</span>
               </div>
