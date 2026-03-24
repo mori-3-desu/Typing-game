@@ -10,7 +10,7 @@ export const DIFFICULTY_ORDER = ["EASY", "NORMAL", "HARD", "EXTRA"] as const;
 export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   EASY: {
     bg: "/images/sea.webp",
-    time: 1,
+    time: 100,
     chars: "1 ~ 7 文字",
     text: "初心者の方におすすめ。朝の爽やかな海でいざ練習！",
     bgm: "/bgm/Secret-Adventure.mp3",
