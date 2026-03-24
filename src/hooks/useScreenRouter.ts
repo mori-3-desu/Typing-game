@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from "react";
+
 import {
   type DifficultyLevel,
   type GameState,
@@ -6,7 +7,7 @@ import {
   type TitlePhase,
 } from "../types";
 import { playSE, startSelectBgm, stopBGM } from "../utils/audio";
-import { DIFFICULTY_SETTINGS, UI_TIMINGS } from "../utils/setting";
+import { DIFFICULTY_SETTINGS, UI_TIMINGS } from "../utils/constants";
 
 type UseScreenRouterProps = {
   // State Values
@@ -55,7 +56,6 @@ export const useScreenRouter = ({
   const initiateGame = useCallback(() => {
     if (isTransitioning) return;
     setIsTransitioning(true);
-    playSE("decision");
     resetGame();
     stopBGM();
     setTimeout(() => {
@@ -97,7 +97,6 @@ export const useScreenRouter = ({
 
   // 難易度選択に戻る
   const backToDifficulty = useCallback(() => {
-    playSE("decision");
     if (gameState !== "hiscore_review") {
       stopBGM();
       startSelectBgm();
@@ -115,7 +114,6 @@ export const useScreenRouter = ({
   // タイトル → 難易度選択
   const goToDifficulty = useCallback(() => {
     if (isTitleExiting || isInputLocked) return;
-    playSE("decision");
     setIsInputLocked(true);
     setIsTitleExiting(true);
     setTimeout(() => {
@@ -144,7 +142,6 @@ export const useScreenRouter = ({
 
   // 戻る: タイトルへ
   const backToTitle = useCallback(() => {
-    playSE("decision");
     stopBGM();
     setGameState("title");
     setShowTitle(false);

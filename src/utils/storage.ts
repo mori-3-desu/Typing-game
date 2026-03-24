@@ -1,5 +1,5 @@
 import { type DifficultyLevel, type GameResultStats } from "../types";
-import { STORAGE_KEYS } from "./setting";
+import { STORAGE_KEYS } from "./constants";
 
 // スコア数値のみ取得（後方互換）
 export const getSavedHighScore = (level: DifficultyLevel): number => {

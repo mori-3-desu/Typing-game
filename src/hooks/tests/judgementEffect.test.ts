@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useTypingGame } from "../useTypingGame";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
 import { type WordDataMap } from "../../types";
+import { useTypingGame } from "../useTypingGame";
 
 // 1. 新しい audio.ts の仕様に合わせてモックも更新！
 vi.mock("../../utils/audio", () => ({
@@ -13,7 +14,7 @@ vi.mock("../../utils/audio", () => ({
 
 vi.mock("../../utils/setting", async (importOriginal) => {
   // 1. 本物のファイルを全部持ってくる
-  const actual = await importOriginal<typeof import("../../utils/setting")>();
+  const actual = await importOriginal<typeof import("../../utils/constants")>();
 
   return {
     // 書かなくていいんです。ここに全部入ってます。

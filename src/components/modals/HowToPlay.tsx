@@ -1,4 +1,5 @@
 import { type FC } from "react";
+import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {
   onClose: () => void;
@@ -128,9 +129,9 @@ export const HowToPlay: FC<Props> = ({ onClose }) => {
         </div>
 
         <div className="config-buttons">
-          <button className="pop-btn primary" onClick={onClose}>
+          <SoundBtn className="pop-btn primary" onClick={onClose}>
             閉じる
-          </button>
+          </SoundBtn>
         </div>
       </div>
     </div>

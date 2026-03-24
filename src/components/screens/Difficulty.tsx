@@ -1,8 +1,9 @@
 import React from "react";
-// パスは環境に合わせて調整してください
-import { DIFFICULTY_ORDER, DIFFICULTY_SETTINGS } from "../../utils/setting";
-import { getSavedHighScore } from "../../utils/storage";
+
 import { type DifficultyLevel } from "../../types";
+import { DIFFICULTY_ORDER, DIFFICULTY_SETTINGS } from "../../utils/constants";
+import { getSavedHighScore } from "../../utils/storage";
+import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {
   difficulty: DifficultyLevel;
@@ -17,7 +18,6 @@ type Props = {
   backToTitle: () => void;
   fetchRanking: (diff: DifficultyLevel) => void;
   handleShowHighScoreDetail: () => void;
-  playDecisionSound: () => void;
 };
 
 export const DifficultySelectScreen: React.FC<Props> = ({
@@ -31,7 +31,6 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   backToTitle,
   fetchRanking,
   handleShowHighScoreDetail,
-  playDecisionSound,
 }) => {
   // 表示用の難易度とハイスコアを計算
   const displayDiff = hoverDifficulty || difficulty;
@@ -54,7 +53,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   };
 
   return (
-    <div id="difficulty-view" style={{ position: "relative", zIndex: 5 }}>
+    <div id="difficulty-view" style={{ position: "absolute", zIndex: 5 }}>
       <h1 className="diff-view-title">SELECT DIFFICULTY</h1>
       <div className="diff-main-container">
         <div
@@ -62,41 +61,45 @@ export const DifficultySelectScreen: React.FC<Props> = ({
           onMouseLeave={handleMenuLeave}
         >
           {DIFFICULTY_ORDER.map((diff) => (
-            <button
+            <SoundBtn
               key={diff}
               className={`diff-btn ${diff.toLowerCase()}`}
               onMouseEnter={() => handleMouseEnter(diff)}
               onClick={() => handleSelectDifficulty(diff)}
             >
               {diff}
-            </button>
+            </SoundBtn>
           ))}
-          <button id="btn-back" className="diff-btn" onClick={backToTitle}>
+        </div>
+
+        <div className="diff-btn-wrapper">
+          <SoundBtn className="btn-back diff-btn" onClick={backToTitle}>
             BACK
-          </button>
+          </SoundBtn>
         </div>
 
         <div className={`diff-info-panel visible`}>
           <>
             <div className="diff-header-group">
-              <img
-                src="/images/ranking.png"
-                alt="Ranking"
-                className="crown-icon-only"
-                onClick={() => fetchRanking(displayDiff)}
-              />
+              <SoundBtn onClick={() => fetchRanking(displayDiff)}>
+                <img
+                  src="/images/ranking.png"
+                  alt="Ranking"
+                  className="crown-icon-only"
+                />
+              </SoundBtn>
+              
               <div className="diff-hiscore-box">
                 <div className="hiscore-label-group">
-                  <button
+                  <SoundBtn
                     className="hiscore-detail-btn"
                     onClick={() => {
-                      playDecisionSound();
                       handleShowHighScoreDetail();
                     }}
                     title="詳細リザルトを見る"
                   >
                     📄
-                  </button>
+                  </SoundBtn>
                   <span className="label">HI-SCORE</span>
                 </div>
                 <span id="menu-hiscore-val">
@@ -107,9 +110,32 @@ export const DifficultySelectScreen: React.FC<Props> = ({
             <h2 id="display-diff-name" style={{ color: currentSetting.color }}>
               {displayDiff}
             </h2>
-            <p id="display-diff-text">
-              {DIFFICULTY_SETTINGS[displayDiff].text}
+
+            {/* TODO: マジックナンバーを修正する */}
+            <p className="display-diff-text">
+              {DIFFICULTY_SETTINGS[displayDiff].text
+                .split("\n")
+                .map((line, index, array) => {
+                  // 行の先頭が「※」で始まっているか判定
+                  const isWarning = line.startsWith("※");
+
+                  return (
+                    <span
+                      key={index}
+                      style={{
+                        color: isWarning ? "#ffff00" : "inherit",
+                        // ちょっと文字を小さくして注釈っぽくするのもアリです
+                        fontSize: isWarning ? "0.85em" : "inherit",
+                      }}
+                    >
+                      {line}
+                      {/* 最後の行以外には <br /> を入れて改行する */}
+                      {index < array.length - 1 && <br />}
+                    </span>
+                  );
+                })}
             </p>
+
             <div className="diff-info-footer">
               <div className="status-item" id="display-diff-time">
                 {DIFFICULTY_SETTINGS[displayDiff].time}s

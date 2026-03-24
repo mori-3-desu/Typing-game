@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useTypingGame } from "../useTypingGame";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
 import { type WordDataMap } from "../../types";
+import { useTypingGame } from "../useTypingGame";
 
 // utils/audio.ts の中身に合わせてモック化
 vi.mock("../../utils/audio", () => ({
@@ -11,15 +12,14 @@ vi.mock("../../utils/audio", () => ({
   playSE: vi.fn(),
 }));
 
-vi.mock("../../utils/setting", async (importOriginal) => {
+vi.mock("../../utils/constants", async (importOriginal) => {
   // 1. 本物のファイルを全部持ってくる
-  const actual = await importOriginal<typeof import("../../utils/setting")>();
+  const actual = await importOriginal<typeof import("../../utils/constants")>();
 
   return {
     // 2. 本物の定数（GAUGE_CONFIG, SCORE_CONFIGなど全部）をここに展開！
     // 書かなくていいんです。ここに全部入ってます。
     ...actual,
-    
 
     // 3. 上書きしたい「難易度設定」だけ手動で書く
     DIFFICULTY_SETTINGS: {

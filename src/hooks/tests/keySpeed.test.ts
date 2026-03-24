@@ -1,19 +1,20 @@
-import { describe, it, expect, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useTypingGame } from "../useTypingGame";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
 import { type WordDataMap } from "../../types";
+import { useTypingGame } from "../useTypingGame";
 
 // 1. 新しい audio.ts の仕様に合わせてモックも更新！
 vi.mock("../../utils/audio", () => ({
   // 初期化
   initAudio: vi.fn(),
   // 統合された再生関数
-  playSE: vi.fn(),   // ← これひとつで全効果音を賄う
+  playSE: vi.fn(), // ← これひとつで全効果音を賄う
 }));
 
 vi.mock("../../utils/setting", async (importOriginal) => {
   // 1. 本物のファイルを全部持ってくる
-  const actual = await importOriginal<typeof import("../../utils/setting")>();
+  const actual = await importOriginal<typeof import("../../utils/constants")>();
 
   return {
     // 2. 本物の定数（GAUGE_CONFIG, SCORE_CONFIGなど全部）をここに展開！
@@ -58,6 +59,6 @@ describe("入力速度(Speed)の計算テスト", () => {
     act(() => result.current.handleBackspace());
 
     // 計算式: correctCount(1) / elapsedTime(1.0) = 1.00 key/s
-    expect(result.current.currentSpeed).toBe("1.00");
+    expect(result.current.currentSpeed).toBe(1.00);
   });
 });

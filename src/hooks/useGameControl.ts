@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { stopBGM, playSE } from "../utils/audio";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+import { type GameControlProps, type GameResultStats } from "../types";
+import { playSE, stopBGM } from "../utils/audio";
+import { UI_TIMINGS } from "../utils/constants";
 import { calculateFinalStats } from "../utils/gameUtils";
-import { UI_TIMINGS } from "../utils/setting";
-import { type GameResultStats, type GameControlProps } from "../types";
 
 const {
   TIMER_DECREMENT,
@@ -75,7 +76,7 @@ export const useGameControl = (props: GameControlProps) => {
 
     const finalStats = calculateFinalStats({
       ...stats,
-      currentSpeed: Number(stats.currentSpeed),
+      currentSpeed: stats.currentSpeed,
     });
 
     setLastGameStats(finalStats);

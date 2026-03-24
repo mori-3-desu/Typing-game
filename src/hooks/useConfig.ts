@@ -8,12 +8,15 @@
  * 3. Cross-Tab Sync: StorageEventを利用し、別タブでの設定変更をリアルタイム同期
  */
 import { useCallback, useEffect, useReducer } from "react";
+
 import { setSystemMute, setVolumes } from "../utils/audio";
-import { STORAGE_KEYS, DEFAULT_CONFIG } from "../utils/setting";
+import { DEFAULT_CONFIG, STORAGE_KEYS } from "../utils/constants";
 
 // 定数の展開（可読性向上）
-const { VOLUME_BGM, VOLUME_SE, VOLUME_MUTE, SHOW_ROMAJI } = STORAGE_KEYS;
-const { VOLUME_BGM_SE, IS_MUTED, D_SHOW_ROMAJI } = DEFAULT_CONFIG;
+const { VOLUME_BGM, VOLUME_SE, VOLUME_MUTE, BRIGHTNESS, SHOW_ROMAJI } =
+  STORAGE_KEYS;
+const { VOLUME_BGM_SE, IS_MUTED, BASE_BRIGHTNESS, D_SHOW_ROMAJI } =
+  DEFAULT_CONFIG;
 
 // --- 1. 型定義 ---
 
@@ -21,6 +24,7 @@ type ConfigState = {
   isMuted: boolean;
   bgmVol: number;
   seVol: number;
+  brightness: number;
   showRomaji: boolean;
 };
 
@@ -31,6 +35,7 @@ type ConfigAction =
   | { type: "BGM"; payload: number }
   | { type: "SE"; payload: number }
   | { type: "SHOWROMA"; payload: boolean }
+  | { type: "BRIGHTNESS"; payload: number } //
   | { type: "SYNC_STORAGE"; payload: Partial<ConfigState> }; // 外部同期用
 
 // --- 2. 安全性確保のためのヘルパー関数 ---
@@ -108,6 +113,7 @@ const createInitialState = (): ConfigState => {
     isMuted: initialMute,
     bgmVol: getSafeStorage(VOLUME_BGM, VOLUME_BGM_SE),
     seVol: getSafeStorage(VOLUME_SE, VOLUME_BGM_SE),
+    brightness: getSafeStorage(BRIGHTNESS, BASE_BRIGHTNESS),
     showRomaji: getSafeStorage(SHOW_ROMAJI, D_SHOW_ROMAJI),
   };
 };
@@ -125,6 +131,8 @@ const configReducer = (
       return { ...state, bgmVol: action.payload };
     case "SE":
       return { ...state, seVol: action.payload };
+    case "BRIGHTNESS":
+      return { ...state, brightness: action.payload };
     case "SHOWROMA":
       return { ...state, showRomaji: action.payload };
 
@@ -172,6 +180,7 @@ export const useConfig = () => {
     localStorage.setItem(VOLUME_MUTE, JSON.stringify(state.isMuted));
     localStorage.setItem(VOLUME_BGM, JSON.stringify(state.bgmVol));
     localStorage.setItem(VOLUME_SE, JSON.stringify(state.seVol));
+    localStorage.setItem(BRIGHTNESS, JSON.stringify(state.brightness));
     localStorage.setItem(SHOW_ROMAJI, JSON.stringify(state.showRomaji));
   }, [state]);
 
@@ -204,6 +213,11 @@ export const useConfig = () => {
           case VOLUME_SE:
             if (isValidType(val, VOLUME_BGM_SE)) {
               dispatch({ type: "SYNC_STORAGE", payload: { seVol: val } });
+            }
+            break;
+          case BRIGHTNESS:
+            if (isValidType(val, BASE_BRIGHTNESS)) {
+              dispatch({ type: "SYNC_STORAGE", payload: { brightness: val } });
             }
             break;
           case SHOW_ROMAJI:
@@ -239,6 +253,11 @@ export const useConfig = () => {
     [],
   );
 
+  const setBrightness = useCallback(
+    (payload: number) => dispatch({ type: "BRIGHTNESS", payload }),
+    [],
+  );
+
   const setShowRomaji = useCallback(
     (payload: boolean) => dispatch({ type: "SHOWROMA", payload }),
     [],
@@ -249,6 +268,7 @@ export const useConfig = () => {
     setIsMuted,
     setBgmVol,
     setSeVol,
+    setBrightness,
     setShowRomaji,
   };
 };

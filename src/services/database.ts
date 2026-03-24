@@ -1,19 +1,19 @@
 import { supabase } from "../supabase";
-import { LIMIT_DATA } from "../utils/setting";
 import {
   type DifficultyLevel,
-  type WordRow,
-  type WordDataMap,
-  type UpdateHighscoreParams,
   type RankingScore,
+  type UpdateHighscoreParams,
+  type WordDataMap,
+  type WordRow,
 } from "../types";
+import { LIMIT_DATA } from "../utils/constants";
 
 // 🛡️ 型ガード関数（Type Guard）
-// 文字列が本当に "EASY" | "NORMAL" | "HARD" のいずれかかチェックする守衛さん
+// 文字列が本当に "EASY" | "NORMAL" | "HARD" | "EXTRA"のいずれかかチェックする守衛さん
 // これを通れば、TypeScriptは安心して DifficultyLevel 型として扱ってくれます
 function isDifficultyLevel(value: unknown): value is DifficultyLevel {
   return (
-    typeof value === "string" && ["EASY", "NORMAL", "HARD"].includes(value)
+    typeof value === "string" && ["EASY", "NORMAL", "HARD", "EXTRA"].includes(value)
   );
 }
 
@@ -41,7 +41,7 @@ export const DatabaseService = {
     if (ngError) throw ngError;
 
     // 3. データの整形とバリデーション
-    const formattedData: WordDataMap = { EASY: [], NORMAL: [], HARD: [] };
+    const formattedData: WordDataMap = { EASY: [], NORMAL: [], HARD: [], EXTRA: [] };
 
     wordsData?.forEach((row: WordRow) => {
       if (!row.difficulty) return;
@@ -57,7 +57,6 @@ export const DatabaseService = {
       const cleanLevel = row.difficulty.trim().toUpperCase();
 
       // 2. 守衛さん（isDifficultyLevel）を呼び出す！
-      // 以前のコード: if (["EASY", "NORMAL", "HARD"].includes(cleanLevel)) {
       if (isDifficultyLevel(cleanLevel)) {
         // ★ ここに入った瞬間、TypeScriptは
         // 「cleanLevel はただの string ではなく DifficultyLevel だ」と認識します。
@@ -120,7 +119,7 @@ export const DatabaseService = {
       throw error;
     }
 
-    if(signal?.aborted) return [];
+    if (signal?.aborted) return [];
 
     // 🛡️ 防衛的プログラミング：返ってきたデータが要求した難易度と一致するか念のため確認
     const hasInvalidData = data?.some((row) => row.difficulty !== difficulty);
@@ -137,7 +136,10 @@ export const DatabaseService = {
    * 全国ランキングを取得
    * 共通ロジック(getScores)を呼び出すだけ
    */
-  async getRanking(difficulty: DifficultyLevel, signal?: AbortSignal): Promise<RankingScore[]> {
+  async getRanking(
+    difficulty: DifficultyLevel,
+    signal?: AbortSignal,
+  ): Promise<RankingScore[]> {
     return this.getScores(difficulty, false, LIMIT_DATA.RANKING_LIMIT, signal);
   },
 
@@ -145,7 +147,10 @@ export const DatabaseService = {
    * 開発者スコアを取得
    * 共通ロジック(getScores)を呼び出すだけ
    */
-  async getDevScore(difficulty: DifficultyLevel, signal?: AbortSignal): Promise<RankingScore[]> {
+  async getDevScore(
+    difficulty: DifficultyLevel,
+    signal?: AbortSignal,
+  ): Promise<RankingScore[]> {
     return this.getScores(difficulty, true, 1, signal);
   },
 

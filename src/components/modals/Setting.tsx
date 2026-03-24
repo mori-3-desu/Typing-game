@@ -1,12 +1,15 @@
-import { useId, useEffect, useState } from "react";
-import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/setting";
+import { useEffect, useId, useState } from "react";
+
 import { playSE } from "../../utils/audio";
+import { SoundBtn } from "../../common/SoundBtn";
+import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/constants";
 
 type Props = {
   playerName: string;
   isMuted: boolean;
   bgmVol: number;
   seVol: number;
+  brightness: number;
   showRomaji: boolean;
   ngWordsList: string[];
 
@@ -14,11 +17,11 @@ type Props = {
   setIsMuted: (val: boolean) => void;
   setBgmVol: (val: number) => void;
   setSeVol: (val: number) => void;
+  setBrightness: (val: number) => void;
   setShowRomaji: (val: boolean) => void;
 
   // 名前保存処理 (Supabase連携などはApp側でやる)
   onSaveName: (newName: string) => Promise<void>;
-
   onClose: () => void;
 };
 
@@ -27,11 +30,13 @@ export const Setting = ({
   isMuted,
   bgmVol,
   seVol,
+  brightness,
   showRomaji,
   ngWordsList,
   setIsMuted,
   setBgmVol,
   setSeVol,
+  setBrightness,
   setShowRomaji,
   onSaveName,
   onClose,
@@ -78,28 +83,24 @@ export const Setting = ({
     setTimeout(() => {
       setIsNameChange("");
     }, UI_TIMINGS.MESSAGE_AUTO_CLOSE);
-
-    playSE("decision");
   };
 
   return (
     <div className="config-overlay" onClick={onClose}>
       <div className="config-modal" onClick={(e) => e.stopPropagation()}>
-        <h2
-          className="config-title"
-          style={{ flexShrink: 0 }}
-        >
+        <h2 className="config-title" style={{ flexShrink: 0 }}>
           SETTING
         </h2>
 
-        <div className="config-scroll-area">
+        <div className="config-scroll-area scroll-gold">
           {/* 名前変更エリア */}
           <div className="config-item">
-            <label htmlFor="{nameInputId}"
+            <label
+              htmlFor="{nameInputId}"
               style={{
                 display: "flex",
                 cursor: "pointer",
-                marginBottom: "5px"
+                marginBottom: "5px",
               }}
             >
               Player Name
@@ -125,7 +126,7 @@ export const Setting = ({
               }}
             >
               <input
-              id={nameInputId}
+                id={nameInputId}
                 type="text"
                 className={`pop-input-field ${
                   nameError ? "input-error-shake" : ""
@@ -145,7 +146,7 @@ export const Setting = ({
                   transition: "all 0.3s",
                 }}
               />
-              <button
+              <SoundBtn
                 className="btn-change-name"
                 onClick={handleSubmit}
                 style={{
@@ -156,7 +157,7 @@ export const Setting = ({
                 }}
               >
                 変更
-              </button>
+              </SoundBtn>
             </div>
             <div
               style={{
@@ -233,11 +234,36 @@ export const Setting = ({
             }}
           />
 
+          <div className="config-item">
+            <div className="slider-label-row">
+              <span>明るさ調整</span>
+              <span>{Math.round(brightness * 100)}%</span>
+            </div>
+
+            <input
+              type="range"
+              min="0.5"
+              max="1"
+              step="0.1"
+              value={brightness}
+              onChange={(e) => setBrightness(parseFloat(e.target.value))}
+              className="volume-slider"
+            />
+          </div>
+
+          <hr
+            style={{
+              borderColor: "rgba(255,255,255,0.2)",
+              margin: "20px 0",
+            }}
+          />
+
           <div className={`config-item ${isMuted ? "disabled" : ""}`}>
             <div className="slider-label-row">
               <span>BGM音量</span>
               <span>{Math.round(bgmVol * 100)}%</span>
             </div>
+
             <input
               type="range"
               min="0"
@@ -262,12 +288,7 @@ export const Setting = ({
               step="0.05"
               value={seVol}
               onChange={(e) => setSeVol(parseFloat(e.target.value))}
-              // ★ここを追加！指（マウス）を離した瞬間に音を鳴らす
-              onMouseUp={() => {
-                if (!isMuted) playSE("decision");
-              }}
-              // ★スマホ（タッチ操作）対応もするならこれも追加
-              onTouchEnd={() => {
+              onPointerUp={() => {
                 if (!isMuted) playSE("decision");
               }}
               disabled={isMuted}
@@ -276,9 +297,9 @@ export const Setting = ({
           </div>
 
           <div className="config-buttons" style={{ marginTop: "30px" }}>
-            <button className="pop-btn primary" onClick={onClose}>
+            <SoundBtn className="pop-btn primary" onClick={onClose}>
               閉じる
-            </button>
+            </SoundBtn>
           </div>
         </div>
       </div>

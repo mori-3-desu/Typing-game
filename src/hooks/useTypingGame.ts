@@ -5,33 +5,33 @@
  * コードの意図や技術選定の理由を明確にするため、また未来の自分への備忘録として、
  * あえて詳細にコメントを残しています。
  */
-import { useState, useRef, useCallback, useEffect, useReducer } from "react";
-import { TypingEngine, Segment } from "./useTypingEngine";
-import {
-  DIFFICULTY_SETTINGS,
-  UI_ANIMATION_CONFIG,
-  JUDGE_COLOR,
-  SCORE_CONFIG,
-  SCORE_DIRECTION,
-  GAUGE_CONFIG,
-  RANK_THRESHOLDS,
-  COMBO_THRESHOLDS,
-  SCORE_COMBO_MULTIPLIER,
-  COMBO_TIME_BONUS,
-} from "../utils/setting";
-import { playSE } from "../utils/audio";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 
 import {
-  type DifficultyLevel,
-  type ScorePopup,
   type BonusPopup,
+  type DifficultyLevel,
+  type MissedWord,
+  type PerfectPopup,
+  type RomaState,
+  type ScorePopup,
   type TimePopup,
   type TypedLog,
-  type RomaState,
-  type PerfectPopup,
-  type MissedWord,
   type WordDataMap,
 } from "../types";
+import { playSE } from "../utils/audio";
+import {
+  COMBO_THRESHOLDS,
+  COMBO_TIME_BONUS,
+  DIFFICULTY_SETTINGS,
+  GAUGE_CONFIG,
+  JUDGE_COLOR,
+  RANK_THRESHOLDS,
+  SCORE_COMBO_MULTIPLIER,
+  SCORE_CONFIG,
+  SCORE_DIRECTION,
+  UI_ANIMATION_CONFIG,
+} from "../utils/constants";
+import { Segment, TypingEngine } from "./useTypingEngine";
 
 // --- Helper Functions ---
 export const calculateRank = (
@@ -336,7 +336,7 @@ export const useTypingGame = (
   const comboClass = getComboClass(combo);
   const isRainbowMode = combo >= COMBO_THRESHOLDS.RAINBOW;
   const currentSpeed =
-    elapsedTime > 0.1 ? (correctCount / elapsedTime).toFixed(2) : "0.00";
+    elapsedTime > 0.1 ? (correctCount / elapsedTime) : 0;
 
   // ★ タイムアウトを安全にスケジュール・管理する共通関数
   const scheduleTrackedTimeout = useCallback(
@@ -357,7 +357,7 @@ export const useTypingGame = (
       popupIdRef.current += 1;
       const newId = popupIdRef.current;
       dispatch({ type: "ADD_POPUP", popup: { id: newId, text, type } });
-      
+
       scheduleTrackedTimeout(() => {
         dispatch({ type: "REMOVE_POPUP", id: newId });
       }, UI_ANIMATION_CONFIG.POPUP_DURATION_MS);
@@ -376,7 +376,11 @@ export const useTypingGame = (
 
       dispatch({
         type: "ADD_SCORE_POPUP",
-        popup: { id: newId, text: amount > 0 ? `+${amount}` : `${amount}`, type },
+        popup: {
+          id: newId,
+          text: amount > 0 ? `+${amount}` : `${amount}`,
+          type,
+        },
       });
 
       scheduleTrackedTimeout(() => {
@@ -458,8 +462,10 @@ export const useTypingGame = (
     // Classから現在の値を吸い出して、新しいオブジェクト(nextRomaState)を作る。
     const nextRomaState = {
       typedLog: newTypedLog,
-      current: !isActuallyFinished && currentSeg ? currentSeg.getCurrentChar() : "",
-      remaining: !isActuallyFinished && currentSeg ? currentSeg.getRemaining() : "",
+      current:
+        !isActuallyFinished && currentSeg ? currentSeg.getCurrentChar() : "",
+      remaining:
+        !isActuallyFinished && currentSeg ? currentSeg.getRemaining() : "",
     };
 
     // 【5. Reactへの通知 (Dispatch)】
@@ -505,10 +511,14 @@ export const useTypingGame = (
     // 今選んだ単語を記録しておき、次回の抽選で除外できるようにする
     prevWordRef.current = nextWord.jp;
 
+    const currentConfig = DIFFICULTY_SETTINGS[difficulty]; // 先ずは設定を取り出す
+    const isEnglishMode = currentConfig.isEnglish ?? false; // 上記のイングリッシュフラグを代入する
+
     // 【5. エンジンの再インスタンス化 (Re-instantiation)】
     // 新しい単語のローマ字を渡し、判定ロジック(Class)を新品にする。
     // これにより、前の単語の入力履歴などはすべてリセットされる。
-    engineRef.current = new TypingEngine(nextWord.roma);
+    // 更に上記のisEnglishモードでtrueなら英語(ローマ字判定解除)モードに
+    engineRef.current = new TypingEngine(nextWord.roma, isEnglishMode);
 
     // 【6. 初期状態の作成】
     // まだ一文字も打っていない状態（1文字目がターゲット）のデータを作る
@@ -533,7 +543,6 @@ export const useTypingGame = (
   }, [difficulty, wordData]); // 難易度かデータが変わった時だけ関数を作り直す
 
   const resetGame = useCallback(() => {
-    // ★ リセット時に現在走っているタイムアウト（ポップアップ消去など）をすべてキャンセル
     timeoutIdsRef.current.forEach(clearTimeout);
     timeoutIdsRef.current.clear();
 
@@ -561,7 +570,7 @@ export const useTypingGame = (
   const processMiss = useCallback(
     (missType: "INPUT" | "COMPLETION", charStr?: string) => {
       playSE("miss");
-      
+
       scheduleTrackedTimeout(
         () => {
           dispatch({ type: "SET_SHAKE", status: "none" });

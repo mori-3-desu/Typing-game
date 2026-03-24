@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from "vitest";
-import { renderHook, act } from "@testing-library/react";
-import { useTypingGame } from "../useTypingGame";
+import { act, renderHook } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+
 import { type WordDataMap } from "../../types";
-import { GAUGE_CONFIG } from "../../utils/setting";
+import { GAUGE_CONFIG } from "../../utils/constants";
+import { useTypingGame } from "../useTypingGame";
 
 vi.mock("../../utils/audio", () => ({
   initAudio: vi.fn(),
@@ -18,7 +19,9 @@ type UseTypingGameReturn = ReturnType<typeof useTypingGame>;
 const SAFE_CHAR_COUNT = 2000;
 describe("ゲージのレベルアップ仕様のテスト", () => {
   const mockWordData: WordDataMap = {
-    EASY: [{ jp: "あ".repeat(SAFE_CHAR_COUNT), roma: "a".repeat(SAFE_CHAR_COUNT) }],
+    EASY: [
+      { jp: "あ".repeat(SAFE_CHAR_COUNT), roma: "a".repeat(SAFE_CHAR_COUNT) },
+    ],
     NORMAL: [],
     HARD: [],
   };

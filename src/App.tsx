@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from "react";
 import "./App.css";
-import { DatabaseService } from "./services/database";
+
+import { useEffect, useRef, useState } from "react";
 
 // --- Components ---
 import { HowToPlay } from "./components/modals/HowToPlay";
 import { Ranking } from "./components/modals/Ranking";
 import { Setting } from "./components/modals/Setting";
+import { BrightnessOverlay } from "./components/screens/BrightnessOverlay";
 import { DifficultySelectScreen } from "./components/screens/Difficulty";
 import { GameCanvas } from "./components/screens/GameCanvas";
 import { GameScreen } from "./components/screens/GameScreen";
@@ -13,6 +14,24 @@ import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 import { TitleScreen } from "./components/screens/TitleScreen";
 
+import { useAuth } from "./hooks/useAuth";
+import { useConfig } from "./hooks/useConfig";
+import { useGameControl } from "./hooks/useGameControl";
+import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
+import { useGameResult } from "./hooks/useGameResult";
+import { useRanking } from "./hooks/useRanking";
+import { useScreenRouter } from "./hooks/useScreenRouter";
+import { useTypingGame } from "./hooks/useTypingGame";
+import { DatabaseService } from "./services/database";
+import {
+  type DifficultyLevel,
+  type GameResultStats,
+  type GameState,
+  type PlayPhase,
+  type TitlePhase,
+  type WordDataMap,
+} from "./types";
+import { initAudio, playSE, setVolumes, startSelectBgm } from "./utils/audio";
 // --- Utils & Hooks ---
 import {
   ALL_BACKGROUNDSDATA,
@@ -22,40 +41,16 @@ import {
   PLAYER_NAME_CHARS,
   STORAGE_KEYS,
   UI_TIMINGS,
-} from "./utils/setting";
-
+} from "./utils/constants";
 // 計算ロジック (分離済み)
 import { createGameStats } from "./utils/gameUtils";
-
-// ★ 画面遷移ロジック (今回導入！)
-import { useAuth } from "./hooks/useAuth";
-import { useGameControl } from "./hooks/useGameControl";
-import { useScreenRouter } from "./hooks/useScreenRouter";
-
-import { initAudio, playSE, setVolumes, startSelectBgm } from "./utils/audio";
-
-import { useConfig } from "./hooks/useConfig";
-import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
-import { useGameResult } from "./hooks/useGameResult";
-import { useTypingGame } from "./hooks/useTypingGame";
 import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
-
-import {
-  type DifficultyLevel,
-  type GameResultStats,
-  type GameState,
-  type PlayPhase,
-  type RankingScore,
-  type TitlePhase,
-  type WordDataMap,
-} from "./types";
 
 const preloadImages = () => {
   const images = [
     "/images/level.webp",
     "/images/cloud.webp",
     "/images/Ready.webp",
-    "/images/X.jpg",
     "/images/ranking.png",
     "/images/X.jpg",
     ...Object.values(DIFFICULTY_SETTINGS).map((s) => s.bg),
@@ -74,6 +69,8 @@ function App() {
     setBgmVol,
     seVol,
     setSeVol,
+    brightness,
+    setBrightness,
     showRomaji,
     setShowRomaji,
   } = useConfig();
@@ -101,10 +98,9 @@ function App() {
     processResult,
     playResultAnimation,
     skipAnimation,
-    resetResultState, // ★ Routerに渡すため取得
+    resetResultState,
   } = useGameResult(difficulty);
 
-  // プレイヤー名
   const [playerName, setPlayerName] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.PLAYER_NAME) || "";
   });
@@ -120,14 +116,6 @@ function App() {
   const [showTitle, setShowTitle] = useState(false);
   const [enableBounce, setEnableBounce] = useState(false);
   const [isTitleExiting, setIsTitleExiting] = useState(false);
-
-  const [rankingData, setIsRankingData] = useState<RankingScore[]>([]);
-  const [showRanking, setShowRanking] = useState(false);
-  const [isDevRankingMode, setIsDevRankingMode] = useState(false);
-  const [isRankingLoading, setIsRankingLoading] = useState(false);
-  const [rankingDataMode, setIsRankingDataMode] = useState<
-    "global" | "dev" | null
-  >(null);
 
   const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
@@ -193,13 +181,12 @@ function App() {
     setShowTitle,
     setEnableBounce,
     setTitlePhase,
-    resetGame, // Hooksから渡す
-    resetResultState, // Hooksから渡す
+    resetGame,
+    resetResultState,
   });
 
   const handleKeyInputRef = useRef(handleKeyInput);
   const handleBackspaceRef = useRef(handleBackspace);
-  const rankingRequestIdRef = useRef(0);
 
   const myGameStats = {
     score,
@@ -254,9 +241,9 @@ function App() {
   useEffect(() => {
     preloadImages();
     initAudio();
-    const startTime = Date.now();
+    const startTime = performance.now();
     const checkLoad = setInterval(() => {
-      const elapsedTime = Date.now() - startTime;
+      const elapsedTime = performance.now() - startTime;
       if (dbWordData && elapsedTime > UI_TIMINGS.MIN_LOADING_TIME) {
         clearInterval(checkLoad);
         setIsLoaded(true);
@@ -303,7 +290,6 @@ function App() {
       goToDifficulty(); // Routerの関数を使用
       return;
     }
-    playSE("decision");
     setIsInputLocked(true);
     setIsTitleExiting(true);
     setTimeout(() => {
@@ -315,7 +301,6 @@ function App() {
   };
 
   const handleCancelInput = () => {
-    playSE("decision");
     setTitlePhase("normal");
   };
 
@@ -334,13 +319,11 @@ function App() {
       return;
     }
     setPlayerName(trimmedName || "Guest");
-    playSE("decision");
     setTitlePhase("confirm");
   };
 
   const handleFinalConfirm = () => {
     localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, playerName);
-    playSE("decision");
     startSelectBgm();
     setIsNameConfirmed(true);
     setGameState("difficulty");
@@ -348,17 +331,14 @@ function App() {
   };
 
   const handleBackToInput = () => {
-    playSE("decision");
     setTitlePhase("input");
   };
 
   const handleOpenConfig = () => {
-    playSE("decision");
     setShowConfig(true);
   };
 
   const handleCloseConfig = () => {
-    playSE("decision");
     setShowConfig(false);
   };
 
@@ -379,7 +359,6 @@ function App() {
   };
 
   const handleOpenHowToPlay = () => {
-    playSE("decision");
     setShowHowToPlay(true);
   };
 
@@ -407,97 +386,16 @@ function App() {
     setGameState("hiscore_review");
   };
 
-  // =========================================================================
-  // 🏆 全国ランキング取得処理
-  // =========================================================================
-  const fetchRanking = async (targetDiff?: DifficultyLevel) => {
-    playSE("decision");
-
-    // 1. 新しい通信用の整理券を発行（連打や通信遅延による「過去データの追い越し」を防止）
-    const requestId = ++rankingRequestIdRef.current;
-
-    const searchDiff = targetDiff || difficulty;
-    if (targetDiff) setDifficulty(targetDiff);
-
-    // 2. 【超重要】通信を始める「前」に、画面の状態を強制リセット！
-    // ここで一気に State を更新することで、React が「古いデータ」を描画する隙を与えない（チラツキ防止）
-    setShowRanking(true);
-    setIsRankingLoading(true); // スピナーON
-    setIsDevRankingMode(false);
-    setIsRankingDataMode(null);
-    setIsRankingData([]); // 過去のデータ（開発者スコアなど）を完全に破壊
-
-    try {
-      // 3. データベースから全国ランキングを取得
-      const data = await DatabaseService.getRanking(searchDiff);
-
-      // 4. 通信が終わった時点で、自分が「最新の整理券」を持っているか確認
-      // 違っていれば、それは「古いリクエスト」なので画面に反映せずに捨てる
-      if (requestId !== rankingRequestIdRef.current) return;
-
-      // 5. 最新のデータだけを安全にセット
-      setIsRankingData(data);
-      setIsRankingDataMode("global");
-    } catch (error) {
-      // エラー時も同様に、古いリクエストのエラーなら無視する
-      if (requestId !== rankingRequestIdRef.current) return;
-      console.error("Ranking fetch error:", error);
-    } finally {
-      // 6. 自分が最新のリクエストだった場合のみ、ローディング（スピナー）を終了する
-      // （古いリクエストが after 処理で勝手にスピナーを消してしまうのを防ぐ）
-      if (requestId === rankingRequestIdRef.current) {
-        setIsRankingLoading(false);
-      }
-    }
-  };
-
-  // =========================================================================
-  // 👑 開発者（クリエイター）スコア取得処理
-  // =========================================================================
-  const handleShowDevScore = async () => {
-    playSE("decision");
-
-    // 既に開発者モードを表示中、または現在何かのデータを読み込み中ならブロック（連打防止）
-    if (isDevRankingMode || isRankingLoading) return;
-
-    // 1. 整理券を発行
-    const requestId = ++rankingRequestIdRef.current;
-
-    // 2. 【超重要】全国ランキングのデータを破棄して、画面を完全にリセット
-    setIsRankingLoading(true);
-    setIsRankingDataMode(null);
-    setIsRankingData([]);
-
-    try {
-      // 3. データベースから開発者スコアを取得
-      const data = await DatabaseService.getDevScore(difficulty);
-
-      // 4. 整理券の確認（過去の通信の追い越し防止）
-      if (requestId !== rankingRequestIdRef.current) return;
-
-      // 5. 最新データのみセットし、モードを「開発者」に切り替える
-      setIsRankingData(data);
-      setIsRankingDataMode("dev");
-      setIsDevRankingMode(true);
-    } catch (error) {
-      if (requestId !== rankingRequestIdRef.current) return;
-      console.error("Ranking fetch error:", error);
-    } finally {
-      // 6. 自分が最新のリクエストだった場合のみローディング終了
-      if (requestId === rankingRequestIdRef.current) {
-        setIsRankingLoading(false);
-      }
-    }
-  };
-
-  const closeRanking = () => {
-    rankingRequestIdRef.current += 1;
-    setShowRanking(false);
-    setIsRankingLoading(false);
-    setIsRankingDataMode(null);
-    setIsRankingData([]);
-    playSE("decision");
-  };
+  const {
+    showRanking,
+    rankingData,
+    isRankingLoading,
+    isDevRankingMode,
+    rankingDataMode,
+    fetchRanking,
+    handleShowDevScore,
+    closeRanking,
+  } = useRanking({ difficulty, setDifficulty });
 
   // リサイズ
   const scalerRef = useRef<HTMLDivElement>(null);
@@ -599,7 +497,7 @@ function App() {
       correct: correctCount,
       miss: missCount,
       backspace: backspaceCount,
-      speed: Number(currentSpeed),
+      speed: currentSpeed,
       combo: maxCombo,
       rank,
       weakWords: sortedWeakWords,
@@ -647,44 +545,43 @@ function App() {
 
             {gameState === "loading" && <LoadingScreen />}
 
-            {gameState === "title" && (
-              <TitleScreen
-                showTitle={showTitle}
-                enableBounce={enableBounce}
-                titlePhase={titlePhase}
-                isTitleExiting={isTitleExiting}
-                isNameConfirmed={isNameConfirmed}
-                playerName={playerName}
-                setPlayerName={setPlayerName}
-                nameError={nameError}
-                setNameError={setNameError}
-                handleStartSequence={handleStartSequence}
-                handleOpenHowToPlay={handleOpenHowToPlay}
-                handleOpenConfig={handleOpenConfig}
-                handleCancelInput={handleCancelInput}
-                handleNameSubmit={handleNameSubmit}
-                handleBackToInput={handleBackToInput}
-                handleFinalConfirm={handleFinalConfirm}
-              />
-            )}
-
-            {gameState === "difficulty" && (
-              <DifficultySelectScreen
-                difficulty={difficulty}
-                setDifficulty={setDifficulty}
-                hoverDifficulty={hoverDifficulty}
-                setHoverDifficulty={setHoverDifficulty}
-                isInputLocked={isInputLocked}
-                isTransitioning={isTransitioning}
-                handleSelectDifficulty={handleSelectDifficulty}
-                backToTitle={backToTitle}
-                fetchRanking={fetchRanking}
-                handleShowHighScoreDetail={handleShowHighScoreDetail}
-                playDecisionSound={() => playSE("decision")}
-              />
-            )}
-
             <main>
+              {gameState === "title" && (
+                <TitleScreen
+                  showTitle={showTitle}
+                  enableBounce={enableBounce}
+                  titlePhase={titlePhase}
+                  isTitleExiting={isTitleExiting}
+                  isNameConfirmed={isNameConfirmed}
+                  playerName={playerName}
+                  setPlayerName={setPlayerName}
+                  nameError={nameError}
+                  setNameError={setNameError}
+                  handleStartSequence={handleStartSequence}
+                  handleOpenHowToPlay={handleOpenHowToPlay}
+                  handleOpenConfig={handleOpenConfig}
+                  handleCancelInput={handleCancelInput}
+                  handleNameSubmit={handleNameSubmit}
+                  handleBackToInput={handleBackToInput}
+                  handleFinalConfirm={handleFinalConfirm}
+                />
+              )}
+
+              {gameState === "difficulty" && (
+                <DifficultySelectScreen
+                  difficulty={difficulty}
+                  setDifficulty={setDifficulty}
+                  hoverDifficulty={hoverDifficulty}
+                  setHoverDifficulty={setHoverDifficulty}
+                  isInputLocked={isInputLocked}
+                  isTransitioning={isTransitioning}
+                  handleSelectDifficulty={handleSelectDifficulty}
+                  backToTitle={backToTitle}
+                  fetchRanking={fetchRanking}
+                  handleShowHighScoreDetail={handleShowHighScoreDetail}
+                />
+              )}
+
               {(gameState === "playing" || gameState === "finishing") && (
                 <GameScreen
                   gameState={gameState}
@@ -713,45 +610,53 @@ function App() {
                   isFinishExit={isFinishExit}
                 />
               )}
+
+              {(gameState === "result" || gameState === "hiscore_review") && (
+                <ResultScreen
+                  gameState={gameState}
+                  difficulty={difficulty}
+                  resultData={displayData}
+                  highScore={gameState === "result" ? highScore : undefined}
+                  scoreDiff={scoreDiff}
+                  isNewRecord={gameState === "result" ? isNewRecord : false}
+                  resultAnimStep={resultAnimStep}
+                  onRetry={retryGame}
+                  onBackToDifficulty={backToDifficulty}
+                  onBackToTitle={backToTitle}
+                  onShowRanking={fetchRanking}
+                  onTweet={getShareUrl}
+                  onClickScreen={() => {
+                    // ハイスコアモードでリザルト画面を使いまわしているため
+                    // "hiscore_review"時の処理とリザルト画面演出スキップの分岐を設けている
+                    // ここもだが全体的に処理の流れを追うのが大変になっている
+                    // 設計を見直す必要があるためひとまず臨時でクリック音が鳴らないよう
+                    // resultAnimStepを入れてクリックで音が鳴らないようにしている。
+                    if (gameState === "hiscore_review") {
+                      playSE("decision");
+                      backToDifficulty();
+                      return;
+                    }
+                    if(resultAnimStep < 5) {
+                      skipAnimation(displayData.rank);
+                    }
+                  }}
+                />
+              )}
+
+              {showRanking && (
+                <Ranking
+                  difficulty={difficulty}
+                  rankingData={rankingData}
+                  userId={userId}
+                  isDevRankingMode={isDevRankingMode}
+                  rankingDataMode={rankingDataMode}
+                  isLoading={isRankingLoading}
+                  onClose={closeRanking}
+                  onShowDevScore={handleShowDevScore}
+                  onFetchRanking={fetchRanking}
+                />
+              )}
             </main>
-
-            {(gameState === "result" || gameState === "hiscore_review") && (
-              <ResultScreen
-                gameState={gameState}
-                difficulty={difficulty}
-                resultData={displayData}
-                highScore={gameState === "result" ? highScore : undefined}
-                scoreDiff={scoreDiff}
-                isNewRecord={gameState === "result" ? isNewRecord : false}
-                resultAnimStep={resultAnimStep}
-                onRetry={retryGame}
-                onBackToDifficulty={backToDifficulty}
-                onBackToTitle={backToTitle}
-                onShowRanking={fetchRanking}
-                onTweet={getShareUrl}
-                onClickScreen={() => {
-                  if (gameState === "hiscore_review") {
-                    backToDifficulty();
-                  } else {
-                    skipAnimation(displayData.rank);
-                  }
-                }}
-              />
-            )}
-
-            {showRanking && (
-              <Ranking
-                difficulty={difficulty}
-                rankingData={rankingData}
-                userId={userId}
-                isDevRankingMode={isDevRankingMode}
-                rankingDataMode={rankingDataMode}
-                isLoading={isRankingLoading}
-                onClose={closeRanking}
-                onShowDevScore={handleShowDevScore}
-                onFetchRanking={fetchRanking}
-              />
-            )}
           </div>
         )}
 
@@ -762,17 +667,20 @@ function App() {
             isMuted={isMuted}
             bgmVol={bgmVol}
             seVol={seVol}
+            brightness={brightness}
             showRomaji={showRomaji}
             ngWordsList={ngWordsList}
             setIsMuted={setIsMuted}
             setBgmVol={setBgmVol}
             setSeVol={setSeVol}
+            setBrightness={setBrightness}
             setShowRomaji={setShowRomaji}
             onSaveName={handleSaveName}
             onClose={handleCloseConfig}
           />
         )}
       </div>
+      <BrightnessOverlay brightness={brightness} />
     </div>
   );
 }
