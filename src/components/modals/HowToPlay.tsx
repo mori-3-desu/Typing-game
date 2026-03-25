@@ -1,4 +1,5 @@
 import { type FC } from "react";
+
 import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {

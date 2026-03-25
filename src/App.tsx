@@ -13,7 +13,6 @@ import { GameScreen } from "./components/screens/GameScreen";
 import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 import { TitleScreen } from "./components/screens/TitleScreen";
-
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";
 import { useGameControl } from "./hooks/useGameControl";
@@ -23,6 +22,8 @@ import { useRanking } from "./hooks/useRanking";
 import { useScreenRouter } from "./hooks/useScreenRouter";
 import { useTypingGame } from "./hooks/useTypingGame";
 import { DatabaseService } from "./services/database";
+// 計算ロジック (分離済み)
+import { ScoreService } from "./services/scoreService";
 import {
   type DifficultyLevel,
   type GameResultStats,
@@ -42,9 +43,7 @@ import {
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
-// 計算ロジック (分離済み)
 import { createGameStats } from "./utils/gameUtils";
-import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 
 const preloadImages = () => {
   const images = [
@@ -379,8 +378,8 @@ function App() {
   const handleShowHighScoreDetail = () => {
     const displayDiff = hoverDifficulty || difficulty;
     const data =
-      getSavedHighScoreResult(displayDiff) ??
-      createGameStats({ score: getSavedHighScore(displayDiff) });
+      ScoreService.getHighScoreResult(displayDiff) ??
+      createGameStats({ score: ScoreService.getHighScore(displayDiff) });
     setReviewData(data);
     skipAnimation("S", false);
     setGameState("hiscore_review");
@@ -636,7 +635,7 @@ function App() {
                       backToDifficulty();
                       return;
                     }
-                    if(resultAnimStep < 5) {
+                    if (resultAnimStep < 5) {
                       skipAnimation(displayData.rank);
                     }
                   }}

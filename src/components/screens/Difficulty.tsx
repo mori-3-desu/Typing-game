@@ -1,9 +1,9 @@
 import React from "react";
 
+import { SoundBtn } from "../../common/SoundBtn";
+import { ScoreService } from "../../services/scoreService";
 import { type DifficultyLevel } from "../../types";
 import { DIFFICULTY_ORDER, DIFFICULTY_SETTINGS } from "../../utils/constants";
-import { getSavedHighScore } from "../../utils/storage";
-import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {
   difficulty: DifficultyLevel;
@@ -34,7 +34,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
 }) => {
   // 表示用の難易度とハイスコアを計算
   const displayDiff = hoverDifficulty || difficulty;
-  const displayHighScore = getSavedHighScore(displayDiff);
+  const displayHighScore = ScoreService.getHighScore(displayDiff);
 
   // 設定データ
   const currentSetting = DIFFICULTY_SETTINGS[displayDiff];
@@ -88,7 +88,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
                   className="crown-icon-only"
                 />
               </SoundBtn>
-              
+
               <div className="diff-hiscore-box">
                 <div className="hiscore-label-group">
                   <SoundBtn
