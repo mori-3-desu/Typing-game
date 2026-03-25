@@ -88,7 +88,8 @@ export const HowToPlay: FC<Props> = ({ onClose }) => {
                 中央に表示されている単語をタイピング！
                 <span className="highlight-green">EASY</span>・
                 <span className="highlight-blue">NORMAL</span>・
-                <span className="highlight-red">HARD</span>
+                <span className="highlight-gold">HARD</span>・
+                <span className="highlight-red">EXTRA</span>
                 <br />
                 3つの難易度があり、出題傾向が変わります。
                 お好きな難易度で挑戦してください！
