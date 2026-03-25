@@ -83,7 +83,6 @@ function App() {
   const [showConfig, setShowConfig] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
 
-  const [, setIsLoaded] = useState(false);
   const [hoverDifficulty, setHoverDifficulty] =
     useState<DifficultyLevel | null>(null);
 
@@ -245,7 +244,6 @@ function App() {
       const elapsedTime = performance.now() - startTime;
       if (dbWordData && elapsedTime > UI_TIMINGS.MIN_LOADING_TIME) {
         clearInterval(checkLoad);
-        setIsLoaded(true);
         setGameState("title");
         setTimeout(() => {
           setShowTitle(true);
@@ -265,15 +263,41 @@ function App() {
     localStorage.setItem(STORAGE_KEYS.VOLUME_SE, seVol.toString());
   }, [bgmVol, seVol]);
 
+  // timeLeftを参照していたが、再実行するたびにintervalを作るためにintervalを消し続けるという無駄が発生していた
+  // intervalの中身はtickを呼ぶだけ。tickがtimeLeftを管理してくれるため依存配列に不要。
+  // ユーザーがそのタブを見ているかどうか判断する為にvisibilitychangeを使用。
+  // 存在しないintervalを操作して挙動がおかしくなるのを防ぐために必ずクリーンアップを実施
   useEffect(() => {
-    let interval: number;
-    if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
-      interval = window.setInterval(() => {
-        tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
+    if (gameState !== "playing" || playPhase !== "game") return;
+    let intervalId: number | null = null;
+
+    // 0.1秒間隔で処理を実行する。(一回の更新で減らす量)
+    const startTimer = () => {
+      intervalId = window.setInterval(() => {
+        tick(UI_TIMINGS.GAME.TIMER_DECREMENT)
       }, 100);
-    }
-    return () => clearInterval(interval);
-  }, [gameState, playPhase, timeLeft, tick]);
+    };
+
+    const stopTimer = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) stopTimer();
+      else startTimer();
+    };
+
+    startTimer();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopTimer();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [gameState, playPhase, tick]);
 
   useEffect(() => {
     if (gameState === "result" && lastGameStats) {
@@ -479,8 +503,6 @@ function App() {
     skipAnimation,
   });
 
-  const targetBgSrc = currentBgSrc;
-
   // 表示用データ作成
   const sortedWeakWords = [...missedWordsRecord]
     .sort((a, b) => b.misses - a.misses)
@@ -520,7 +542,7 @@ function App() {
                 className="bg-layer"
                 style={{
                   backgroundImage: `url(${bg.src})`,
-                  opacity: targetBgSrc === bg.src ? 1 : 0,
+                  opacity: currentBgSrc === bg.src ? 1 : 0,
                 }}
               />
             ))}
