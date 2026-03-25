@@ -1,6 +1,7 @@
-import { useState, useRef } from "react";
-import { type RankingScore, type DifficultyLevel } from "../types";
+import { useRef,useState } from "react";
+
 import { DatabaseService } from "../services/database";
+import { type DifficultyLevel,type RankingScore } from "../types";
 
 type UseRankingProps = {
   difficulty: DifficultyLevel;

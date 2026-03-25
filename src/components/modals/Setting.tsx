@@ -1,7 +1,7 @@
 import { useEffect, useId, useState } from "react";
 
-import { playSE } from "../../utils/audio";
 import { SoundBtn } from "../../common/SoundBtn";
+import { playSE } from "../../utils/audio";
 import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/constants";
 
 type Props = {

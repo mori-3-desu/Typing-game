@@ -1,10 +1,10 @@
+import { SoundBtn } from "../../common/SoundBtn";
 import {
   type DifficultyLevel,
   type GameResultStats,
   type WeakWord,
 } from "../../types";
 import { LIMIT_DATA } from "../../utils/constants";
-import { SoundBtn } from "../../common/SoundBtn";
 
 type Props = {
   gameState: "result" | "hiscore_review";
