@@ -1,7 +1,7 @@
 import React from "react";
 
-import { type TitlePhase } from "../../types";
 import { SoundBtn } from "../../common/SoundBtn";
+import { type TitlePhase } from "../../types";
 
 type TitleScreenProps = {
   // 表示制御系

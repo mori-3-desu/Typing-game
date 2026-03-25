@@ -1,5 +1,5 @@
-import { type DifficultyLevel, type RankingScore } from "../../types";
 import { SoundBtn } from "../../common/SoundBtn";
+import { type DifficultyLevel, type RankingScore } from "../../types";
 
 type Props = {
   difficulty: DifficultyLevel;
@@ -205,7 +205,7 @@ export const Ranking = ({
                           BS: {item.backspace}
                         </div>
                         <div className="stat-box c-cyan">
-                          Speed: {item.speed}
+                          Speed: {item.speed.toFixed(2)}
                         </div>
                         <div className="stat-box c-orange">
                           Combo: {item.combo}
