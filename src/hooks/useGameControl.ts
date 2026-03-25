@@ -33,10 +33,8 @@ export const useGameControl = (props: GameControlProps) => {
   );
   const [isFinishExit, setIsFinishExit] = useState(false);
   const [isWhiteFade, setIsWhiteFade] = useState(false);
-
-  // -------------------------------------------------------
-  // ■ 1. 【データ避難所】 Refによる最新データの保持
-  // -------------------------------------------------------
+  
+  // Refによる最新データの保持
   // Stateだと「値が変わる→再レンダリング→useEffect発火」の連鎖が起きるため、
   // 「値は最新にしたいが、それをトリガーに何かを動かしたくはない」データをRefに入れる。
   // イメージ：こっそり裏で更新される「黒板」
@@ -50,12 +48,9 @@ export const useGameControl = (props: GameControlProps) => {
     latestProcessRef.current = processResult;
   }, [currentStats, processResult]);
 
-  // 「処理済みガード」：連打やReactのStrictモードによる2回実行を防ぐフラグ
   const isProcessedRef = useRef(false);
 
-  // -------------------------------------------------------
-  // ■ 2. 【アクション定義】 終了処理の関数化
-  // -------------------------------------------------------
+  // 終了処理の関数化
   // この関数を下の useEffect から呼びたい。
   // そのまま書くと、レンダリングのたびに「新品の関数」として作り直されてしまい、
   // 依存配列に入れた useEffect が無駄に発火してしまう。
