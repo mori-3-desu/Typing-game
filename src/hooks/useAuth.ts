@@ -29,7 +29,7 @@ export const useAuth = () => {
       try {
         const {
           data: { session },
-          // ★ここで getSession を使う理由は「能動的に今の状態を確認したいから」
+          // ここで getSession を使う理由は「能動的に今の状態を確認したいから」
           // onAuthStateChangeの初回発火を待つより、ここで明示的にチェックする方が
           // ロジックの実行順序として確実です。
         } = await supabase.auth.getSession();
