@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-
 import { ScoreService } from "../services/scoreService";
 import { type DifficultyLevel, type GameResultStats } from "../types";
 import { playSE } from "../utils/audio";

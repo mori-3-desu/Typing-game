@@ -13,7 +13,8 @@ import { LIMIT_DATA } from "../utils/constants";
 // これを通れば、TypeScriptは安心して DifficultyLevel 型として扱ってくれます
 function isDifficultyLevel(value: unknown): value is DifficultyLevel {
   return (
-    typeof value === "string" && ["EASY", "NORMAL", "HARD", "EXTRA"].includes(value)
+    typeof value === "string" &&
+    ["EASY", "NORMAL", "HARD", "EXTRA"].includes(value)
   );
 }
 
@@ -41,7 +42,12 @@ export const DatabaseService = {
     if (ngError) throw ngError;
 
     // 3. データの整形とバリデーション
-    const formattedData: WordDataMap = { EASY: [], NORMAL: [], HARD: [], EXTRA: [] };
+    const formattedData: WordDataMap = {
+      EASY: [],
+      NORMAL: [],
+      HARD: [],
+      EXTRA: [],
+    };
 
     wordsData?.forEach((row: WordRow) => {
       if (!row.difficulty) return;
@@ -56,9 +62,8 @@ export const DatabaseService = {
       // ※ ここで 'as DifficultyLevel' は書かないのが作法です
       const cleanLevel = row.difficulty.trim().toUpperCase();
 
-      // 2. 守衛さん（isDifficultyLevel）を呼び出す！
       if (isDifficultyLevel(cleanLevel)) {
-        // ★ ここに入った瞬間、TypeScriptは
+        //  ここに入った瞬間、TypeScriptは
         // 「cleanLevel はただの string ではなく DifficultyLevel だ」と認識します。
 
         if (formattedData[cleanLevel]) {
@@ -100,7 +105,7 @@ export const DatabaseService = {
   ): Promise<RankingScore[]> {
     const query = supabase
       .from("scores")
-      .select("*")
+      .select("id, user_id, name, score, created_at, correct, miss, backspace, combo, speed, is_creator")
       .eq("difficulty", difficulty)
       .eq("is_creator", isCreator)
       .order("score", { ascending: false })
@@ -120,14 +125,6 @@ export const DatabaseService = {
     }
 
     if (signal?.aborted) return [];
-
-    // 🛡️ 防衛的プログラミング：返ってきたデータが要求した難易度と一致するか念のため確認
-    const hasInvalidData = data?.some((row) => row.difficulty !== difficulty);
-    if (hasInvalidData) {
-      throw new Error(
-        `[Integrity Error] 要求した難易度(${difficulty})と異なるデータが含まれています。`,
-      );
-    }
 
     return data || [];
   },
