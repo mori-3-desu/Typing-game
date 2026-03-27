@@ -147,7 +147,7 @@ export const GameScreen = ({
           </div>
 
           <div
-            className={`full-roma ${hasPunctuation ? "has-punctuation" : ""}`}
+            className="full-roma"
             style={{ display: showRomaji ? "block" : "none" }}
           >
             {allSegments.map((seg, i) => (

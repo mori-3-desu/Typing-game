@@ -1,5 +1,38 @@
-import { type GameResultStats } from "../types";
-import { LIMIT_DATA } from "./constants";
+import { type DifficultyLevel, type GameResultStats } from "../types";
+import {
+  COMBO_THRESHOLDS,
+  LIMIT_DATA,
+  RANK_THRESHOLDS,
+  SCORE_COMBO_MULTIPLIER,
+} from "./constants";
+
+export const calculateRank = (
+  difficulty: DifficultyLevel,
+  currentScore: number,
+) => {
+  const th = RANK_THRESHOLDS[difficulty] || RANK_THRESHOLDS.NORMAL;
+  if (currentScore >= th.S) return "S";
+  if (currentScore >= th.A) return "A";
+  if (currentScore >= th.B) return "B";
+  if (currentScore >= th.C) return "C";
+  return "D";
+};
+
+export const getComboClass = (val: number) => {
+  if (val >= COMBO_THRESHOLDS.RAINBOW) return "is-rainbow";
+  if (val >= COMBO_THRESHOLDS.GOLD) return "is-gold";
+  return "";
+};
+
+export const getScoreMultiplier = (currentCombo: number) => {
+  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_1)
+    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_BASE;
+  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_2)
+    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MID;
+  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_3)
+    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_HIGH;
+  return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
+};
 
 export const createGameStats = (
   overrides: Partial<GameResultStats> = {},

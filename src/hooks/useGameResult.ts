@@ -1,8 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { ScoreService } from "../services/scoreService";
-import { type DifficultyLevel, type GameResultStats } from "../types";
+import type { DifficultyLevel, GameResultStats, SoundKey } from "../types";
 import { playSE } from "../utils/audio";
 import { UI_TIMINGS } from "../utils/constants";
+
+const playRankSE = (rank: string) => {
+  const rankMap: Record<string, string> = {
+    S: "rankS",
+    A: "rankA",
+    B: "rankB",
+    C: "rankC",
+  };
+  playSE((rankMap[rank] ?? "rankD") as SoundKey);
+};
 
 export const useGameResult = (difficulty: DifficultyLevel) => {
   const [highScore, setHighScore] = useState(0);
@@ -53,101 +64,67 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
     [difficulty],
   );
 
-  // アニメーション再生（App.tsxから移植）
-  const playResultAnimation = useCallback((rank: string) => {
-    setResultAnimStep(0);
+  const clearTimers = () => {
     resultTimersRef.current.forEach(clearTimeout);
     resultTimersRef.current = [];
+  };
+
+  // アニメーション再生
+  const playResultAnimation = useCallback((rank: string) => {
+    setResultAnimStep(0);
+    clearTimers();
 
     const schedule = [
       {
-        step: 1,
         delay: UI_TIMINGS.RESULT.STEP_1,
         sound: () => playSE("result"),
       },
       {
-        step: 2,
         delay: UI_TIMINGS.RESULT.STEP_2,
         sound: () => playSE("result"),
       },
       {
-        step: 3,
         delay: UI_TIMINGS.RESULT.STEP_3,
         sound: () => playSE("result"),
       },
       {
-        step: 4,
         delay: UI_TIMINGS.RESULT.STEP_4,
         sound: () => {
-          if (rank === "S") playSE("rankS");
-          else if (rank === "A") playSE("rankA");
-          else if (rank === "B") playSE("rankB");
-          else if (rank === "C") playSE("rankC");
-          else playSE("rankD");
+          playRankSE(rank);
         },
       },
-      { step: 5, delay: UI_TIMINGS.RESULT.STEP_5, sound: null },
+      { delay: UI_TIMINGS.RESULT.STEP_5, sound: null },
     ];
 
-    schedule.forEach(({ step, delay, sound }) => {
+    schedule.forEach(({ delay, sound }, i) => {
       const timer = window.setTimeout(() => {
-        setResultAnimStep(step);
-        if (sound) sound();
+        setResultAnimStep(i + 1);
+        sound?.();
       }, delay);
       resultTimersRef.current.push(timer);
     });
   }, []);
 
-  // リセット用
   const resetResultState = useCallback(() => {
     setSaveStatus("idle");
     setIsNewRecord(false);
     hasSaved.current = false;
     setResultAnimStep(0);
-    resultTimersRef.current.forEach(clearTimeout);
-    resultTimersRef.current = [];
+    clearTimers();
   }, []);
 
-  // 演出スキップ
   const skipAnimation = useCallback((rank: string, playSound = true) => {
-    resultTimersRef.current.forEach(clearTimeout);
-    resultTimersRef.current = [];
+    clearTimers();
     setResultAnimStep(5);
-    // ランク音だけ鳴らす
     if (playSound) {
-      if (rank === "S") playSE("rankS");
-      else if (rank === "A") playSE("rankA");
-      else if (rank === "B") playSE("rankB");
-      else if (rank === "C") playSE("rankC");
-      else playSE("rankD");
+      playRankSE(rank);
     }
   }, []);
 
-  // リザルト画面キー操作でも〇
-  const handleResultKeyAction = useCallback(
-    (key: string, rank: string, onRetry: () => void, onBack: () => void) => {
-      if (resultAnimStep < 5) {
-        if (key === "Enter" || key === "Escape") {
-          skipAnimation(rank);
-        }
-        return;
-      }
-
-      if (key === "Enter") {
-        onRetry();
-      } else if (key === "Escape") {
-        onBack();
-      }
-    },
-    [resultAnimStep, skipAnimation],
-  );
-
+  // アンマウント時のメモリリークを防ぎ、予期しない更新によるエラーを防ぐ
   useEffect(() => {
-    // ★アンマウント時（クリーンアップ）
     return () => {
-      // 全タイマーを爆破する
-      resultTimersRef.current.forEach(clearTimeout);
-      resultTimersRef.current = [];
+      clearTimers();
     };
   }, []);
 
@@ -162,6 +139,5 @@ export const useGameResult = (difficulty: DifficultyLevel) => {
     playResultAnimation,
     skipAnimation,
     resetResultState,
-    handleResultKeyAction,
   };
 };

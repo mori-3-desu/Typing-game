@@ -42,14 +42,12 @@ export const ResultScreen = ({
   onTweet,
   onClickScreen,
 }: Props) => {
-  // App.tsx から渡されたデータをそのままターゲットにする
-  const targetResultData = resultData;
 
   // 苦手単語リスト (既に整形済みだが念のため型定義通りに使用)
-  const displayWeakWords = targetResultData.weakWords;
+  const displayWeakWords = resultData.weakWords;
 
   // 苦手キー (オブジェクト形式なので、配列に変換してソート)
-  const displayWeakKeys = Object.entries(targetResultData.weakKeys)
+  const displayWeakKeys = Object.entries(resultData.weakKeys)
     .sort((a, b) => b[1] - a[1])
     .slice(0, LIMIT_DATA.WEAK_DATA_LIMIT);
 
@@ -117,7 +115,7 @@ export const ResultScreen = ({
                 id="res-score"
                 style={{ textAlign: "right" }}
               >
-                {targetResultData.score.toLocaleString()}
+                {resultData.score.toLocaleString()}
               </div>
             </div>
           </div>
@@ -133,10 +131,10 @@ export const ResultScreen = ({
               <span className="stat-label c-green">Correct</span>
               <div className="stat-right-stacked">
                 <span className="sub-val-upper">
-                  ({targetResultData.words} words)
+                  ({resultData.words} words)
                 </span>
                 <span className="stat-val c-green" id="res-correct">
-                  {targetResultData.correct}
+                  {resultData.correct}
                 </span>
               </div>
             </div>
@@ -144,7 +142,7 @@ export const ResultScreen = ({
               <span className="stat-label c-red">Miss</span>
               <div className="stat-right">
                 <span className="stat-val c-red" id="res-miss">
-                  {targetResultData.miss}
+                  {resultData.miss}
                 </span>
               </div>
             </div>
@@ -152,7 +150,7 @@ export const ResultScreen = ({
               <span className="stat-label c-blue">BackSpace</span>
               <div className="stat-right">
                 <span className="stat-val c-blue" id="res-bs">
-                  {targetResultData.backspace}
+                  {resultData.backspace}
                 </span>
               </div>
             </div>
@@ -160,7 +158,7 @@ export const ResultScreen = ({
               <span className="stat-label c-cyan">Speed</span>
               <div className="stat-val-group" style={{ textAlign: "right" }}>
                 <span className="stat-val c-cyan" id="res-speed">
-                  {Number(targetResultData.speed).toFixed(2)}
+                  {Number(resultData.speed).toFixed(2)}
                 </span>
                 <span className="stat-unit">key/s</span>
               </div>
@@ -168,7 +166,7 @@ export const ResultScreen = ({
             <div className="stat-row combo-row">
               <span className="stat-label c-orange">MAX COMBO</span>
               <span className="stat-val c-orange" id="res-max-combo">
-                {targetResultData.combo}
+                {resultData.combo}
               </span>
             </div>
           </div>
@@ -184,8 +182,8 @@ export const ResultScreen = ({
           >
             <div className="label-small">苦手な単語</div>
             <ul id="weak-words-list" className="weak-list scroll-gold">
-              {displayWeakWords.map((item: WeakWord, idx: number) => (
-                <li key={idx}>
+              {displayWeakWords.map((item: WeakWord) => (
+                <li key={item.word}>
                   <span className="weak-text" title={item.word}>
                     {item.word}
                   </span>{" "}
@@ -209,8 +207,8 @@ export const ResultScreen = ({
               className="weak-list scroll-gold"
               style={{ display: "flex", flexDirection: "column" }}
             >
-              {displayWeakKeys.map(([char, count], idx) => (
-                <li key={idx}>
+              {displayWeakKeys.map(([char, count]) => (
+                <li key={char}>
                   <span>{char.toUpperCase()}</span>{" "}
                   <span className="miss-count">{count}回</span>
                 </li>
@@ -230,9 +228,9 @@ export const ResultScreen = ({
               <div className="rank-label">RANK</div>
               <div
                 id="res-rank"
-                className={`rank-char res-rank-${targetResultData.rank.toLowerCase()}`}
+                className={`rank-char res-rank-${resultData.rank.toLowerCase()}`}
               >
-                {targetResultData.rank}
+                {resultData.rank}
               </div>
             </div>
           </div>

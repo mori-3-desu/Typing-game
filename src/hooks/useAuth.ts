@@ -17,8 +17,8 @@ export const useAuth = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserId(session?.user?.id ?? "");
 
-      // ★ドキュメントの通り、登録直後に一度発火して状態を教えてくれるので
-      // ここで isLoading を false にするのは正解です！
+      // 登録直後に一度発火して状態を教えてくれるので
+      // ここで isLoading を false にする
       setIsLoading(false);
     });
 
