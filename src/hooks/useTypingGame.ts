@@ -25,42 +25,16 @@ import {
   DIFFICULTY_SETTINGS,
   GAUGE_CONFIG,
   JUDGE_COLOR,
-  RANK_THRESHOLDS,
-  SCORE_COMBO_MULTIPLIER,
   SCORE_CONFIG,
   SCORE_DIRECTION,
   UI_ANIMATION_CONFIG,
 } from "../utils/constants";
+import {
+  calculateRank,
+  getComboClass,
+  getScoreMultiplier,
+} from "../utils/gameUtils";
 import { Segment, TypingEngine } from "./useTypingEngine";
-
-// --- Helper Functions ---
-export const calculateRank = (
-  difficulty: DifficultyLevel,
-  currentScore: number,
-) => {
-  const th = RANK_THRESHOLDS[difficulty] || RANK_THRESHOLDS.NORMAL;
-  if (currentScore >= th.S) return "S";
-  if (currentScore >= th.A) return "A";
-  if (currentScore >= th.B) return "B";
-  if (currentScore >= th.C) return "C";
-  return "D";
-};
-
-const getComboClass = (val: number) => {
-  if (val >= COMBO_THRESHOLDS.RAINBOW) return "is-rainbow";
-  if (val >= COMBO_THRESHOLDS.GOLD) return "is-gold";
-  return "";
-};
-
-const getScoreMultiplier = (currentCombo: number) => {
-  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_1)
-    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_BASE;
-  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_2)
-    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MID;
-  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_3)
-    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_HIGH;
-  return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
-};
 
 // --- State Definitions ---
 interface GameState {
@@ -289,6 +263,26 @@ const gameReducer = (state: GameState, action: GameAction): GameState => {
   }
 };
 
+// エンジン内では「セグメントごと」にログを持っているが、
+// 画面表示用には「全履歴を一直線の配列」にしたいので、ここで結合する。
+const buildTypedLog = (segments: Segment[]): TypedLog[] =>
+  segments.flatMap((seg) => seg.typedLog);
+
+const buildRomaState = (engine: TypingEngine): RomaState => {
+  // segIndexが配列の長さを超えてしまった場合のエラー防止。
+  // Math.min を使うことで、必ず「最後のセグメント」で止まるようにする。
+  const currentSegIndex = Math.min(engine.segIndex, engine.segments.length - 1);
+  const currentSeg = engine.segments[currentSegIndex];
+
+  // 実際に全文字打ち終わっているかどうかのフラグ
+  const isFinished = engine.segIndex >= engine.segments.length;
+  return {
+    typedLog: buildTypedLog(engine.segments),
+    current: !isFinished && currentSeg ? currentSeg.getCurrentChar() : "",
+    remaining: !isFinished && currentSeg ? currentSeg.getRemaining() : "",
+  };
+};
+
 // --- Hook 本体 ---
 export const useTypingGame = (
   difficulty: DifficultyLevel,
@@ -304,7 +298,7 @@ export const useTypingGame = (
   const engineRef = useRef<TypingEngine | null>(null);
   const prevWordRef = useRef<string | null>(null);
   const popupIdRef = useRef(0);
-  // ★ 実行中のタイムアウトIDを管理するためのRefを追加
+
   const timeoutIdsRef = useRef<Set<number>>(new Set());
 
   const {
@@ -335,10 +329,9 @@ export const useTypingGame = (
   const rank = calculateRank(difficulty, score);
   const comboClass = getComboClass(combo);
   const isRainbowMode = combo >= COMBO_THRESHOLDS.RAINBOW;
-  const currentSpeed =
-    elapsedTime > 0.1 ? (correctCount / elapsedTime) : 0;
+  const currentSpeed = elapsedTime > 0.1 ? correctCount / elapsedTime : 0;
 
-  // ★ タイムアウトを安全にスケジュール・管理する共通関数
+  // タイムアウトを安全にスケジュール・管理する共通関数
   const scheduleTrackedTimeout = useCallback(
     (callback: () => void, delayMs: number) => {
       const timeoutId = window.setTimeout(() => {
@@ -402,10 +395,8 @@ export const useTypingGame = (
 
   const addTime = useCallback(
     (sec: number, isLarge: boolean = false) => {
-      // 1. ロジック上の時間を足す（Reducerの ADD_TIME を呼ぶ）
       dispatch({ type: "ADD_TIME", sec });
 
-      // 2. ポップアップを表示リストに追加する（新しいIDを発行）
       popupIdRef.current += 1;
       const newId = popupIdRef.current;
 
@@ -422,65 +413,29 @@ export const useTypingGame = (
     [scheduleTrackedTimeout],
   );
 
-  // ★ 新しい時間経過関数
+  // 新しい時間経過関数
   const tick = useCallback((amount: number) => {
     dispatch({ type: "TICK", amount });
   }, []);
 
-  // 画面描画の更新 (UPDATE DISPLAY)
   // 役割: Class(TypingEngine)の内部状態を、React(View)用のデータに変換して渡す
-  const updateDisplay = useCallback(() => {
-    // 【1. ガード節】
+  const syncEngineToReact = useCallback(() => {
     // エンジンが初期化されていない(null)時は何もしない
     // ※非同期読み込み中などに呼ばれてクラッシュするのを防ぐ
     if (!engineRef.current) return;
-
-    const engine = engineRef.current;
-
-    // 【2. ログのフラット化 (Flattening)】
-    // エンジン内では「セグメントごと」にログを持っているが、
-    // 画面表示用には「全履歴を一直線の配列」にしたいので、ここで結合する。
-    const newTypedLog: TypedLog[] = [];
-    engine.segments.forEach((seg) => {
-      seg.typedLog.forEach((log) => newTypedLog.push(log));
-    });
-
-    // 【3. 現在位置の特定】
-    // segIndexが配列の長さを超えてしまった場合（ゲームクリア直後など）のエラー防止。
-    // Math.min を使うことで、必ず「最後のセグメント」で止まるようにする。
-    const currentSegIndex = Math.min(
-      engine.segIndex,
-      engine.segments.length - 1,
-    );
-    const currentSeg = engine.segments[currentSegIndex];
-
-    // 実際に全文字打ち終わっているかどうかのフラグ
-    const isActuallyFinished = engine.segIndex >= engine.segments.length;
-
-    // 【4. スナップショットの作成 (Snapshot)】
-    // Reactは「オブジェクトの中身が変わった」だけでは再描画しないため、
-    // Classから現在の値を吸い出して、新しいオブジェクト(nextRomaState)を作る。
-    const nextRomaState = {
-      typedLog: newTypedLog,
-      current:
-        !isActuallyFinished && currentSeg ? currentSeg.getCurrentChar() : "",
-      remaining:
-        !isActuallyFinished && currentSeg ? currentSeg.getRemaining() : "",
-    };
-
-    // 【5. Reactへの通知 (Dispatch)】
     dispatch({
       type: "UPDATE_DISPLAY",
-      romaState: nextRomaState,
+      romaState: buildRomaState(engineRef.current),
       // ★重要テクニック:
       // engine.segments をそのまま渡すと「参照」が変わらないためReactが変更を無視する可能性がある。
       // [...Array] (スプレッド構文) で「新しい配列」としてコピーして渡すことで、
       // 確実に再レンダリング（色が変わるなど）をトリガーさせる。
-      segments: [...engine.segments],
+      segments: [...engineRef.current.segments],
     });
   }, []);
 
-  // 次の単語を抽選してロード (LOAD RANDOM WORD)
+  // todo: 責務が多い（単語選択・重複排除・エンジン初期化・初期状態生成・dispatch）
+  // selectNextWord（純粋関数）/ initializeEngine / dispatch の3段階に分離を検討したい
   const loadRandomWord = useCallback(() => {
     // データ未ロード時の安全策
     if (!wordData) return;
@@ -542,6 +497,8 @@ export const useTypingGame = (
     });
   }, [difficulty, wordData]); // 難易度かデータが変わった時だけ関数を作り直す
 
+  // todo: startGame / resetGame はタイピング判定・スコア計算とは層が違うフロー制御
+  // useGameFlow のような専用フックへの切り出しを検討したい
   const resetGame = useCallback(() => {
     timeoutIdsRef.current.forEach(clearTimeout);
     timeoutIdsRef.current.clear();
@@ -554,6 +511,8 @@ export const useTypingGame = (
     prevWordRef.current = null;
   }, [difficulty]);
 
+  // todo: loadRandomWord の薄いラッパーになっており役割が曖昧
+  // ゲーム開始時固有の処理（SE・アニメーション等）が増えた場合に責務を整理したい
   const startGame = useCallback(() => {
     loadRandomWord();
   }, [loadRandomWord]);
@@ -564,8 +523,8 @@ export const useTypingGame = (
     engineRef.current.backspace();
     dispatch({ type: "BACKSPACE", penalty: SCORE_CONFIG.BACKSPACE_PENALTY });
     addScorePopup(-SCORE_CONFIG.BACKSPACE_PENALTY);
-    updateDisplay();
-  }, [updateDisplay, addScorePopup]);
+    syncEngineToReact();
+  }, [syncEngineToReact, addScorePopup]);
 
   const processMiss = useCallback(
     (missType: "INPUT" | "COMPLETION", charStr?: string) => {
@@ -690,7 +649,7 @@ export const useTypingGame = (
       } else if (["OK", "NEXT", "EXPANDED"].includes(result.status)) {
         processCorrectHit(combo);
       }
-      updateDisplay();
+      syncEngineToReact();
       if (engine.segIndex >= engine.segments.length) {
         processWordCompletion();
       }
@@ -700,7 +659,7 @@ export const useTypingGame = (
       processMiss,
       processCorrectHit,
       processWordCompletion,
-      updateDisplay,
+      syncEngineToReact,
     ],
   );
 
@@ -730,7 +689,6 @@ export const useTypingGame = (
     }
   }, [score, displayScore]);
 
-  // ★ アンマウント時に未実行のタイムアウトを全て一掃する
   useEffect(() => {
     const timeoutIds = timeoutIdsRef.current;
     return () => {

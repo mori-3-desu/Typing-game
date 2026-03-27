@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // --- Components ---
 import { HowToPlay } from "./components/modals/HowToPlay";
@@ -19,6 +19,7 @@ import { useGameControl } from "./hooks/useGameControl";
 import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
 import { useGameResult } from "./hooks/useGameResult";
 import { useRanking } from "./hooks/useRanking";
+import { useScaler } from "./hooks/useScaler";
 import { useScreenRouter } from "./hooks/useScreenRouter";
 import { useTypingGame } from "./hooks/useTypingGame";
 import { DatabaseService } from "./services/database";
@@ -37,7 +38,6 @@ import { initAudio, playSE, setVolumes, startSelectBgm } from "./utils/audio";
 import {
   ALL_BACKGROUNDSDATA,
   DIFFICULTY_SETTINGS,
-  DISPLAY_SCALE,
   LIMIT_DATA,
   PLAYER_NAME_CHARS,
   STORAGE_KEYS,
@@ -183,9 +183,6 @@ function App() {
     resetResultState,
   });
 
-  const handleKeyInputRef = useRef(handleKeyInput);
-  const handleBackspaceRef = useRef(handleBackspace);
-
   const myGameStats = {
     score,
     completedWords,
@@ -217,11 +214,6 @@ function App() {
   const { userId, isLoading, error } = useAuth();
 
   // --- Effects ---
-  useEffect(() => {
-    handleKeyInputRef.current = handleKeyInput;
-    handleBackspaceRef.current = handleBackspace;
-  }, [handleKeyInput, handleBackspace]);
-
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -420,78 +412,15 @@ function App() {
     closeRanking,
   } = useRanking({ difficulty, setDifficulty });
 
-  // リサイズ
-  const scalerRef = useRef<HTMLDivElement>(null);
-
-  // アニメーションからResizeObserverに変えてみる
-  useEffect(() => {
-    const scaler = scalerRef.current;
-
-    if (!scaler) return;
-
-    // スケールの共通関数
-    const applyScale = (width: number, height: number) => {
-      const scale = Math.min(
-        width / DISPLAY_SCALE.WIDTH,
-        height / DISPLAY_SCALE.HEIGHT,
-      );
-      scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    };
-
-    // ResizeObserverは対応していないブラウザもあるのでその場合はこちらを使う
-    if (typeof ResizeObserver === "undefined") {
-      const handleResize = () => {
-        applyScale(
-          document.documentElement.clientWidth,
-          document.documentElement.clientHeight,
-        );
-      };
-
-      // 初回実行
-      handleResize();
-      window.addEventListener("resize", handleResize);
-
-      // クリーンアップを実施
-      return () => window.removeEventListener("resize", handleResize);
-    }
-
-    // 対応してる場合の処理、サイズが変わった時だけ実行
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        // inlineSize, blockSizeを安全に取得
-        let width: number;
-        let height: number;
-
-        if (entry.contentBoxSize && entry.contentBoxSize.length > 0) {
-          // contentBoxSize は配列で返ってくる（標準仕様）
-          width = entry.contentBoxSize[0].inlineSize;
-          height = entry.contentBoxSize[0].blockSize;
-        } else {
-          // 古いブラウザやポリフィル用のフォールバック
-          width = entry.contentRect.width;
-          height = entry.contentRect.height;
-        }
-
-        applyScale(width, height);
-      }
-    });
-
-    // 監視対象を指定
-    observer.observe(document.documentElement);
-
-    // クリーンアップ
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+  const scalerRef = useScaler();
 
   // --- Key Handler ---
   useGameKeyHandler({
     gameState,
     playPhase,
     difficulty,
-    handleKeyInputRef,
-    handleBackspaceRef,
+    handleKeyInput,
+    handleBackspace,
     startGame,
     setPlayPhase,
     backToDifficulty,

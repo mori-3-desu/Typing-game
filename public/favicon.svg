@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 左耳 -->
+  <polygon points="5,14 9,3 14,14" fill="#FF8C00"/>
+  <!-- 右耳 -->
+  <polygon points="18,14 23,3 27,14" fill="#FF8C00"/>
+  <!-- 左耳の内側（ピンク） -->
+  <polygon points="7,13 9,6 12,13" fill="#FFB3C6"/>
+  <!-- 右耳の内側（ピンク） -->
+  <polygon points="20,13 23,6 25,13" fill="#FFB3C6"/>
+  <!-- 顔 -->
+  <circle cx="16" cy="20" r="11" fill="#FF8C00"/>
+  <!-- 左目（^）-->
+  <path d="M10,20 Q12,16.5 14,20" stroke="#2a2a2a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <!-- 右目（^） -->
+  <path d="M18,20 Q20,16.5 22,20" stroke="#2a2a2a" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  <!-- 鼻 -->
+  <polygon points="16,22 14.5,23.5 17.5,23.5" fill="#FF69B4"/>
+  <!-- 口（開いてる） -->
+  <path d="M13,24 Q16,29 19,24" fill="#cc3333" stroke="#2a2a2a" stroke-width="0.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- 左ひげ -->
+  <line x1="5" y1="22" x2="13" y2="23" stroke="#2a2a2a" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="5" y1="24.5" x2="13" y2="24" stroke="#2a2a2a" stroke-width="0.6" stroke-linecap="round"/>
+  <!-- 右ひげ -->
+  <line x1="19" y1="23" x2="27" y2="22" stroke="#2a2a2a" stroke-width="0.6" stroke-linecap="round"/>
+  <line x1="19" y1="24" x2="27" y2="24.5" stroke="#2a2a2a" stroke-width="0.6" stroke-linecap="round"/>
+</svg>
