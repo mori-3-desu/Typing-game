@@ -34,10 +34,8 @@ export const useGameControl = (props: GameControlProps) => {
   const [isFinishExit, setIsFinishExit] = useState(false);
   const [isWhiteFade, setIsWhiteFade] = useState(false);
   
-  // Refによる最新データの保持
   // Stateだと「値が変わる→再レンダリング→useEffect発火」の連鎖が起きるため、
   // 「値は最新にしたいが、それをトリガーに何かを動かしたくはない」データをRefに入れる。
-  // イメージ：こっそり裏で更新される「黒板」
   const latestStatsRef = useRef(currentStats);
   const latestProcessRef = useRef(processResult);
 
@@ -60,7 +58,6 @@ export const useGameControl = (props: GameControlProps) => {
     stopBGM();
     playSE("finish");
 
-    // ★重要テクニック
     // ここで props.currentStats を直接使うと、依存配列に currentStats を入れる必要が出る。
     // すると「データが変わるたびに関数が作り直し」になってしまう。
     //
@@ -97,9 +94,8 @@ export const useGameControl = (props: GameControlProps) => {
     // この useEffect 自体は再実行（タイマーの再生成）されている。
     // しかし、handleGameFinish が「不変」であるため、ロジック自体は壊れない。
     if (timeLeft <= 0) {
-      // ガードチェック：既に処理済みなら何もしない
       if (!isProcessedRef.current) {
-        isProcessedRef.current = true; // ロックをかける
+        isProcessedRef.current = true;
         handleGameFinish(); // ★上で定義した「不変の関数」を実行！
       }
       return;

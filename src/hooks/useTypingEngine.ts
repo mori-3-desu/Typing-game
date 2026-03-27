@@ -104,63 +104,38 @@ export class Segment {
    * コア処理：ユーザーが打ったキーを受け取って、判定結果を返す
    */
   handleKey(key: string): string {
-    const nextExpected = this.getCurrentChar();
-    let inputChar = key;
-
-    // 1. 次に打つべき文字（nextExpected）の許容キーリストを取得
-    // （将来的な記号追加やプログラマー向け拡張を考えているため、if文の連続を避ける設計）
-    const allowedKeys = ROMA_VARIATIONS[nextExpected];
-
-    // 2. 入力キーが許容リストに含まれていれば、内部の文字を nextExpected にすり替える
-    // （例: ',' を打っても '、' として処理し、お題の見た目や判定が崩れるのを防ぐ）
-    if (allowedKeys && allowedKeys.includes(key)) {
-      inputChar = nextExpected;
-    }
-
-    const nextBuffer = this.inputBuffer + inputChar;
-
-    // startsWithで「このキーを受け入れた後も、まだ正解になれるパターンが残っているか？」を探す
+    // 生のキー入力でルートチェック
+    // ※先にすり替えると "kyo" に "c" が通過してしまうバグの原因になる
+    const nextBuffer = this.inputBuffer + key;
     const hasFutureRoute = this.patterns.some((p) => p.startsWith(nextBuffer));
+    
+    // handlekeyは正解時とミス時で振り分けるだけ
+    return hasFutureRoute ? this.accept(key) : this.advanceOnMiss();
+  }
 
-    // 正解ルートに乗っている場合
-    if (hasFutureRoute) {
-      this.inputBuffer = nextBuffer;
-      this.typedLog.push({ char: inputChar, color: JUDGE_COLOR.CORRECT });
+  // handleKeyを通じてのみ行われる処理のため、
+  // 外部から呼ばれると壊れる可能性があるため、プライベートメソッドを使用
+  private accept(key: string): "NEXT" | "OK" {
+    this.inputBuffer += key;
+    this.typedLog.push({ char: key, color: JUDGE_COLOR.CORRECT });
+    return this.isDone() ? "NEXT" : "OK";
+  }
 
-      // 打った結果、パターンと完全一致した（このブロックの入力が完了した）なら NEXT を返す
-      if (this.patterns.includes(this.inputBuffer)) return "NEXT";
-      return "OK"; // まだ途中なら OK
-    }
-
-    // --- ここから下はミス（ミスルート）の処理 ---
-
-    // 既にこのブロックは完成しているのに、さらに余計なキーを打ってきた場合
-    if (this.patterns.includes(this.inputBuffer)) {
-      return "MISS";
-    }
-
-    // ガイド表示用の「本来打つべきだった文字」を特定する
+  private advanceOnMiss(): "MISS" | "MISS_NEXT" | "MISS_ADVANCE" {
+    if (this.isDone()) return "MISS";
     const currentPattern =
-      this.patterns.find((p) => p.startsWith(this.inputBuffer)) ||
+      this.patterns.find((p) => p.startsWith(this.inputBuffer)) ??
       this.patterns[0];
     const expectedChar = currentPattern[this.inputBuffer.length];
 
     // 何も期待されていない（想定外のバグ防止）
     if (!expectedChar) return "MISS";
-
     // ミスだけど、画面上では赤文字で進める（ゲームの仕様）
     this.inputBuffer += expectedChar;
     this.typedLog.push({ char: expectedChar, color: JUDGE_COLOR.MISS });
-
-    // ミスタイプによって、偶然このブロックが完成してしまった場合
-    if (this.patterns.includes(this.inputBuffer)) {
-      return "MISS_NEXT";
-    }
-
-    return "MISS_ADVANCE"; // ミスして赤文字が進んだ状態
+    return this.isDone() ? "MISS_NEXT" : "MISS_ADVANCE";
   }
 
-  // バックスペース：1文字だけ履歴を消す
   backspace(): boolean {
     if (this.inputBuffer.length > 0) {
       this.inputBuffer = this.inputBuffer.slice(0, -1);
@@ -181,6 +156,7 @@ export class Segment {
  * お題の文章を Segment（ブロック）に切り分け、キー入力を適切な Segment に割り振る
  */
 export class TypingEngine {
+  // todo: segments / segIndex は public のため外部から直接書き換えられる。readonly 化または getDisplayState() 経由のみに制限したい
   segments: Segment[]; // 文章を構成するブロックの配列
   segIndex: number; // 今、何番目のブロックを入力しているか（現在地）
   isEnglish: boolean; // 英語モードかローマ字か
@@ -208,7 +184,7 @@ export class TypingEngine {
       const hitKey = SORTED_ROMA_KEYS.find((key) => roma.startsWith(key, i));
       if (hitKey) {
         out.push(new Segment(hitKey));
-        i += hitKey.length; // 見つかった文字数分、現在地を進める
+        i += hitKey.length;
       } else {
         // 辞書にない記号などは、そのまま1文字のSegmentにするフォールバック処理
         out.push(new Segment(roma[i]));
@@ -220,6 +196,7 @@ export class TypingEngine {
 
   /**
    * キーボードからの入力を受け付ける総合窓口
+   * todo: 「ん」の特殊処理が Engine 側に混在している。Segment 側で解決できないか検討したい
    */
   input(key: string): { status: string } {
     const segment = this.segments[this.segIndex]; // 今担当しているブロック
