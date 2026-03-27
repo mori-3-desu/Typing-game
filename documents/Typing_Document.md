@@ -1,201 +1,48 @@
 # --- CRITICAL_TYPING 開発ドキュメント ---
 
-## --- Concept ---
+## 1. システム構成図
 
-自分自身中々タイプミスが減らなくて、どうにか改善できないかを考えました。<br/>
-そこでタイプミスをしたら自分で**Backspace**を押して消すという従来のタイピングゲームと違った**実践型のタイピングゲーム**を作ろうと決意しました。<br/>
-タイトルは正確性の向上により、より効率的にという意味を込めております。<br/>
-また、ミスタイプが多いと逆に効率が下がるのをゲームに反映させ、**正確性があるほうがスコアが高くなるように**調整し、また楽しく**正確性 × 継続性**が鍛えられるように工夫しました。<br/>
-みんなにお手軽に楽しんでもらえるよう**ローカルストレージ採用の無料ブラウザゲーム**として公開しました。(LP はまだ未制作なので勉強をして、このゲームを主軸とした紹介サイトを構築予定です。)<br/>
-自分が音楽ゲーム好きなのでコンボシステムを導入し、**爽快感**と**緊張感**を味わえる構成になっております！
-
-## 1. 完成プレイ gif 動画とそれぞれの状態の画像一覧
-
-- まずはどういった構造なのかを直感的に判断しやすいよう完成時の画像を先に載せます。
-- 正確性 × 継続性重視の実践的な要素を取り入れていますが全体的にポップな感じに仕上げ、**年齢問わず操作しやすい UI/UX デザイン**を意識しました。
-
-![プレイ動画](images/game_demo.gif)
-
-#### ・ タイトル画面、遊び方、設定画面
-
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    <img src="images/title.webp" 
-         alt="タイトル画面：触りやすいよう全体的にポップに" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-    <img src="images/how_to_play.jpg" 
-         alt="遊び方説明：ゲームの特徴を書いたガイド" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-    <img src="images/setting.jpeg" 
-         alt="設定画面：名前変更やBGMやSEの音量、参考ローマ字表示を調整可能" 
-         style="width: 400px; height: 300px; object-fit: cover; border-radius: 1em;">
-</div>
-
-#### ・ 難易度選択、ハイスコア時のリザルト詳細
-
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    <img src="images/select_difficulty.jpeg" 
-         alt="難易度選択画面：難易度ごとの詳細やハイスコアのスコア表示" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-    <img src="images/hiscore_result.jpeg" 
-         alt="📄クリックでハイスコア時のリザルトが見れます" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-</div>
-
-#### ・ ランキング画面詳細
-
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    <img src="images/ranking.jpg" 
-         alt="ランキング画面：難易度ごとにデザインを変えております。" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-    <img src="images/creator_score.jpeg" 
-         alt="👑クリックで開発者スコアが見られます。" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-</div>
-
-#### ・ ゲーム画面、リザルト画面
-
-<div style="display: flex; flex-wrap: wrap; gap: 10px;">
-    <img src="images/gamescreen.jpeg" 
-         alt="ゲーム画面：こちらも難易度ごとに画像とデザインを変えております。" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-    <img src="images/result.jpeg" 
-         alt="リザルト画面：こちらも難易度ごとにデザインを変えており、様々な状態に戻れるよう配慮しています。" 
-         style="width: 400px; height: 250px; object-fit: cover; border-radius: 1em;">
-</div>
-
----
-
-## 2. システム構成図（3 層アーキテクチャの採用）
-
-本アプリケーションは、<b>「プレゼンテーション層（画面）」「アプリケーション層（認証・ロジック）」「データ層（DB）」</b>の 3 層アーキテクチャに基づき、セキュリティとパフォーマンスを両立するよう設計しました。
-
-### ① プレゼンテーション層：ローカルストレージの活用
-
-**（役割：UX の向上とサーバー負荷軽減）**
-
-React（クライアントサイド）上でゲームロジックを完結させ、設定情報（音量など）はブラウザ固有の「ローカルストレージ」に保存しています。これにより、サーバー通信による<b>ラグ</b>をゼロにし、快適なプレイ環境を実現しました。
+本アプリケーションは **「プレゼンテーション層・アプリケーション層・データ層」の 3 層アーキテクチャ** に基づき、セキュリティとパフォーマンスを両立するよう設計しました。
 
 ```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '13px', 'lineColor': '#dddddd'}, 'flowchart': {'nodeSpacing': 15, 'rankSpacing': 25}}}%%
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '13px', 'lineColor': '#dddddd'}, 'flowchart': {'nodeSpacing': 20, 'rankSpacing': 35}}}%%
 graph LR
+    linkStyle default stroke:#dddddd,stroke-width:2px
+
     User((プレイヤー))
 
     subgraph Presentation ["📱 プレゼンテーション層"]
-        Logic["ゲーム<br/>ロジック"]
-        State["設定<br/>(音量・表示)"]
-    end
-
-    subgraph Local ["LocalStorage"]
-        Store["設定の<br/>永続化"]
-    end
-
-    User <---->|操作| Logic
-    Logic <---->|読込/保存| State
-    State <---->|保存| Store
-
-    %% --- スタイル定義 ---
-    %% ユーザー
-    style User fill:#ffffff,stroke:#333,color:black
-
-    %% ロジック・設定（水色系：処理）
-    style Logic fill:#e1f5fe,stroke:#333,color:black
-    style State fill:#e1f5fe,stroke:#333,color:black
-
-    %% ローカルストレージ（黄色系：保存）
-    style Store fill:#fff9c4,stroke:#333,stroke-width:2px,color:black
-
-    %% 矢印を薄いグレーにする設定
-    linkStyle default stroke:#dddddd,stroke-width:2px
-```
-
-### ② アプリケーション層：RLS によるセキュリティ
-
-**（役割：不正な書き込みを防ぐ「門番」）**
-
-ランキング登録時には、Supabase の認証機能（Auth）と<b>RLS（行レベルセキュリティ）</b>が「アプリケーション層」として機能します。 データベースの前に「本人確認を行う門番」を配置することで、他人のなりすましやスコア改ざんなどの不正アクセスを遮断する設計です。
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '13px', 'lineColor': '#dddddd'}, 'flowchart': {'nodeSpacing': 15, 'rankSpacing': 25}}}%%
-graph LR
-%% 矢印を「薄いグレー」に設定
-    linkStyle default stroke:#dddddd,stroke-width:2px
-    User((プレイヤー))
-
-    subgraph Presentation ["📱 プレゼンテーション層"]
-        Result["🏆 リザルト画面"]
-        Logic["📡 保存処理"]
+        Game["ゲームロジック<br/>(React)"]
+        Local["LocalStorage<br/>(設定・ハイスコア)"]
     end
 
     subgraph Application ["🛡️ アプリケーション層"]
-        Auth["ID認証<br/>(Auth)"]
+        Auth["匿名認証<br/>(Auth)"]
         RLS{"RLS<br/>(門番)"}
     end
 
     subgraph Data ["🗄️ データ層"]
-        DB[("データ<br/>ベース")]
+        DB[("PostgreSQL<br/>(scores)")]
     end
 
-    User -- "名前決定" --> Result
-    Result -- "送信" --> Logic
+    User <-->|操作| Game
+    Game <-->|読み書き| Local
+    Game -->|スコア送信| Auth
+    Auth -->|uid| RLS
+    RLS -->|保存| DB
+    DB -->|ランキング取得<br/>ソート＋上位N件| Game
 
-    Logic -- "ID確認" --> Auth
-    Auth -- "uid" --> Logic
-
-    Logic -- "保存要求" --> RLS
-    RLS -- "OK" --> DB
-
-    %% スタイル定義
+    style User fill:#ffffff,stroke:#333,color:black
+    style Game fill:#e1f5fe,stroke:#333,color:black
+    style Local fill:#fff9c4,stroke:#333,color:black
+    style Auth fill:#fce4ec,stroke:#333,color:black
     style RLS fill:#f9f,stroke:#333,stroke-width:2px,color:black
     style DB fill:#f96,stroke:#333,stroke-width:2px,color:black
-
-    %% 矢印を薄いグレーにする設定
-    linkStyle default stroke:#dddddd,stroke-width:2px
 ```
 
-### ③ データ層：クエリによる通信最適化
+---
 
-**（役割：必要なデータだけを提供）**
-
-ランキング表示においては、データベース側で<b>ソート（並べ替え）とリミット（上位抽出）</b>のクエリ処理を行ってからフロントエンドに返却します。 全データをダウンロードするのではなく、サーバー側で計算を済ませることで、<b>通信量を最小限に抑え、スマホ回線でも高速に表示されるよう配慮しました。</b>
-
-```mermaid
-%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '13px'}, 'flowchart': {'nodeSpacing': 15, 'rankSpacing': 25}}}%%
-graph LR
-%% 矢印を「薄いグレー」に設定
-    linkStyle default stroke:#dddddd,stroke-width:2px
-    User((閲覧者))
-
-    subgraph Presentation ["📱 プレゼンテーション層"]
-        RankUI["👑ランキング画面"]
-        Logic["📡 取得処理"]
-    end
-
-    subgraph Data ["🗄️ データ層 (Backend)"]
-        direction TB
-        DB[("データ<br/>ベース")]
-
-        subgraph Process ["🔍 クエリ処理"]
-            direction TB
-            Sort["1. スコア順に整列"]
-            Limit["2. 上位10件に絞る"]
-        end
-    end
-
-    User -- "閲覧" --> RankUI
-    RankUI -- "要求" --> Logic
-
-    Logic -- "SELECT" --> DB
-    DB --> Sort
-    Sort --> Limit
-    Limit -- "JSON返却" --> Logic
-    Logic -- "表示" --> RankUI
-
-    style DB fill:#f96,stroke:#333,stroke-width:2px,color:black
-    style Sort fill:#eef,stroke:#333,stroke-width:2px,color:black
-    style Limit fill:#eef,stroke:#333,stroke-width:2px,color:black
-```
-
-## 3. 詳細フローチャート図
+## 2. 詳細フローチャート図
 
 - 手書きの設計書のフローチャートをデジタル化しました。
 - 全体の流れと、主にこだわった入力処理と Backspace 処理を掲載します。
@@ -313,7 +160,7 @@ graph LR
     %% デザイン定義
     classDef default fill:#ffffff,stroke:#333,stroke-width:2px;
 
-    %% === 【ここを変更しました】ひし形（判定）を黄色に変更 ===
+    %% === ひし形（判定）を黄色に変更 ===
     classDef decision fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
 
     %% 成功（緑）のスタイル定義
@@ -470,7 +317,7 @@ graph LR
         class Green_N2 process
 
         %% 2文字目ミス
-        Check_Next -- "No <br>その他入力" --> Error_N2[二個目のnを<br/>赤で表示]
+        Check_Next -- "No <br>その他入力" --> Error_N2[nn不成立<br/>nの次の文字を赤で表示]
         class Error_N2 error
 
         %% 全ルート合流地点
@@ -613,7 +460,7 @@ graph LR
 
 ---
 
-## 4. ER 図
+## 3. ER 図
 
 - 管理人スコアと一般ユーザーは同じ構造のテーブルになるため、あえて一つのテーブルで管理し、is_creator カラムの Boolean 値が false を一般ユーザーとして扱い、一般ユーザーを全国ランキングに、管理人は is_creator カラムの Boolean 値を true にして開発者スコアに分断し、効率的なデータ管理を実現しています。
 
@@ -636,19 +483,20 @@ erDiagram
     }
 ```
 
-## 5. 技術選定
+## 4. 技術選定
 
 ### フロントエンド / インフラ
 
-| カテゴリ             | 技術                  | 選定理由                                                                                                   |
-| :------------------- | :-------------------- | :--------------------------------------------------------------------------------------------------------- |
-| **Framework**        | **React**             | 生の JavaScript と比較し、保守性と拡張性を重視。コンポーネント化による状態管理のしやすさを評価。           |
-| **Language**         | **TypeScript**        | 開発段階での型定義によりバグを削減し、品質や安全性、長期的な機能拡張においても堅牢なコードを維持するため。 |
-| **Build Tool**       | **Vite**              | HMR（Hot Module Replacement）による高速な開発サイクルと、Vitest との親和性を考慮。                         |
-| **BaaS**             | **Supabase**          | PostgreSQL の学習経験を活かしたデータ管理。RLS によるセキュリティ担保と開発効率の両立。                    |
-| **Hosting**          | **Vercel**            | Vite/React 環境との親和性が高く、高速なデプロイが可能なため。                                              |
-| **Testing**          | **Vitest**            | 環境構築が容易で、機能追加時のロジック崩れ（デグレ）を防止し品質を担保するため。                           |
-| **Linter/Formatter** | **ESLint / Prettier** | 自動整形ツールによるコード品質の一貫性を保つ目的。                                                         |
+| カテゴリ             | 技術                             | 選定理由                                                                                                   |
+| :------------------- | :------------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| **Framework**        | **React**                        | 生の JavaScript と比較し、保守性と拡張性を重視。コンポーネント化による状態管理のしやすさを評価。           |
+| **Language**         | **TypeScript**                   | 開発段階での型定義によりバグを削減し、品質や安全性、長期的な機能拡張においても堅牢なコードを維持するため。 |
+| **Build Tool**       | **Vite**                         | HMR（Hot Module Replacement）による高速な開発サイクルと、Vitest との親和性を考慮。                         |
+| **BaaS**             | **Supabase**                     | PostgreSQL の学習経験を活かしたデータ管理。RLS によるセキュリティ担保と開発効率の両立。                    |
+| **Testing**          | **Vitest** / **TESTING LIBRARY** | 環境構築が容易で、機能追加時のロジック崩れ（デグレ）を防止し品質を担保するため。                           |
+| **Monitorring**      | **Sentry**                       | 実行時のエラーやパフォーマンスをリアルタイムで検知し、ユーザー環境での不具合を迅速に修正する為             |
+| **Linter/Formatter** | **ESLint / Prettier**            | 自動整形ツールによるコード品質の一貫性を保つ目的。                                                         |
+| **Hosting**          | **Vercel**                       | Vite/React 環境との親和性が高く、高速なデプロイが可能なため。                                              |
 
 ---
 
@@ -656,125 +504,60 @@ erDiagram
 
 ### 1. 「Vanilla JS」から「React/TypeScript」への移行
 
-プロジェクト初期は DOM 操作の基礎理解のため HTML/CSS/JavaScript で構築していましたが、DOM 操作が複雑化し、将来機能追加等を行うと管理が大変になるため、**保守性**と**拡張性**を意識して移行しました。
+プロジェクト初期は DOM 操作の基礎理解のため `HTML/CSS/JavaScript` で構築していましたが、DOM 操作が複雑化し、将来機能追加等を行うと管理が大変になるため、**保守性**と**拡張性**を意識して移行しました。
 
-- **保守性:** アプリケーションの規模拡大を見据え、宣言的な UI 構築が可能な React を採用。
-- **安全性:** TypeScript を導入することで、型定義により実行前にエラーを防げる。将来機能拡張していった際に、**品質、安全性が担保された堅牢なコード**になる。
+- **保守性:** 生の JS で構築していたが DOM 操作が複雑化し管理が限界になったため `React` へ移行。
+  仮想 DOM による計算ステップが増えるトレードオフはあるが、**宣言的 UI とコンポーネント分割による保守性・拡張性を優先した。**
+
+- **型安全性:** `TypeScript` の型チェックはコンパイル時のみで実行時には効かないが、
+  開発段階でバグの大半を検出できる点と、将来の機能拡張時に**堅牢なコードを維持できる点**を評価して採用。
 
 ### 2. Supabase による堅牢なデータ管理
 
 ランキング機能などのデータ整合性を保つため、型定義が厳格な**PostgreSQL**を採用しています。
 
-- **セキュリティ:** RLS（Row Level Security）を活用し、ユーザー本人以外のデータ操作を制限。
-- **開発効率:** 信頼性の高いバックエンドツールを導入することで、UI/UX の開発に注力できる環境を整えました。
-- **勉強目的** OSS-DB Silver を取得していた為、実際にPostgreSQLを扱ってみたかった。
+- **セキュリティ:** `RLS（Row Level Security）`と`ストアドプロシージャ`、`制約`を活用し、ユーザー本人以外のデータ操作を制限。
+- **開発効率:** 信頼性の高いバックエンドツールを導入することで、**UI/UX の開発に注力できる環境を整えました。**
+- **勉強目的** `OSS-DB Silver` を取得していた為、実際にPostgreSQLを扱ってみたかったという目的もあります。
+
+| 操作                 | 保護方法                                              | 理由                               |
+| -------------------- | ----------------------------------------------------- | ---------------------------------- |
+| SELECT               | RLS = 全公開                                          | ランキングは誰でも見える（意図的   |
+| INSERT/UPDATE/DELETE | `security definer` 関数 + `auth.uid()` + NOT NULL制約 | 本人のみ、かつ有効なセッション必須 |
+| スコア改ざん         | バリデーション                                        | 不正値の弾き飛ばし                 |
+
+**なぜ REST ではなく RPC（ストアドプロシージャ）を使うのか**
+
+REST でハイスコア更新を実装する場合、「取得 → フロントで比較 → 更新」の流れになります。
+この設計だと比較ロジックがフロントに露出するため、DevTools からスコアを改ざんして送り込まれるリスクがあります。
+
+RPC（`security definer` 関数）を経由することでフロントから直接テーブルを操作させず、
+**バリデーションとハイスコア比較をサーバー側で完結**させています。
+ロジックをデータベース層に閉じ込めることで、フロントからの不正な操作を根本から防ぐ設計にしています。
+
+**SELECT を全公開にしている理由**
+
+INSERT / UPDATE / DELETE は `auth.uid()` で本人のみに制限していますが、SELECT は意図的に全公開としています。
+認証を要求するとランキングが自分のデータしか見えなくなるため、公開データとして扱うトレードオフを選択しています。
+
+**読み取り最適化設計**
+
+スコアの集計・計算は `RPC` 側で完結させ、フロントは結果を受け取るだけの設計にしています。
+書き込み時のコストは増えますが、読み取りを軽量に保つことで**通信量を削減し、スマホ環境でも高速に動作します。**
 
 ### 3. テストによる品質担保
 
-- **テスト** ゲームにかかわるロジックを中心に Vitest でテストを実施。機能追加による既存のロジック崩壊を防ぎ、品質を担保している。
+現状はゲームロジックを中心に Vitest で単体テストを実施し、機能追加による既存ロジックの崩壊を防いでいます。
+
+| テスト種別           | 現状                            | 今後の方針                     |
+| -------------------- | ------------------------------- | ------------------------------ |
+| 単体テスト           | ✅ ゲームロジック中心に実施済み | カバレッジ拡充                 |
+| 結合テスト           | ❌ 未実施                       | コンポーネント間の連携検証     |
+| E2E / システムテスト | ❌ 未実施                       | デプロイ環境での実際の操作検証 |
 
 ---
 
-## 6. ゲームの機能一覧
-
-### ⚙️ 設定 (Settings)
-
-- **名前変更機能**
-  - 任意のユーザー名に変更でき、「変更」ボタンを押すことで即時反映されます。
-  - NG ワードはエラーで入力できないようにしています。
-- **音量設定**
-  - BGM と効果音のバランスをスライドバーで調整可能です。
-  - チェックボックスによる一括ミュート機能も搭載しています。
-- **ローマ字ガイド**
-  - 画面上のローマ字補助表示を非表示に設定できます。
-
-### 🌙 難易度選択画面
-
-- **王冠アイコン**
-  - 全国ランキング（TOP10）を確認できます。
-- **📄 アイコン**
-  - ハイスコア時のリザルト詳細（統計データ）を確認できます。
-
-### 🏆 ランキング画面
-
-- **視覚的な強調**
-  - 自分がランクインしている場合、**YOU バッジ**が付与され、色が変わることで一目で分かるようにしました。
-- **開発者への挑戦**
-  - ランキング画面の 👑 アイコンをクリックすると、開発者の参考スコアを確認できます。（目標の指標となり、開発者とも競える遊び心を実装）
-
-### 🏁 Ready? 画面
-
-- **アラート表示**
-  - キーボード入力が必要なことを赤文字の点滅で警告表示します。
-- **ショートカット操作**
-  - **Enter** でゲーム開始、**Esc** で難易度選択画面に戻るクイック操作に対応しました。
-
-### 🎮 ゲーム画面
-
-- **入力分岐**
-  - 様々なローマ字入力パターンに対応しています。（例：si / shi など）
-- **Backspace**
-  - 文字を消して戻すことができます。
-  - 間違えた文字を放置して入力すると、**次の単語に進まないだけでなく、正解した文字まで消えて修正しないといけない仕様**です。
-  - **手戻り入力による効率悪化**を再現することで、正確なタイピングを意識づける設計にしています。
-- **お題の単語処理**
-  - 正解は緑、間違いは赤で表示され、どちらでも次に進めます。
-  - すべてのキーが緑（正解）になった瞬間に、次の単語がランダムで選出されます。
-  - 同じ単語が連続で出現しないよう制御しています。（例：りんご → りんご の回避）
-- **連打ゲージ**
-  - 正確にキーを打つごとにゲージが蓄積され、MAX まで貯まるとタイムボーナスが加算されます。
-  - ミスタイプをするとゲージが大きく減少します。
-- **コンボシステム**
-  - 正確にキーを打ち続けることでコンボ数が増加します。
-  - 継続することで得られるスコアやタイムボーナスが増え、**爽快感**を味わえますが、**一度でもミスをすると 0 に戻る**緊張感のある仕様です。
-- **スコア制**
-  - スコアが表示されます。
-  - コンボでスコアの倍率が変わります。
-  - ミスなく単語を入力すると、PERFECT 演出が出て**文字列ボーナス**が加算されます。
-- **RANK**
-  - 現在のランクが表示され、スコアの値によって変わります。
-- **WORDS**
-  - クリアした単語数が表示されます。(同じ単語も加算されます。)
-- **KeySpeed**
-  - 現在のキー速度が表示されます。
-  - **Miss**と**BackSpace**は含まれません。
-
-## 📝 リザルト画面
-
-- **演出**
-  - スコア → 判定詳細 → 苦手単語、苦手キー詳細 → ランクの順に表示されます
-  - **クリック**or**Enter**でランク表示までスキップ可能です。
-- **スコア**
-  - 終了時のスコアが表示され、ハイスコア時に**NEW RECORD バッジ**が付与されます。
-  - ハイスコアとの差分表示が見れるようになってます。
-- **判定詳細**
-  - Correct: 正確キー数
-  - Miss: ミスタイプ数
-  - BackSpace: バックスペース数
-  - Speed: Correct のみの平均速度
-  - MAX COMBO: 最大コンボ数
-- **苦手な単語、苦手なキー**
-  - 間違えた単語とローマ字を多い順に 5 つ表示
-  - **改善のための指標**に出来るよう導入
-- **RANK**
-  - 最終スコアの値によってランクを表示
-  - ランクごとに演出が異なります。
-
-### 🔴 ボタンメニュー
-
-- **もう一度**をクリックまたは**Enter**を押すと Ready?画面に移動します。
-- **難易度選択**をクリックまたは**ESC**を押すと難易度選択画面に移動します。
-- **タイトルへ**をクリックするとタイトル画面に移動します。
-- **王冠アイコン**をクリックすると全国ランキングが確認できます。
-- **X アイコン**をクリックすると今回の結果をポストすることが出来ます。
-
----
-
-## 7.セキュリティ対策とクレジット
-
-本プロジェクトにおけるセキュリティ対策の設計思想と、使用素材のクレジット表記です。
-
-## 🛡️ セキュリティ対策
+## 5. セキュリティ対策
 
 個人開発のゲームアプリですが、Webアプリケーションとしてセキュリティを意識し、以下の対策を講じています。
 
@@ -782,7 +565,7 @@ erDiagram
 
 ローカルストレージ採用なので直接APIを叩かれるとどうしても防げない為、**「データベースの最前線で防ぐ」**設計にしています。
 
-- **不正書き込み防止:** `auth.uid() = user_id` のポリシーを適用し、**本人のスコアのみ**挿入・更新可能に制限。
+- **不正書き込み防止:** `auth.uid() = user_id` のポリシーを適用し、**本人のスコアのみ**挿入・更新・削除可能に制限。
 - **なりすまし防止:** Supabase AuthのUIDを「仮の身分証明書」として利用。
 - **最小権限の原則:** 必要なカラム以外へのアクセス権限を遮断。
 - **Bot対策:** チェック制約を使い、ありえないスコアや挙動を弾く設定に。(こちらは運用データを見ながら閾値を調整予定)
@@ -793,37 +576,33 @@ erDiagram
 - **XSS (クロスサイトスクリプティング):** Reactの標準機能によるエスケープ処理を活用し、スクリプトの埋め込みを防止。
 - **OSコマンドインジェクション:** OSコマンドを実行するプログラムを書いていないが、シェルを起動してコマンドを実行する関数の使用は避ける。(exec()やpassthru()等)
 
-### 3. サプライチェーンセキュリティ
+### 3. HTTPセキュリティヘッダー（vercel.json）
+
+`vercel.json` にレスポンスヘッダーを設定し、ブラウザレベルの攻撃に対策しています。
+
+| ヘッダー                   | 設定値（概要）                                                           | 設定しないと起きること                                                                                                       |
+| -------------------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| **CSP**                    | 自ドメイン・Supabase・Sentryのみ許可。`unsafe-inline` なしで動作確認済み | XSSで注入されたスクリプトが自由に実行され、LocalStorageやセッション情報を盗まれる                                            |
+| **HSTS**                   | max-age=2年・preload                                                     | 初回HTTP接続をSSLストリッピングで中継される → 中間者攻撃 → Cookieを盗みセッションハイジャック。`preload` で初回から強制HTTPS |
+| **X-Content-Type-Options** | nosniff                                                                  | ブラウザがファイルの中身を独自解釈し、画像ファイルに埋め込まれたスクリプトをJSとして実行させられる（MIMEスニッフィング）     |
+| **X-Frame-Options**        | DENY                                                                     | 悪意あるサイトにiframeで埋め込まれ、見えないボタンをクリックさせられる（クリックジャッキング）                               |
+| **Referrer-Policy**        | strict-origin-when-cross-origin                                          | 外部サイト遷移時にURLのパスが漏れる                                                                                          |
+| **Permissions-Policy**     | カメラ・マイク・位置情報を無効化                                         | スクリプト注入時にデバイスのセンサー類へのアクセスを許してしまう                                                             |
+
+> **CORSについて**
+> vercel.json にCORS設定はありません。Supabase APIのCORSはSupabaseダッシュボード側で管理しており、
+> フロントはVercelから静的ファイルを配信するだけのため、Vercel側でのCORSヘッダーは不要な構成です。
+
+### 4. サプライチェーンセキュリティ
 
 - **依存関係の管理:** 不要なライブラリを導入せず、`npm audit` 等で定期的に脆弱性をチェック。
 - **機密情報の管理:** 機密情報を直書きせず、APIキー等は `.env` ファイルで管理し、`.gitignore` でGitHubへの流出を防止。
 
 ---
 
-## 👏 クレジット (Special Thanks)
+## 6. 開発プロセスと設計資料
 
-本ゲームの制作にあたり、以下の素晴らしい素材を使用させていただきました。心より感謝申し上げます。
-
-### 🎵 BGM
-
-- **しろう** 様
-- **kyatto** 様
-
-### 🔊 SE (効果音)
-
-- **効果音ラボ** 様
-- **魔王魂** 様
-- **Springin'** 様
-
-### 📚 参考・学習リソース
-
-- 様々なタイピングゲームや音楽ゲームのシステムを参考にさせていただきました。
-
----
-
-## 8. 開発プロセスと設計資料
-
-- 開発前の設計図と開発後の設計図の手書きの設計書です。よろしければご覧ください。
+- 開発前の設計図とデプロイ後(1/8地点)の手書きの設計書です。よろしければご覧ください。
 - 開発後の設計書？とはなりますが、改めて書き直すことで設計書の重要性を自分なりに理解することが出来たので書いてよかったです。
 
 <details>
@@ -859,3 +638,572 @@ erDiagram
 <img src="images/Credit_security.jpg" alt="セキュリティ構成" width="600" style="border: 1px solid #ddd; border-radius: 8px;">
 
 </details>
+
+## 7. コード説明
+
+### ① TypingEngine / Segment クラス（`useTypingEngine.ts`）
+
+タイピング判定の核となるクラス。React の外側（クラス）に切り出した理由は、**キー入力のたびに状態を直接書き換える「ミュータブルな処理」** が必要なためです。
+
+**なぜ `useState` ではダメなのか — 具体例**
+
+速いタイピストが `s` → `h` を連打したケースで考えます。
+
+```ts
+// もし inputBuffer を useState で管理していた場合
+const [inputBuffer, setInputBuffer] = useState("");
+
+const handleKey = (key: string) => {
+  const nextBuffer = inputBuffer + key; // inputBuffer は今のレンダリング時点の値
+  if (patterns.some((p) => p.startsWith(nextBuffer))) {
+    setInputBuffer(nextBuffer); // ← React に「次回から使って」と予約するだけ
+  }
+};
+```
+
+`setInputBuffer` は次の再レンダリングまで反映されません。
+速い入力で `s` のハンドラが完了する前に `h` のハンドラが走ると、`h` が参照する `inputBuffer` は**まだ `""` のまま**です。
+`nextBuffer = "" + "h" = "h"` はどのパターンにも一致しないため**ミス判定**になります。
+
+クラスの `this.inputBuffer` は**同期的に書き換わる**ため、`s` の処理が終わった瞬間に `"s"` になっています。
+次の `h` は `"s" + "h" = "sh"` で正しく分岐を追えます。
+
+**ローマ字バリエーション辞書（`ROMA_VARIATIONS`）の構造**
+
+```ts
+// romajiMap.ts の一部
+si:  ["si", "shi", "ci"],
+shi: ["si", "shi", "ci"],  // ← si と shi は同じ patterns を持つ
+```
+
+`し` に対応するキーが `"si"` と `"shi"` の 2 つあり、どちらも同じ `patterns` 配列を持ちます。
+`segmentize` 時に `"し"` のローマ字 `"shi"` を解析すると `SORTED_ROMA_KEYS` の長い順サーチで `"shi"` が `"si"` より先にヒットし、canonical が `"shi"` のセグメントが生成されます。しかしどちらのキーでセグメント化しても patterns は同じなので、`"si"` と `"shi"` 両方の入力ルートが保持されます。
+
+ユーザーが最初に `s` を打った時点では、`patterns` の全候補（`"si"`, `"shi"`, `"ci"`）が `"s"` で始まるため、**どのルートも生きている**状態です。
+`display` ゲッターは `patterns.find(p => p.startsWith(inputBuffer))` で最初に見つかった `"si"` をガイド表示しますが、`"shi"` ルートも消えていません。
+
+**SORTED_ROMA_KEYS（静的ソート）**
+
+```ts
+const SORTED_ROMA_KEYS = Object.keys(ROMA_VARIATIONS).sort(
+  (a, b) => b.length - a.length,
+);
+```
+
+ローマ字テーブルのキーを「文字数の多い順」にソートした配列を、モジュール読み込み時に 1 回だけ生成しています。
+ソートなしで `segmentize("shi...")` を処理すると、`"s"` が先にヒットして 1 文字のセグメントが作られてしまい、残りの `"h"` が正しく解析されません。
+コンポーネント内に書くと再レンダリングのたびに計算が走るため、モジュールスコープに置いて使い回す設計にしています。
+
+**バックスペースで `sh` → `si` 表示に戻る処理**
+
+```ts
+// Segment.backspace()
+backspace(): boolean {
+  if (this.inputBuffer.length > 0) {
+    this.inputBuffer = this.inputBuffer.slice(0, -1); // "sh" → "s"
+    this.typedLog.pop();
+    return true;
+  }
+  return false;
+}
+
+// display ゲッター
+get display() {
+  if (this.inputBuffer === "") return this.patterns[0];
+  const match = this.patterns.find((p) => p.startsWith(this.inputBuffer));
+  return match ? match : this.patterns[0];
+}
+```
+
+`"sh"` の状態でバックスペースを押すと `inputBuffer` が `"s"` に戻ります。
+`display` ゲッターは `patterns.find(p => p.startsWith("s"))` を再計算し、先頭から探した `"si"` を返します。
+これによりガイド表示が `shi` から `si` に切り替わり、次に打つべき文字が `h` から `i` に変わります。
+`"shi"` ルートが消えたわけではなく、`"s"` で始まるパターンを先頭から探した結果として `"si"` が先にヒットしているだけです。
+
+**「ん」分岐処理**
+
+「ん」は `n` 1文字でも `nn` 2文字でも入力できるため、次の文字が来るまで確定できません。
+
+```ts
+// TypingEngine.input() の「ん」処理
+if (key === "n" && prevSegment?.isSingleN()) {
+  const isCorrectForCurrent = segment?.canAccept(key) ?? false;
+  if (!isCorrectForCurrent) {
+    prevSegment.expandToDoubleN(); // ん を "nn" に書き換え
+    return { status: "EXPANDED" };
+  }
+}
+```
+
+**`ん` + `か` の場合（拡張が起きるケース）：**
+`k` は `か` の先頭文字なので `ん` の後に `n` が来ても `か` は受け入れません（`canAccept("n") = false`）。
+条件が成立するため前のセグメント（ん）を `"nn"` に書き換えます。
+
+**`ん` + `にゃ（nya）` の場合（拡張が起きないケース）：**
+`にゃ` は `n・y・a` の 3 文字を **1 セグメント**として管理しています（`か` が `k・a` の 1 セグメントであるのと同じ）。
+`n` を押すと次のセグメント（`にゃ`）が `canAccept("n") = true` を返します（`"nya"` が `"n"` で始まるため）。
+`isCorrectForCurrent = true` → 条件 `!isCorrectForCurrent` が **false** → 拡張チェックはスキップされ、処理がそのまま `にゃ` セグメントへ渡ります。
+ん は single `n` のまま確定し、打った `n` は `にゃ` の 1 文字目として扱われます。
+
+**`accept` / `advanceOnMiss` を `private` にしている理由**
+
+`handleKey` の内部処理は `private` メソッドに委譲しています。
+
+```ts
+private accept(key: string): "NEXT" | "OK" { ... }
+private advanceOnMiss(): "MISS" | "MISS_NEXT" | "MISS_ADVANCE" { ... }
+```
+
+`handleKey` は `hasFutureRoute` チェックを行ってから `accept` を呼ぶ設計です。
+もし `public` のままだと、外部から直接 `segment.accept("x")` を呼べてしまい、
+**バリデーションを飛ばして無効なキーをバッファに書き込む**ことができてしまいます。
+
+```ts
+// public だと外部から状態を壊せる
+segment.accept("x"); // "きょ" に "x" を強制書き込み → パターン不整合
+```
+
+`private` で「このメソッドは `handleKey` 経由でしか使えない」と明示することで、
+状態の整合性を守る責任をクラス自身が担う設計にしています。
+
+---
+
+「戻れない処理を後から取り消せる」ようにするため、`tryShrinkFromDoubleN()` でバックスペース時の特殊ケースも処理しています。
+`"nn"` 拡張後にバックスペースを押すと `inputBuffer` を一気に `""` に戻す仕様のため、**2文字分まとめて消えるように見えます**。
+現状はこの挙動のままリリースしていますが、「なぜ2個消えるのか」というフィードバックが多い場合は `"n"` に戻す1文字消し仕様への変更を検討しています。
+
+---
+
+### ② useTypingGame（`useTypingGame.ts`）
+
+**なぜ `useReducer` を使うのか**
+
+ゲーム中はスコア・コンボ・残り時間・ゲージ・ポップアップなど多くの状態が同時に変化します。
+`useState` を並べると、1 回のキー入力で複数の `setState` が走り**バッチされなかった場合に中間状態が描画される可能性**があります。
+`useReducer` にまとめることで「1 つのアクションに対して 1 回の状態更新」が保証され、状態の整合性を保ちながらテストもしやすくなります。
+
+**エンジンの再インスタンス化**
+
+```ts
+engineRef.current = new TypingEngine(nextWord.roma, isEnglishMode);
+```
+
+新しい単語がロードされるたびに `TypingEngine` を `new` で作り直します。
+「前の単語の入力状態を引き継がない」という仕様を、リセット処理を書かずに「新品を作る」ことで実現しています。
+
+再インスタンス化をせず `reset()` メソッドで対応しようとした場合、Segment が持つ `inputBuffer` / `typedLog` / `isExpanded`、Engine の `segIndex` など**すべてのフィールドを漏れなく初期化**する必要が出てきます。
+1つ漏らせば前の単語の状態が次の単語に引き継がれてバグになるため、`new` で作り直すことで「リセット漏れ」が構造上起きない設計にしています。
+
+**スプレッド構文による再レンダリングの強制**
+
+```ts
+segments: [...engine.segments],
+```
+
+React はオブジェクトの参照が同じだと変更なしと判断します。
+`engine.segments` はクラス内部の配列なので参照が変わらないため、スプレッド構文で**新しい配列を作ってから渡す**ことで確実に再レンダリングをトリガーしています。
+
+スプレッド構文なしで `segments: engine.segments` と渡した場合、`allSegments` がエンジン内部と**同じ参照**を持ちます。
+Segment オブジェクトはミュータブルに書き換わっていても React は「参照が変わっていない＝変更なし」と判断してスキップするため、打鍵しても文字の色が変わらない表示バグになります。
+
+**scheduleTrackedTimeout**
+
+```ts
+const scheduleTrackedTimeout = useCallback((callback, delayMs) => {
+  const timeoutId = window.setTimeout(() => {
+    callback();
+    timeoutIdsRef.current.delete(timeoutId);
+  }, delayMs);
+  timeoutIdsRef.current.add(timeoutId);
+  return timeoutId;
+}, []);
+```
+
+ポップアップ消去などの `setTimeout` をすべてこの関数経由で登録します。
+`timeoutIdsRef` に ID を追跡しておくことで、コンポーネントがアンマウントされた際に `forEach(clearTimeout)` で**未実行のタイマーを一括クリア**できます。登録時だけでなく、実行完了後も `delete` して管理をクリーンに保つ設計です。
+
+**なぜポップアップIDを `Math.random()` ではなく連番管理にしているか**
+
+以前 はref管理ではなく、IDに`Math.random()` を付与してID管理していた際、低確率でIDが衝突し `REMOVE_POPUP` が別のポップアップを誤って消せず、演出が残り続けるバグが発生しました。
+`popupIdRef` をインクリメントする連番方式にすることで、衝突が構造上起きない設計にしています。
+
+```ts
+popupIdRef.current += 1; // 1 → 2 → 3 … 絶対に重複しない
+const newId = popupIdRef.current;
+```
+
+`useState` ではなく `useRef` にしているのは、IDは画面に表示しないため値が変わっても再レンダリングが不要だからです。
+
+---
+
+### ③ useGameKeyHandler（`useGameKeyHandler.ts`）
+
+**前提：Stale Closure（古いクロージャ）問題**
+
+`useEffect` に `[]` を渡すと、リスナーは**マウント時の一度だけ**登録されます。
+このとき、ハンドラ内の変数は「登録した瞬間の値」をずっと掴み続けます。
+
+```ts
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    // gameState は初期値のまま永遠に変わらない（Stale Closure）
+    if (gameState === "playing") { ... }
+  };
+  window.addEventListener("keydown", handleKeyDown);
+}, []);
+```
+
+これを解決するために「依存配列に `gameState` を入れる」と、状態変化のたびにリスナーが着脱され直し、**キー入力とリスナー登録の間に一瞬の不感時間が生まれる**という別の問題が起きます。
+
+**解決策：`useEffectEvent`（React 19）**
+
+`useEffectEvent` でラップした関数は、**呼び出された瞬間に最新の値を読みに行く**よう React が内部で管理します。
+「リスナーの参照（ポインタ）は変わらないが、中身は常に最新」という動きです。
+
+```ts
+const onKeyDown = useEffectEvent((e: KeyboardEvent) => {
+  // gameState は呼び出し時点の最新値が見える
+  switch (gameState) {
+    case "playing": ...
+    case "result": ...
+  }
+});
+
+useEffect(() => {
+  window.addEventListener("keydown", onKeyDown, true);
+  return () => window.removeEventListener("keydown", onKeyDown, true);
+}, []); // 依存配列は空！リスナーの着脱は1回だけ
+```
+
+さらに `switch` 内の各フェーズ処理を `useEffectEvent` で分離することで、責務が明確になります。
+
+```ts
+const handleReadyPhaseKey = useEffectEvent((e) => { ... });
+const handleGamePhaseKey  = useEffectEvent((e) => { ... });
+const handleResultKey     = useEffectEvent((e) => { ... });
+
+const onKeyDown = useEffectEvent((e) => {
+  // ガード処理のみ
+  switch (gameState) {
+    case "playing":
+      if (playPhase === "ready") handleReadyPhaseKey(e);
+      else if (playPhase === "game") handleGamePhaseKey(e);
+      break;
+    case "result":
+      handleResultKey(e);
+      break;
+  }
+});
+```
+
+<details>
+<summary><strong>旧実装：Latest Ref Pattern（`useEffectEvent` 以前の解決策）<strong></summary>
+
+```ts
+const propsRef = useRef(props);
+useEffect(() => {
+  propsRef.current = props;
+}); // 依存配列なし → 毎レンダリング後に手動で同期
+```
+
+`useEffectEvent` が使えない環境では、最新の props を ref に手動コピーする方法で Stale Closure を回避していました。
+ハンドラ内では `propsRef.current` から値を取り出すことで、常に最新の状態にアクセスできます。
+
+|              | Latest Ref Pattern        | `useEffectEvent`     |
+| ------------ | ------------------------- | -------------------- |
+| 依存配列     | `[]`                      | `[]`                 |
+| 最新値の取得 | 手動で ref に同期         | 自動（React が管理） |
+| 余分なコード | propsRef + 同期 useEffect | 不要                 |
+
+</details>
+
+**IME（日本語入力）対策**
+
+```ts
+if (isComposingRef.current || e.isComposing || e.keyCode === 229) return;
+```
+
+日本語入力中（変換前）のキーイベントがゲームに誤入力されるのを防ぐため、3 つの方法で多重チェックしています。
+
+- `compositionstart/end` イベントで `isComposingRef` を自分で管理（イベント由来）
+  - Safari と Chrome 系で「変換確定の Enter」の `keydown` → `compositionend` の発火順が逆になるため、`e.isComposing` だけでは取りこぼしが発生する。自前でフラグを持つことで補完している。
+- `e.isComposing`（ブラウザ標準プロパティ）
+  - モダンブラウザの標準。ただし上記のブラウザ差異があるため単体では不十分。
+- `e.keyCode === 229`（古いブラウザの互換対応）
+  - `e.isComposing` が存在しない古いブラウザ向けの保険。
+
+確定後のEnterの挙動が厄介で発火順の違いを解消するためにcompositionstart/endイベントでrefを自前管理してどのブラウザでも誤判定しないを実現しています。
+
+---
+
+### ④ useRanking（`useRanking.ts`）
+
+**requestId パターン（競合状態の防止）**
+
+```ts
+const isLatest = (id: number) => id === rankingRequestIdRef.current;
+
+// ...
+if (!isLatest(requestId)) return;
+```
+
+ランキング取得中に別の難易度に切り替えると、古いリクエストが後から返ってきて画面を上書きする「レース状態」が起きます。
+リクエスト開始時に `ref` をインクリメントして「整理券番号」を発行し、レスポンス受信時に番号が一致するか確認することで**古いレスポンスを無視**します。
+
+`AbortController` で通信自体をキャンセルする方法もありますが、今回は古い値を参照して画面を上書きするのを防ぎたいといった問題だったため、実装がシンプルで同等の安全性を得られる`ref`管理を採用しました。
+
+---
+
+### ⑤ useAuth / useGameResult（多重処理防止）
+
+**useAuth — initializedRef による重複実行ガード**
+
+```ts
+const initializedRef = useRef(false);
+// ...
+if (initializedRef.current) return;
+initializedRef.current = true;
+```
+
+React 18 の Strict Mode では依存配列ミスやclean up忘れ、EventListenerの多重登録を未然に防ぐために `useEffect` が開発環境で 2 回実行されます。
+`useState` ではなく `useRef` を使う理由は、**フラグの更新で再レンダリングを起こしたくない**からです。`ref` の更新は同期的かつ副作用なし（画面に影響しない）なので、重複実行防止のガードに最適です。
+
+もし、これを`useState`で管理してしまうと
+
+```ts
+const [initialized, setInitialized] = useState(false);
+
+useEffect(() => {
+  if (initialized) return;
+  setInitialized(true); // 再レンダリング発生
+  // 再レンダリング →　useEffect再実行 → setInitialized...
+}, []);
+```
+
+`setState` は非同期なので、ガードが機能する前に次のループが走る可能性があります。その結果...
+
+```
+setInitialized(true) 
+  → 再レンダリング  
+    → useEffect 再実行  
+      → if (initialized) return ... 
+        → initialized はまだ false（setState は非同期）
+          → setInitialized(true)
+            → 再レンダリング → ...（無限ループ）
+```
+
+といった形で無限ループを引き起こす可能性があるため `ref` で管理する設計にしました。
+
+**useGameResult — hasSaved.current による二重保存防止**
+
+```ts
+hasSaved.current = true; // await の前にセット
+await ScoreService.saveRemote(...);
+```
+
+`await` の前にフラグを立てることがポイントです。非同期処理の「隙間」に 2 回目の呼び出しが来ても、`ref` は同期的に更新されているため確実に防げます。
+`useState` だとセットと読み取りの間にレンダリングが挟まる可能性があり、この用途には不適切です。上記の説明を参照。
+
+---
+
+### ⑥ storage.ts / ScoreService（`storage.ts` / `scoreService.ts`）
+
+**storage — ジェネリクスによる型安全なラッパー**
+
+```ts
+get<T>(key: string, parse: (raw: string) => T): T | null
+```
+
+`localStorage` の `getItem` が返すのは `string | null` です。
+取り出す時に**パース処理を呼び出し元に委譲**することで、スコアなら `parseNonNegativeInt`、結果データなら `JSON.parse + バリデーション` と用途ごとに変換ロジックを変えられます。
+パースに失敗した場合は `catch` で捕まえ、壊れたデータを自動削除して `null` を返す設計にしています。
+
+**なぜ壊れたデータを自動削除するのか**
+
+`localStorage` は文字列しか保存できません。オブジェクトをそのまま渡すと `[object Object]` という文字列として保存されてしまいます。
+
+```ts
+// NG: オブジェクトをそのまま set した場合
+localStorage.setItem("score", someObject); // → "[object Object]" が保存される
+
+// 次回読み込み時
+parseInt("[object Object]", 10); // → NaN
+```
+
+`parseInt` は変換できない文字列に対して `NaN` を返しますが、**`NaN` はあらゆる比較で `false`** になるため、バリデーションをすり抜けてスコア計算が壊れます。
+
+```ts
+NaN > 0;    // false → ハイスコア更新が永遠に起きない
+NaN + 100;  // NaN → 計算結果が全て NaN に伝播する
+```
+
+`parseNonNegativeInt` では `Number.isNaN` と負数チェックを明示的に行い、異常値は例外を投げる設計にしています。`catch` でその例外を受け取り、壊れたデータを即削除することで**次回以降も正常に動作**します。
+
+```ts
+export const parseNonNegativeInt = (raw: string): number => {
+  const n = parseInt(raw, 10);
+  if (Number.isNaN(n) || n < 0) throw new Error("invalid"); // 異常値は例外へ
+  return n;
+};
+```
+
+**ScoreService — ローカル保存とリモート保存の分離**
+
+`processResult`（ローカル更新）と `saveRemote`（Supabase への送信）を意図的に分けています。
+
+**なぜ分離するのか**
+
+仮にリモート保存を `await` で待つ設計にすると、ネットワークが不安定な環境ではゲーム終了からリザルト表示まで数秒の待機が発生します。ユーザーはゲームが終わったのに画面が切り替わらない状態で待たされることになり、UX が著しく低下します。
+
+ローカル保存はゲーム終了直後に同期的に完結させてリザルトを即表示し、リモート送信はバックグラウンドで非同期実行することで、**通信の成否がローカルのハイスコア表示に影響しない**構造にしています。 
+
+非同期中に二回更新処理が来るエッジケースは上記のuseGameResult.tsの二重保存防止で対策してあります。
+
+---
+
+### ⑦ visibilitychange イベントの活用
+
+**App.tsx — タイマー制御**
+
+```ts
+const handleVisibilityChange = () => {
+  if (document.hidden) stopTimer();
+  else startTimer();
+};
+document.addEventListener("visibilitychange", handleVisibilityChange);
+```
+
+以前の実装では `timeLeft` を依存配列に入れていたため、1 秒ごとに `setInterval` の削除と再生成が繰り返されていました。
+`tick` 関数が `timeLeft` を内部で管理するようにした上で、`visibilitychange` でタブが非表示になった時だけタイマーを停止・再開するよう改善しています。不要な interval の生成をなくし、**タブを離れている間のタイマー誤進行も防いでいます。**
+
+**audio.ts — AudioContext の自動停止・再開**
+
+```ts
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) audioCtx.suspend();
+  else audioCtx.resume();
+});
+```
+
+タブが非表示のとき `AudioContext` をサスペンドすることで、**BGM の音声処理による CPU 消費を抑制**しています。
+ブラウザが自動でやる場合もありますが、明示的に制御することで挙動を確実にしています。
+
+---
+
+### ⑧ index.html — 初期描画の最適化
+
+```html
+<link rel="preload" as="image" href="/images/title.webp" fetchpriority="high" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+```
+
+ページを開いた瞬間に表示が必要なタイトル画像を `preload` で最優先フェッチします。
+Google Fonts への接続は `preconnect` で事前に DNS 解決・TCP 接続を済ませておき、フォントリクエスト発生時のレイテンシを削減しています。
+
+```html
+<link href="...text=LOADING..." rel="stylesheet" fetchpriority="high" />
+<link href="..." rel="stylesheet" media="print" onload="this.media='all'" />
+```
+
+フォントは 2 段階で読み込んでいます。
+最初のリクエストでは `text=` パラメータで**ローディング画面・タイトル画面に必要な文字だけ**に絞って先行取得（レンダリングブロックを最小化）。
+残りのフォント（ゲーム中・結果画面用）は `media="print"` で最初はレンダリングから除外し、`onload` で `media='all'` に切り替えて非同期適用します。
+ユーザーが実際にそのフォントを必要とする画面に到達するまでに読み込みが完了するよう設計しています。
+
+## 8. プチこだわり
+
+### ① 難易度選択画面 — ホバー時の背景切り替え演出
+
+![難易度選択画面ボタンhover演出](../public/images/demo_hover.gif)
+
+ボタンにホバーした瞬間、背景が選択中の難易度に合わせて切り替わります。
+プレイ前から難易度ごとの「雰囲気」を掴んでもらうための視覚的なヒントとして実装しました。
+
+---
+
+### ② コンボ演出 — 音楽ゲームを意識した演出
+
+![コンボアニメーション](../public/images/demo_comboanim.gif)  
+
+コンボが続くほど演出が強化される、段階的なビジュアルフィードバックです。
+
+| コンボ数 | 演出 |
+| --- | --- |
+| 通常 | 紫の発光 |
+| 100コンボ〜 | ゴールドに変色 + 1.1倍に拡大 |
+| 200コンボ〜 | レインボーに変色 + 1.1〜1.2倍に拡大 |
+
+コンボが加算されるたびにポップアニメーションが走り、**打鍵の爽快感**を視覚的にフィードバックしています。
+
+**ポップアニメーションの仕組み**
+
+```css
+@keyframes combo-shrink-pop {
+  0%   { transform: scale(0.75); }
+  75%  { transform: scale(1.05); }
+  100% { transform: scale(1);    }
+}
+
+.combo-pop-anim {
+  animation: combo-shrink-pop 0.5s cubic-bezier(0.24, 1.86, 0.93, 1);
+  transform: translateZ(0); /* GPU強制でアニメーションを滑らかに */
+}
+```
+
+`cubic-bezier` の第2引数 `1.86` が **1を超えている**のがポイントです。
+通常のイージングは0〜1の範囲に収まりますが、これを超えることで一瞬オーバーシュートする**バネのような挙動**になります。
+`@keyframes` の `scale(0.75 → 1.05 → 1)` と組み合わさり「縮む → 行き過ぎて膨らむ → 元に戻る」という弾む感覚を演出しています。
+
+`translateZ(0)` でGPUのコンポジットレイヤー(この要素は3D処理が必要とブラウザに認識させる)に乗せることで、コンボ連打時もアニメーションがカクつかないようにしています。
+
+**レインボーテキストの仕組み**
+
+![](../public/images/demo_combo.webp)
+
+```css
+color: transparent;
+background: linear-gradient(90deg, /* 虹色グラデーション */);
+-webkit-background-clip: text;
+background-clip: text;
+```
+
+`color: transparent` で文字を透明にし、背景に敷いたグラデーションを `background-clip: text` でテキストの形に切り抜く3行セットで実現しています。
+
+縁取りは `-webkit-text-stroke` を直接当てるとグラデーションに混ざって汚くなるため、`::after` 疑似要素で白い縁取りだけを上から重ねる2層構造にしています。
+
+```css
+/* z-index: 1 → レインボー本体（透明テキスト + グラデ背景） */
+/* z-index: 2 → ::after で白縁取りのみ上から被せる */
+#combo-count.is-rainbow::after {
+  content: attr(data-text);
+  position: absolute;
+  color: var(--color-white);
+  -webkit-text-stroke: 0; /* 縁取りなし（白文字のみ） */
+  z-index: 2;
+}
+```
+
+---
+
+## 9. 今後の展望
+
+### ① App.tsx のファイル分割
+
+現状 `App.tsx` にルーティング・状態管理・画面切り替えロジックが集中しており、肥大化が進んでいます。
+画面単位・責務単位でコンポーネントやフックに分割し、見通しの良い構造に整理していきます。
+
+### ② リファクタリング（dead code 削除・共通化）
+
+上記のファイル分割と並行して、使われていないコードの削除と重複処理の共通化を進めます。
+分割の過程でコードの全体像が見えやすくなるため、そのタイミングで整理するのが効率的と判断しています。
+
+### ③ CSS の id → class への統一
+
+現状、CSS のスタイル適用が `id` セレクタと `class` セレクタに混在しています。
+`id` はページ内に1つしか存在できない前提のため、再利用性がなく保守性が低下します。
+`class` に統一することで、スタイルの再利用性と保守性を高めていきます。
+
+### ④ テストカバレッジの拡充
+
+現状はゲームロジックの単体テストのみですが、結合テスト・E2E / システムテストまで整備し、より高い品質を担保していきます。

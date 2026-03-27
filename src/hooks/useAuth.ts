@@ -17,8 +17,8 @@ export const useAuth = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUserId(session?.user?.id ?? "");
 
-      // ★ドキュメントの通り、登録直後に一度発火して状態を教えてくれるので
-      // ここで isLoading を false にするのは正解です！
+      // 登録直後に一度発火して状態を教えてくれるので
+      // ここで isLoading を false にする
       setIsLoading(false);
     });
 
@@ -29,7 +29,7 @@ export const useAuth = () => {
       try {
         const {
           data: { session },
-          // ★ここで getSession を使う理由は「能動的に今の状態を確認したいから」
+          // ここで getSession を使う理由は「能動的に今の状態を確認したいから」
           // onAuthStateChangeの初回発火を待つより、ここで明示的にチェックする方が
           // ロジックの実行順序として確実です。
         } = await supabase.auth.getSession();

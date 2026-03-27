@@ -1,6 +1,6 @@
 import "./App.css";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 // --- Components ---
 import { HowToPlay } from "./components/modals/HowToPlay";
@@ -13,16 +13,18 @@ import { GameScreen } from "./components/screens/GameScreen";
 import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 import { TitleScreen } from "./components/screens/TitleScreen";
-
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";
 import { useGameControl } from "./hooks/useGameControl";
 import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
 import { useGameResult } from "./hooks/useGameResult";
 import { useRanking } from "./hooks/useRanking";
+import { useScaler } from "./hooks/useScaler";
 import { useScreenRouter } from "./hooks/useScreenRouter";
 import { useTypingGame } from "./hooks/useTypingGame";
 import { DatabaseService } from "./services/database";
+// 計算ロジック (分離済み)
+import { ScoreService } from "./services/scoreService";
 import {
   type DifficultyLevel,
   type GameResultStats,
@@ -36,15 +38,12 @@ import { initAudio, playSE, setVolumes, startSelectBgm } from "./utils/audio";
 import {
   ALL_BACKGROUNDSDATA,
   DIFFICULTY_SETTINGS,
-  DISPLAY_SCALE,
   LIMIT_DATA,
   PLAYER_NAME_CHARS,
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
-// 計算ロジック (分離済み)
 import { createGameStats } from "./utils/gameUtils";
-import { getSavedHighScore, getSavedHighScoreResult } from "./utils/storage";
 
 const preloadImages = () => {
   const images = [
@@ -84,7 +83,6 @@ function App() {
   const [showConfig, setShowConfig] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
 
-  const [, setIsLoaded] = useState(false);
   const [hoverDifficulty, setHoverDifficulty] =
     useState<DifficultyLevel | null>(null);
 
@@ -185,9 +183,6 @@ function App() {
     resetResultState,
   });
 
-  const handleKeyInputRef = useRef(handleKeyInput);
-  const handleBackspaceRef = useRef(handleBackspace);
-
   const myGameStats = {
     score,
     completedWords,
@@ -220,11 +215,6 @@ function App() {
 
   // --- Effects ---
   useEffect(() => {
-    handleKeyInputRef.current = handleKeyInput;
-    handleBackspaceRef.current = handleBackspace;
-  }, [handleKeyInput, handleBackspace]);
-
-  useEffect(() => {
     const fetchInitialData = async () => {
       try {
         const { formattedData, ngList } =
@@ -246,7 +236,6 @@ function App() {
       const elapsedTime = performance.now() - startTime;
       if (dbWordData && elapsedTime > UI_TIMINGS.MIN_LOADING_TIME) {
         clearInterval(checkLoad);
-        setIsLoaded(true);
         setGameState("title");
         setTimeout(() => {
           setShowTitle(true);
@@ -266,15 +255,41 @@ function App() {
     localStorage.setItem(STORAGE_KEYS.VOLUME_SE, seVol.toString());
   }, [bgmVol, seVol]);
 
+  // timeLeftを参照していたが、再実行するたびにintervalを作るためにintervalを消し続けるという無駄が発生していた
+  // intervalの中身はtickを呼ぶだけ。tickがtimeLeftを管理してくれるため依存配列に不要。
+  // ユーザーがそのタブを見ているかどうか判断する為にvisibilitychangeを使用。
+  // 存在しないintervalを操作して挙動がおかしくなるのを防ぐために必ずクリーンアップを実施
   useEffect(() => {
-    let interval: number;
-    if (gameState === "playing" && playPhase === "game" && timeLeft > 0) {
-      interval = window.setInterval(() => {
-        tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
+    if (gameState !== "playing" || playPhase !== "game") return;
+    let intervalId: number | null = null;
+
+    // 0.1秒間隔で処理を実行する。(一回の更新で減らす量)
+    const startTimer = () => {
+      intervalId = window.setInterval(() => {
+        tick(UI_TIMINGS.GAME.TIMER_DECREMENT)
       }, 100);
-    }
-    return () => clearInterval(interval);
-  }, [gameState, playPhase, timeLeft, tick]);
+    };
+
+    const stopTimer = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) stopTimer();
+      else startTimer();
+    };
+
+    startTimer();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopTimer();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [gameState, playPhase, tick]);
 
   useEffect(() => {
     if (gameState === "result" && lastGameStats) {
@@ -379,8 +394,8 @@ function App() {
   const handleShowHighScoreDetail = () => {
     const displayDiff = hoverDifficulty || difficulty;
     const data =
-      getSavedHighScoreResult(displayDiff) ??
-      createGameStats({ score: getSavedHighScore(displayDiff) });
+      ScoreService.getHighScoreResult(displayDiff) ??
+      createGameStats({ score: ScoreService.getHighScore(displayDiff) });
     setReviewData(data);
     skipAnimation("S", false);
     setGameState("hiscore_review");
@@ -397,78 +412,15 @@ function App() {
     closeRanking,
   } = useRanking({ difficulty, setDifficulty });
 
-  // リサイズ
-  const scalerRef = useRef<HTMLDivElement>(null);
-
-  // アニメーションからResizeObserverに変えてみる
-  useEffect(() => {
-    const scaler = scalerRef.current;
-
-    if (!scaler) return;
-
-    // スケールの共通関数
-    const applyScale = (width: number, height: number) => {
-      const scale = Math.min(
-        width / DISPLAY_SCALE.WIDTH,
-        height / DISPLAY_SCALE.HEIGHT,
-      );
-      scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
-    };
-
-    // ResizeObserverは対応していないブラウザもあるのでその場合はこちらを使う
-    if (typeof ResizeObserver === "undefined") {
-      const handleResize = () => {
-        applyScale(
-          document.documentElement.clientWidth,
-          document.documentElement.clientHeight,
-        );
-      };
-
-      // 初回実行
-      handleResize();
-      window.addEventListener("resize", handleResize);
-
-      // クリーンアップを実施
-      return () => window.removeEventListener("resize", handleResize);
-    }
-
-    // 対応してる場合の処理、サイズが変わった時だけ実行
-    const observer = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        // inlineSize, blockSizeを安全に取得
-        let width: number;
-        let height: number;
-
-        if (entry.contentBoxSize && entry.contentBoxSize.length > 0) {
-          // contentBoxSize は配列で返ってくる（標準仕様）
-          width = entry.contentBoxSize[0].inlineSize;
-          height = entry.contentBoxSize[0].blockSize;
-        } else {
-          // 古いブラウザやポリフィル用のフォールバック
-          width = entry.contentRect.width;
-          height = entry.contentRect.height;
-        }
-
-        applyScale(width, height);
-      }
-    });
-
-    // 監視対象を指定
-    observer.observe(document.documentElement);
-
-    // クリーンアップ
-    return () => {
-      observer.disconnect();
-    };
-  }, []);
+  const scalerRef = useScaler();
 
   // --- Key Handler ---
   useGameKeyHandler({
     gameState,
     playPhase,
     difficulty,
-    handleKeyInputRef,
-    handleBackspaceRef,
+    handleKeyInput,
+    handleBackspace,
     startGame,
     setPlayPhase,
     backToDifficulty,
@@ -479,8 +431,6 @@ function App() {
     resultAnimStep,
     skipAnimation,
   });
-
-  const targetBgSrc = currentBgSrc;
 
   // 表示用データ作成
   const sortedWeakWords = [...missedWordsRecord]
@@ -521,7 +471,7 @@ function App() {
                 className="bg-layer"
                 style={{
                   backgroundImage: `url(${bg.src})`,
-                  opacity: targetBgSrc === bg.src ? 1 : 0,
+                  opacity: currentBgSrc === bg.src ? 1 : 0,
                 }}
               />
             ))}
@@ -636,7 +586,7 @@ function App() {
                       backToDifficulty();
                       return;
                     }
-                    if(resultAnimStep < 5) {
+                    if (resultAnimStep < 5) {
                       skipAnimation(displayData.rank);
                     }
                   }}
