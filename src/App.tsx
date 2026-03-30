@@ -33,17 +33,17 @@ import {
   type TitlePhase,
   type WordDataMap,
 } from "./types";
-import { initAudio, playSE, setVolumes, startSelectBgm } from "./utils/audio";
+import { initAudio, playSE, setVolumes } from "./utils/audio";
 // --- Utils & Hooks ---
 import {
   ALL_BACKGROUNDSDATA,
   DIFFICULTY_SETTINGS,
   LIMIT_DATA,
-  PLAYER_NAME_CHARS,
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
 import { createGameStats } from "./utils/gameUtils";
+import { useTitleFlow } from "./hooks/useTitleFlow";
 
 const preloadImages = () => {
   const images = [
@@ -118,7 +118,6 @@ function App() {
   const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
 
-  // --- Hook 2: Typing Game (リセット関数を取り出す) ---
   const {
     score,
     displayScore,
@@ -210,8 +209,37 @@ function App() {
     processResult,
   });
 
-  // --- Hook: Auth(認証)
   const { userId, isLoading, error } = useAuth();
+
+  const {
+    handleStartSequence,
+    handleCancelInput,
+    handleNameSubmit,
+    handleFinalConfirm,
+    handleBackToInput,
+    handleOpenConfig,
+    handleCloseConfig,
+    handleSaveName,
+    handleOpenHowToPlay,
+    handleCloseHowToPlay,
+  } = useTitleFlow({
+    isInputLocked,
+    isNameConfirmed,
+    isTitleExiting,
+    playerName,
+    ngWordsList,
+    userId,
+    goToDifficulty,
+    setIsInputLocked,
+    setIsTitleExiting,
+    setNameError,
+    setTitlePhase,
+    setPlayerName,
+    setIsNameConfirmed,
+    setGameState,
+    setShowConfig,
+    setShowHowToPlay,
+  });
 
   // --- Effects ---
   useEffect(() => {
@@ -266,7 +294,7 @@ function App() {
     // 0.1秒間隔で処理を実行する。(一回の更新で減らす量)
     const startTimer = () => {
       intervalId = window.setInterval(() => {
-        tick(UI_TIMINGS.GAME.TIMER_DECREMENT)
+        tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
       }, 100);
     };
 
@@ -297,90 +325,6 @@ function App() {
       playResultAnimation(lastGameStats.rank);
     }
   }, [gameState, lastGameStats, saveScore, playResultAnimation, playerName]);
-
-  // --- Handlers (View Logic) ---
-  const handleStartSequence = () => {
-    if (isTitleExiting || isInputLocked) return;
-    if (isNameConfirmed) {
-      goToDifficulty(); // Routerの関数を使用
-      return;
-    }
-    setIsInputLocked(true);
-    setIsTitleExiting(true);
-    setTimeout(() => {
-      setIsTitleExiting(false);
-      setIsInputLocked(false);
-      setNameError("");
-      setTitlePhase("input");
-    }, UI_TIMINGS.TITLE.BUTTON_FADE_OUT);
-  };
-
-  const handleCancelInput = () => {
-    setTitlePhase("normal");
-  };
-
-  const handleNameSubmit = () => {
-    const trimmedName = playerName.trim();
-    setNameError("");
-    if (trimmedName && trimmedName.length > PLAYER_NAME_CHARS.MAX) {
-      setNameError(`名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`);
-      return;
-    }
-    const isNg = ngWordsList.some((word) =>
-      trimmedName.toLowerCase().includes(word.toLowerCase()),
-    );
-    if (isNg) {
-      setNameError("不適切な文字が含まれています");
-      return;
-    }
-    setPlayerName(trimmedName || "Guest");
-    setTitlePhase("confirm");
-  };
-
-  const handleFinalConfirm = () => {
-    localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, playerName);
-    startSelectBgm();
-    setIsNameConfirmed(true);
-    setGameState("difficulty");
-    setTitlePhase("normal");
-  };
-
-  const handleBackToInput = () => {
-    setTitlePhase("input");
-  };
-
-  const handleOpenConfig = () => {
-    setShowConfig(true);
-  };
-
-  const handleCloseConfig = () => {
-    setShowConfig(false);
-  };
-
-  const handleSaveName = async (newName: string) => {
-    // userId がない（認証が終わっていない）場合は処理を中断
-    if (!userId) {
-      console.error("User is not authenticated yet.");
-      return;
-    }
-    const finalName = newName || "Guest";
-    setPlayerName(finalName);
-    localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, finalName);
-    try {
-      await DatabaseService.updateUserName(userId, finalName);
-    } catch (err) {
-      console.error("Name update error:", err);
-    }
-  };
-
-  const handleOpenHowToPlay = () => {
-    setShowHowToPlay(true);
-  };
-
-  const handleCloseHowToPlay = () => {
-    playSE("decision");
-    setShowHowToPlay(false);
-  };
 
   const getShareUrl = () => {
     const text = encodeURIComponent(
