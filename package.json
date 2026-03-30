@@ -41,6 +41,11 @@
     "vitest": "^4.0.16"
   },
   "overrides": {
-    "vite": "npm:rolldown-vite@7.2.5"
+    "vite": "npm:rolldown-vite@7.2.5",
+    "brace-expansion": ">=1.1.13",
+    "flatted": ">=3.4.2",
+    "picomatch": ">=2.3.2",
+    "smol-toml": ">=1.6.1",
+    "tar": ">=7.5.13"
   }
 }

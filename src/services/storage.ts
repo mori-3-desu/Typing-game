@@ -28,11 +28,10 @@ export const storage = {
 
 // スコアだけを取得したい時と詳細リザルトでオブジェクトを取得したい時で
 // 処理を切り分けている。
-// parseIntだけだと文字列が入ってしまったときにNaNになるので
-// Number.isNaNでチェックしている
+// スコアは小数点を扱わないのでNumber.isIntegerで整数以外は弾く
 export const parseNonNegativeInt = (raw: string): number => {
-  const n = parseInt(raw, 10);
-  if (Number.isNaN(n) || n < 0) throw new Error("invalid");
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 0) throw new Error("invalid");
   return n;
 };
 
