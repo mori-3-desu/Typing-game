@@ -19,8 +19,10 @@ import { useGameControl } from "./hooks/useGameControl";
 import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
 import { useGameResult } from "./hooks/useGameResult";
 import { useRanking } from "./hooks/useRanking";
+import { useSaveName } from "./hooks/useSaveName";
 import { useScaler } from "./hooks/useScaler";
 import { useScreenRouter } from "./hooks/useScreenRouter";
+import { useTitleFlow } from "./hooks/useTitleFlow";
 import { useTypingGame } from "./hooks/useTypingGame";
 import { DatabaseService } from "./services/database";
 // 計算ロジック (分離済み)
@@ -33,7 +35,7 @@ import {
   type TitlePhase,
   type WordDataMap,
 } from "./types";
-import { initAudio, playSE, setVolumes } from "./utils/audio";
+import { initAudio, playSE } from "./utils/audio";
 // --- Utils & Hooks ---
 import {
   ALL_BACKGROUNDSDATA,
@@ -43,7 +45,6 @@ import {
   UI_TIMINGS,
 } from "./utils/constants";
 import { createGameStats } from "./utils/gameUtils";
-import { useTitleFlow } from "./hooks/useTitleFlow";
 
 const preloadImages = () => {
   const images = [
@@ -152,8 +153,6 @@ function App() {
     currentSpeed,
   } = useTypingGame(difficulty, dbWordData);
 
-  // --- Hook 3: Screen Router (画面遷移ロジックの集約) ---
-  // ★ ここで一括呼び出し！
   const {
     currentBgSrc,
     resetToReady,
@@ -197,7 +196,6 @@ function App() {
     currentWordMiss,
   };
 
-  // --- ★ Hook: Game Control (タイマー & 終了ロジック) ---
   const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
     gameState,
     playPhase,
@@ -211,6 +209,11 @@ function App() {
 
   const { userId, isLoading, error } = useAuth();
 
+  const { saveName } = useSaveName({
+    userId,
+    setPlayerName,
+  });
+
   const {
     handleStartSequence,
     handleCancelInput,
@@ -219,7 +222,6 @@ function App() {
     handleBackToInput,
     handleOpenConfig,
     handleCloseConfig,
-    handleSaveName,
     handleOpenHowToPlay,
     handleCloseHowToPlay,
   } = useTitleFlow({
@@ -228,7 +230,7 @@ function App() {
     isTitleExiting,
     playerName,
     ngWordsList,
-    userId,
+    saveName,
     goToDifficulty,
     setIsInputLocked,
     setIsTitleExiting,
@@ -241,7 +243,6 @@ function App() {
     setShowHowToPlay,
   });
 
-  // --- Effects ---
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -276,48 +277,6 @@ function App() {
     }, 100);
     return () => clearInterval(checkLoad);
   }, [dbWordData]);
-
-  useEffect(() => {
-    setVolumes(bgmVol, seVol);
-    localStorage.setItem(STORAGE_KEYS.VOLUME_BGM, bgmVol.toString());
-    localStorage.setItem(STORAGE_KEYS.VOLUME_SE, seVol.toString());
-  }, [bgmVol, seVol]);
-
-  // timeLeftを参照していたが、再実行するたびにintervalを作るためにintervalを消し続けるという無駄が発生していた
-  // intervalの中身はtickを呼ぶだけ。tickがtimeLeftを管理してくれるため依存配列に不要。
-  // ユーザーがそのタブを見ているかどうか判断する為にvisibilitychangeを使用。
-  // 存在しないintervalを操作して挙動がおかしくなるのを防ぐために必ずクリーンアップを実施
-  useEffect(() => {
-    if (gameState !== "playing" || playPhase !== "game") return;
-    let intervalId: number | null = null;
-
-    // 0.1秒間隔で処理を実行する。(一回の更新で減らす量)
-    const startTimer = () => {
-      intervalId = window.setInterval(() => {
-        tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
-      }, 100);
-    };
-
-    const stopTimer = () => {
-      if (intervalId !== null) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) stopTimer();
-      else startTimer();
-    };
-
-    startTimer();
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      stopTimer();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [gameState, playPhase, tick]);
 
   useEffect(() => {
     if (gameState === "result" && lastGameStats) {
@@ -569,7 +528,7 @@ function App() {
             setSeVol={setSeVol}
             setBrightness={setBrightness}
             setShowRomaji={setShowRomaji}
-            onSaveName={handleSaveName}
+            onSaveName={saveName}
             onClose={handleCloseConfig}
           />
         )}

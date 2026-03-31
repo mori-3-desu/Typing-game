@@ -676,25 +676,30 @@ export const useTypingGame = (
     if (displayScore !== score) {
       const diff = score - displayScore;
       const easing = UI_ANIMATION_CONFIG.SCORE_EASING;
+
       const step =
         Math.abs(diff) < easing
           ? diff > 0
             ? 1
             : -1
           : Math.ceil(diff / easing);
+
       const timer = setTimeout(() => {
         setDisplayScore((prev) => prev + step);
       }, UI_ANIMATION_CONFIG.SCORE_FLUCTUATION_MS);
+
       return () => clearTimeout(timer);
     }
   }, [score, displayScore]);
 
   useEffect(() => {
     const timeoutIds = timeoutIdsRef.current;
+
     return () => {
       timeoutIds.forEach((timeoutId) => {
         clearTimeout(timeoutId);
       });
+      
       timeoutIds.clear();
     };
   }, []);

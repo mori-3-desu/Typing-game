@@ -1,12 +1,11 @@
 import type { Dispatch, SetStateAction } from "react";
-import type { TitlePhase, GameState } from "../types";
+
+import type { GameState,TitlePhase } from "../types";
 import { playSE, startSelectBgm } from "../utils/audio";
 import {
-  UI_TIMINGS,
   PLAYER_NAME_CHARS,
-  STORAGE_KEYS,
+  UI_TIMINGS,
 } from "../utils/constants";
-import { DatabaseService } from "../services/database";
 
 type UseTitleParams = {
   isInputLocked: boolean;
@@ -14,12 +13,10 @@ type UseTitleParams = {
   isTitleExiting: boolean;
   playerName: string;
   ngWordsList: string[];
-  userId: string | null;
 
-  // 関数系（外から受け取るもの）
+  saveName: (name: string) => void;
   goToDifficulty: () => void;
 
-  // setter系
   setIsInputLocked: Dispatch<SetStateAction<boolean>>;
   setIsTitleExiting: Dispatch<SetStateAction<boolean>>;
   setNameError: Dispatch<SetStateAction<string>>;
@@ -53,7 +50,7 @@ export const useTitleFlow = ({
   isTitleExiting,
   playerName,
   ngWordsList,
-  userId,
+  saveName,
   goToDifficulty,
   setIsInputLocked,
   setIsTitleExiting,
@@ -102,7 +99,7 @@ export const useTitleFlow = ({
   };
 
   const handleFinalConfirm = () => {
-    localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, playerName);
+    saveName(playerName);
     startSelectBgm();
     setIsNameConfirmed(true);
     setGameState("difficulty");
@@ -119,24 +116,6 @@ export const useTitleFlow = ({
 
   const handleCloseConfig = () => {
     setShowConfig(false);
-  };
-
-  const handleSaveName = async (newName: string) => {
-    // userId がない（認証が終わっていない）場合は処理を中断
-    if (!userId) {
-      console.error("User is not authenticated yet.");
-      return;
-    }
-
-    const finalName = newName || "Guest";
-    setPlayerName(finalName);
-    localStorage.setItem(STORAGE_KEYS.PLAYER_NAME, finalName);
-
-    try {
-      await DatabaseService.updateUserName(userId, finalName);
-    } catch (err) {
-      console.error("Name update error:", err);
-    }
   };
 
   const handleOpenHowToPlay = () => {
@@ -156,7 +135,6 @@ export const useTitleFlow = ({
     handleBackToInput,
     handleOpenConfig,
     handleCloseConfig,
-    handleSaveName,
     handleOpenHowToPlay,
     handleCloseHowToPlay,
   };
