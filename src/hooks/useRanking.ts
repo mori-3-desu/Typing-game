@@ -35,7 +35,6 @@ export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
     const searchDiff = targetDiff || difficulty;
     if (targetDiff) setDifficulty(targetDiff);
 
-    
     setShowRanking(true);
     setIsDevRankingMode(false);
 

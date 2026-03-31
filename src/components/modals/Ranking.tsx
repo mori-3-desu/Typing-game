@@ -143,7 +143,7 @@ export const Ranking = ({
                       <div className="dev-stat-item stat-speed">
                         <span>Speed</span>
                         <span className="dev-stat-val">
-                          {item.speed} <span>key/s</span>
+                          {item.speed.toFixed(2)} <span>key/s</span>
                         </span>
                       </div>
                       <div className="dev-stat-item stat-combo">

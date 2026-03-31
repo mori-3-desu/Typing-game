@@ -105,7 +105,9 @@ export const DatabaseService = {
   ): Promise<RankingScore[]> {
     const query = supabase
       .from("scores")
-      .select("id, user_id, name, score, created_at, correct, miss, backspace, combo, speed, is_creator")
+      .select(
+        "id, user_id, name, score, created_at, correct, miss, backspace, combo, speed, is_creator",
+      )
       .eq("difficulty", difficulty)
       .eq("is_creator", isCreator)
       .order("score", { ascending: false })
