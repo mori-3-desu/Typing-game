@@ -15,6 +15,7 @@ type TitleScreenProps = {
   setPlayerName: (name: string) => void;
   nameError: string;
   setNameError: (error: string) => void;
+
   // アクション系（関数）
   handleStartSequence: () => void;
   handleOpenHowToPlay: () => void;
