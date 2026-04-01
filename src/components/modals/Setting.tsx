@@ -20,9 +20,28 @@ type Props = {
   setBrightness: (val: number) => void;
   setShowRomaji: (val: boolean) => void;
 
-  // 名前保存処理 (Supabase連携などはApp側でやる)
-  onSaveName: (newName: string) => Promise<void>;
+  onSaveName: (newName: string) => void;
   onClose: () => void;
+};
+
+const validateName = (name: string, ngWordsList: string[]): string | null => {
+  if (!name) {
+    return "名前を入力してください";
+  }
+
+  if (name.length > PLAYER_NAME_CHARS.MAX) {
+    return `名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`;
+  }
+
+  const isNg = ngWordsList.some((word) =>
+    name.toLowerCase().includes(word.toLowerCase()),
+  );
+
+  if (isNg) {
+    return "不適切な文字が含まれています";
+  }
+
+  return null;
 };
 
 export const Setting = ({
@@ -41,7 +60,6 @@ export const Setting = ({
   onSaveName,
   onClose,
 }: Props) => {
-  // ★ App.tsx にあった入力用Stateをここに移動！
   const [tempPlayerName, setTempPlayerName] = useState(playerName);
   const [nameError, setNameError] = useState("");
   const [isNameChange, setIsNameChange] = useState("");
@@ -53,32 +71,19 @@ export const Setting = ({
     setTempPlayerName(playerName);
   }, [playerName]);
 
-  const handleSubmit = async () => {
+  const handleNameChange = () => {
     const trimmedName = tempPlayerName.trim();
     setNameError("");
 
-    if (!trimmedName) {
-      setNameError("名前を入力してください");
-      return;
-    }
-    if (trimmedName.length > PLAYER_NAME_CHARS.MAX) {
-      setNameError(`名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`);
-      return;
-    }
+    const errorMessage = validateName(trimmedName, ngWordsList);
 
-    const isNg = ngWordsList.some((word) =>
-      trimmedName.toLowerCase().includes(word.toLowerCase()),
-    );
-
-    if (isNg) {
-      setNameError("不適切な文字が含まれています");
+    if (errorMessage) {
+      setNameError(errorMessage);
       return;
     }
 
-    // App側の保存処理を呼ぶ
-    await onSaveName(trimmedName);
+    onSaveName(trimmedName);
 
-    // 成功メッセージ表示
     setIsNameChange("名前を保存しました！");
     setTimeout(() => {
       setIsNameChange("");
@@ -148,7 +153,7 @@ export const Setting = ({
               />
               <SoundBtn
                 className="btn-change-name"
-                onClick={handleSubmit}
+                onClick={handleNameChange}
                 style={{
                   whiteSpace: "nowrap",
                   padding: "10px 20px",

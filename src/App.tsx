@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import { HowToPlay } from "./components/modals/HowToPlay";
 import { Ranking } from "./components/modals/Ranking";
 import { Setting } from "./components/modals/Setting";
-import { BrightnessOverlay } from "./components/screens/BrightnessOverlay";
 import { DifficultySelectScreen } from "./components/screens/Difficulty";
 import { GameCanvas } from "./components/screens/GameCanvas";
 import { GameScreen } from "./components/screens/GameScreen";
@@ -19,10 +18,11 @@ import { useGameControl } from "./hooks/useGameControl";
 import { useGameKeyHandler } from "./hooks/useGameKeyHandler";
 import { useGameResult } from "./hooks/useGameResult";
 import { useRanking } from "./hooks/useRanking";
-import { useScaler } from "./hooks/useScaler";
+import { useSaveName } from "./hooks/useSaveName";
 import { useScreenRouter } from "./hooks/useScreenRouter";
+import { useTitleFlow } from "./hooks/useTitleFlow";
 import { useTypingGame } from "./hooks/useTypingGame";
-import { DatabaseService } from "./services/database";
+
 // 計算ロジック (分離済み)
 import { ScoreService } from "./services/scoreService";
 import {
@@ -31,34 +31,25 @@ import {
   type GameState,
   type PlayPhase,
   type TitlePhase,
-  type WordDataMap,
 } from "./types";
-import { initAudio, playSE, setVolumes } from "./utils/audio";
+import { playSE } from "./utils/audio";
+
 // --- Utils & Hooks ---
 import {
   ALL_BACKGROUNDSDATA,
-  DIFFICULTY_SETTINGS,
-  LIMIT_DATA,
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
-import { createGameStats } from "./utils/gameUtils";
-import { useTitleFlow } from "./hooks/useTitleFlow";
 
-const preloadImages = () => {
-  const images = [
-    "/images/level.webp",
-    "/images/cloud.webp",
-    "/images/Ready.webp",
-    "/images/ranking.png",
-    "/images/X.jpg",
-    ...Object.values(DIFFICULTY_SETTINGS).map((s) => s.bg),
-  ];
-  images.forEach((src) => {
-    const img = new Image();
-    img.src = src;
-  });
-};
+import {
+  buildDisplayData,
+  createGameStats,
+  getShareUrl,
+} from "./utils/gameUtils";
+
+import { useAppInit } from "./hooks/useAppInit";
+import { ScalerWrapper } from "./components/screens/ScalerWrapper";
+import { BrightnessOverlay } from "./components/screens/BrightnessOverlay";
 
 function App() {
   const {
@@ -74,7 +65,6 @@ function App() {
     setShowRomaji,
   } = useConfig();
 
-  // --- State Definitions ---
   const [nameError, setNameError] = useState("");
   const [gameState, setGameState] = useState<GameState>("loading");
   const [difficulty, setDifficulty] = useState<DifficultyLevel>("NORMAL");
@@ -86,7 +76,6 @@ function App() {
   const [hoverDifficulty, setHoverDifficulty] =
     useState<DifficultyLevel | null>(null);
 
-  // --- Hook 1: Game Result (リセット関数を取り出す) ---
   const {
     highScore,
     isNewRecord,
@@ -106,7 +95,6 @@ function App() {
     return !!localStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
   });
 
-  const [ngWordsList, setNgWordsList] = useState<string[]>([]);
   const [titlePhase, setTitlePhase] = useState<TitlePhase>("normal");
 
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -115,8 +103,9 @@ function App() {
   const [enableBounce, setEnableBounce] = useState(false);
   const [isTitleExiting, setIsTitleExiting] = useState(false);
 
-  const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
+
+  const { ngWordsList, dbWordData } = useAppInit();
 
   const {
     score,
@@ -152,8 +141,6 @@ function App() {
     currentSpeed,
   } = useTypingGame(difficulty, dbWordData);
 
-  // --- Hook 3: Screen Router (画面遷移ロジックの集約) ---
-  // ★ ここで一括呼び出し！
   const {
     currentBgSrc,
     resetToReady,
@@ -197,7 +184,6 @@ function App() {
     currentWordMiss,
   };
 
-  // --- ★ Hook: Game Control (タイマー & 終了ロジック) ---
   const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
     gameState,
     playPhase,
@@ -211,6 +197,11 @@ function App() {
 
   const { userId, isLoading, error } = useAuth();
 
+  const { saveName } = useSaveName({
+    userId,
+    setPlayerName,
+  });
+
   const {
     handleStartSequence,
     handleCancelInput,
@@ -219,7 +210,6 @@ function App() {
     handleBackToInput,
     handleOpenConfig,
     handleCloseConfig,
-    handleSaveName,
     handleOpenHowToPlay,
     handleCloseHowToPlay,
   } = useTitleFlow({
@@ -228,7 +218,7 @@ function App() {
     isTitleExiting,
     playerName,
     ngWordsList,
-    userId,
+    saveName,
     goToDifficulty,
     setIsInputLocked,
     setIsTitleExiting,
@@ -241,32 +231,18 @@ function App() {
     setShowHowToPlay,
   });
 
-  // --- Effects ---
   useEffect(() => {
-    const fetchInitialData = async () => {
-      try {
-        const { formattedData, ngList } =
-          await DatabaseService.fetchAllGameData();
-        setDbWordData(formattedData);
-        setNgWordsList(ngList);
-      } catch (err) {
-        console.error("Data fetch error", err);
-      }
-    };
-    fetchInitialData();
-  }, []);
-
-  useEffect(() => {
-    preloadImages();
-    initAudio();
     const startTime = performance.now();
     const checkLoad = setInterval(() => {
       const elapsedTime = performance.now() - startTime;
+
       if (dbWordData && elapsedTime > UI_TIMINGS.MIN_LOADING_TIME) {
         clearInterval(checkLoad);
         setGameState("title");
+
         setTimeout(() => {
           setShowTitle(true);
+
           setTimeout(() => {
             setEnableBounce(true);
             setIsInputLocked(false);
@@ -274,50 +250,9 @@ function App() {
         }, UI_TIMINGS.TITLE.SHOW_DELAY);
       }
     }, 100);
+
     return () => clearInterval(checkLoad);
   }, [dbWordData]);
-
-  useEffect(() => {
-    setVolumes(bgmVol, seVol);
-    localStorage.setItem(STORAGE_KEYS.VOLUME_BGM, bgmVol.toString());
-    localStorage.setItem(STORAGE_KEYS.VOLUME_SE, seVol.toString());
-  }, [bgmVol, seVol]);
-
-  // timeLeftを参照していたが、再実行するたびにintervalを作るためにintervalを消し続けるという無駄が発生していた
-  // intervalの中身はtickを呼ぶだけ。tickがtimeLeftを管理してくれるため依存配列に不要。
-  // ユーザーがそのタブを見ているかどうか判断する為にvisibilitychangeを使用。
-  // 存在しないintervalを操作して挙動がおかしくなるのを防ぐために必ずクリーンアップを実施
-  useEffect(() => {
-    if (gameState !== "playing" || playPhase !== "game") return;
-    let intervalId: number | null = null;
-
-    // 0.1秒間隔で処理を実行する。(一回の更新で減らす量)
-    const startTimer = () => {
-      intervalId = window.setInterval(() => {
-        tick(UI_TIMINGS.GAME.TIMER_DECREMENT);
-      }, 100);
-    };
-
-    const stopTimer = () => {
-      if (intervalId !== null) {
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-    };
-
-    const handleVisibilityChange = () => {
-      if (document.hidden) stopTimer();
-      else startTimer();
-    };
-
-    startTimer();
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-
-    return () => {
-      stopTimer();
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, [gameState, playPhase, tick]);
 
   useEffect(() => {
     if (gameState === "result" && lastGameStats) {
@@ -325,15 +260,6 @@ function App() {
       playResultAnimation(lastGameStats.rank);
     }
   }, [gameState, lastGameStats, saveScore, playResultAnimation, playerName]);
-
-  const getShareUrl = () => {
-    const text = encodeURIComponent(
-      `CRITICAL TYPINGでスコア:${score.toLocaleString()} ランク:${rank} を獲得しました！`,
-    );
-    const hashtags = encodeURIComponent("CRITICALTYPING,タイピング");
-    const url = encodeURIComponent(window.location.origin);
-    return `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
-  };
 
   const handleShowHighScoreDetail = () => {
     const displayDiff = hoverDifficulty || difficulty;
@@ -356,9 +282,6 @@ function App() {
     closeRanking,
   } = useRanking({ difficulty, setDifficulty });
 
-  const scalerRef = useScaler();
-
-  // --- Key Handler ---
   useGameKeyHandler({
     gameState,
     playPhase,
@@ -376,31 +299,13 @@ function App() {
     skipAnimation,
   });
 
-  // 表示用データ作成
-  const sortedWeakWords = [...missedWordsRecord]
-    .sort((a, b) => b.misses - a.misses)
-    .slice(0, LIMIT_DATA.WEAK_DATA_LIMIT);
-  let displayData: GameResultStats;
-  if (gameState === "hiscore_review" && reviewData)
-    displayData = createGameStats(reviewData);
-  else if (gameState === "result" && lastGameStats) displayData = lastGameStats;
-  else
-    displayData = createGameStats({
-      score,
-      words: completedWords,
-      correct: correctCount,
-      miss: missCount,
-      backspace: backspaceCount,
-      speed: currentSpeed,
-      combo: maxCombo,
-      rank,
-      weakWords: sortedWeakWords,
-      weakKeys: missedCharsRecord,
-    });
+  const displayData = buildDisplayData(gameState, reviewData, lastGameStats);
+
+  const tweetUrl = () => getShareUrl(displayData.score, displayData.rank);
 
   return (
     <div className="App">
-      <div id="scaler" ref={scalerRef}>
+      <ScalerWrapper>
         {isLoading ? (
           <LoadingScreen />
         ) : error ? (
@@ -419,6 +324,7 @@ function App() {
                 }}
               />
             ))}
+
             <div
               id="game-screen"
               className={`${isRainbowMode && (gameState === "playing" || gameState === "finishing") ? "rainbow-glow" : ""} ${gameState === "finishing" ? "bg-blur" : ""}`}
@@ -430,6 +336,7 @@ function App() {
                 zIndex: 2,
               }}
             ></div>
+
             <div
               id="fade-overlay"
               style={{ opacity: isWhiteFade ? 1 : 0 }}
@@ -518,7 +425,7 @@ function App() {
                   onBackToDifficulty={backToDifficulty}
                   onBackToTitle={backToTitle}
                   onShowRanking={fetchRanking}
-                  onTweet={getShareUrl}
+                  onTweet={tweetUrl}
                   onClickScreen={() => {
                     // ハイスコアモードでリザルト画面を使いまわしているため
                     // "hiscore_review"時の処理とリザルト画面演出スキップの分岐を設けている
@@ -569,11 +476,11 @@ function App() {
             setSeVol={setSeVol}
             setBrightness={setBrightness}
             setShowRomaji={setShowRomaji}
-            onSaveName={handleSaveName}
+            onSaveName={saveName}
             onClose={handleCloseConfig}
           />
         )}
-      </div>
+      </ScalerWrapper>
       <BrightnessOverlay brightness={brightness} />
     </div>
   );

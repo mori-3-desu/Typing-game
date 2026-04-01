@@ -230,7 +230,7 @@ body {
   color: var(--color-white);
 }
 
-#scaler {
+.scaler {
   position: absolute;
   transform: translate(-50%, -50%);
   width: var(--scale-standard-width);
