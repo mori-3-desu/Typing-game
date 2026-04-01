@@ -1,10 +1,29 @@
-import { type DifficultyLevel, type GameResultStats } from "../types";
+import {
+  type DifficultyLevel,
+  type GameResultStats,
+  type GameState,
+} from "../types";
 import {
   COMBO_THRESHOLDS,
   LIMIT_DATA,
   RANK_THRESHOLDS,
   SCORE_COMBO_MULTIPLIER,
 } from "./constants";
+
+type CalculateStatsParams = {
+  score: number;
+  completedWords: number;
+  correctCount: number;
+  missCount: number;
+  backspaceCount: number;
+  maxCombo: number;
+  currentSpeed: number;
+  rank: string;
+  missedWordsRecord: { word: string; misses: number }[];
+  missedCharsRecord: { [key: string]: number };
+  jpText: string;
+  currentWordMiss: number;
+};
 
 export const calculateRank = (
   difficulty: DifficultyLevel,
@@ -34,6 +53,15 @@ export const getScoreMultiplier = (currentCombo: number) => {
   return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
 };
 
+export const getShareUrl = (score: number, rank: string): string => {
+  const text = encodeURIComponent(
+    `CRITICAL TYPINGでスコア:${score.toLocaleString()} ランク:${rank} を獲得しました！`,
+  );
+  const hashtags = encodeURIComponent("CRITICALTYPING,タイピング");
+  const url = encodeURIComponent(window.location.origin);
+  return `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
+};
+
 export const createGameStats = (
   overrides: Partial<GameResultStats> = {},
 ): GameResultStats => ({
@@ -50,19 +78,16 @@ export const createGameStats = (
   ...overrides, // ここで引数のデータを上書き結合
 });
 
-type CalculateStatsParams = {
-  score: number;
-  completedWords: number;
-  correctCount: number;
-  missCount: number;
-  backspaceCount: number;
-  maxCombo: number;
-  currentSpeed: number;
-  rank: string;
-  missedWordsRecord: { word: string; misses: number }[];
-  missedCharsRecord: { [key: string]: number };
-  jpText: string;
-  currentWordMiss: number;
+export const buildDisplayData = (
+  gameState: GameState,
+  reviewData: GameResultStats | null,
+  lastGameStats: GameResultStats | null,
+): GameResultStats => {
+  if (gameState === "hiscore_review" && reviewData)
+    return reviewData;
+
+  if (gameState === "result" && lastGameStats) return lastGameStats;
+  return createGameStats();
 };
 
 export const calculateFinalStats = (
@@ -104,14 +129,9 @@ export const calculateFinalStats = (
     .sort((a, b) => b.misses - a.misses)
     .slice(0, LIMIT_DATA.WEAK_DATA_LIMIT);
 
-  // 結果デ
   // 結果データ作成
   return createGameStats({
     score,
-    // ★エラー2322の修正:
-    // もし型定義が「完了した単語数(number)」を求めているなら .length をつける
-    // もし型定義が「単語リスト(string[])」を求めているなら completedWords のままでOK
-    // エラーが出ているということは、おそらく number が期待されています。
     words: completedWords,
 
     correct: correctCount,

@@ -9,8 +9,6 @@ import { LIMIT_DATA } from "../../utils/constants";
 type Props = {
   gameState: "result" | "hiscore_review";
   difficulty: DifficultyLevel;
-
-  // ★重要: 親(App.tsx)が決めた「表示すべきデータ」を1つだけ受け取る
   resultData: GameResultStats;
 
   highScore?: number;
@@ -23,7 +21,7 @@ type Props = {
   onBackToDifficulty: () => void;
   onBackToTitle: () => void;
   onShowRanking: () => void;
-  onTweet: () => string;
+  onTweet: (score: number, rank:string) => string;
   onClickScreen: () => void;
 };
 
@@ -289,7 +287,7 @@ export const ResultScreen = ({
                 <img src="/images/ranking.png" alt="Ranking" />
               </SoundBtn>
               <a
-                href={onTweet()}
+                href={onTweet(resultData.score, resultData.rank)}
                 target="_blank"
                 rel="noopener noreferrer"
                 id="btn-share-x"

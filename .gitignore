@@ -24,5 +24,8 @@ supabase/.temp/
 *.njsproj
 *.sln
 *.sw?
+.claude/
+claude.local
+*.local
 .env
 .env.local
