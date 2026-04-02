@@ -1212,6 +1212,8 @@ background-clip: text;
 
 **完了条件**: 主要導線3本がCIで自動実行されること。
 
+- フォルダとファイル分けを行うので優先度を下げます(useTypingGame.ts等)
+
 #### ④ CI整備（GitHub Actions）
 
 以下のチェックを PR の必須条件として設定します。
