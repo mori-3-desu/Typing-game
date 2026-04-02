@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+
 import { useScaler } from "../../hooks/useScaler";
 
 type Props = {
