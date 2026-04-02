@@ -133,7 +133,7 @@ export const UI_TIMINGS = {
   // ゲーム進行・リザルト系
   GAME: {
     TIMER_DECREMENT: 0.1, // 一回の処理で減らす回数(主にキースピードで)
-    TIMER_COUNT_DOWN: 1000, // 一秒ずつ減らす
+    TIMER_COUNT_DOWN: 100, // 一秒ずつ減らす
     READY_TO_GO: 1000, // Ready... から Go! になる間隔
     FINISH_ANIMATION: 1500, // "FINISH!" が出てからハケるまで
     WHITE_FADE_OUT: 2000, // ホワイトアウト開始
@@ -161,22 +161,9 @@ export const STORAGE_KEYS = {
   PLAYER_NAME: "typing_player_name",
   HISCORE_REGISTER: "typing_hiscore_",
   HISCORE_DATA_REGISTER: "typing_hiscore_data_",
-  VOLUME_BGM: "typing_bgm_vol",
-  VOLUME_SE: "typing_se_vol",
-  VOLUME_MUTE: "typing_is_muted",
-  BRIGHTNESS: "typing_is_bright",
-  SHOW_ROMAJI: "typing_show_romaji",
+  SETTINGS: "typing_settings",
 } as const;
 
-// 初期値（デフォルト値）は別のオブジェクトにまとめると分かりやすいです
-export const DEFAULT_CONFIG = {
-  VOLUME_BGM_SE: 0.5,
-  BASE_BRIGHTNESS: 1.0,
-  IS_MUTED: false,
-  D_SHOW_ROMAJI: true,
-} as const;
-
-// useTypingEngine
 // 判定の色
 export const JUDGE_COLOR = {
   CORRECT: "#4aff50", // 緑色

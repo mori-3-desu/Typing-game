@@ -33,7 +33,7 @@ export const useGameControl = (props: GameControlProps) => {
   );
   const [isFinishExit, setIsFinishExit] = useState(false);
   const [isWhiteFade, setIsWhiteFade] = useState(false);
-  
+
   // Stateだと「値が変わる→再レンダリング→useEffect発火」の連鎖が起きるため、
   // 「値は最新にしたいが、それをトリガーに何かを動かしたくはない」データをRefに入れる。
   const latestStatsRef = useRef(currentStats);
@@ -52,7 +52,6 @@ export const useGameControl = (props: GameControlProps) => {
   // この関数を下の useEffect から呼びたい。
   // そのまま書くと、レンダリングのたびに「新品の関数」として作り直されてしまい、
   // 依存配列に入れた useEffect が無駄に発火してしまう。
-  //
   // → useCallback で「関数を冷凍保存（メモ化）」する。
   const handleGameFinish = useCallback(() => {
     stopBGM();
@@ -60,7 +59,6 @@ export const useGameControl = (props: GameControlProps) => {
 
     // ここで props.currentStats を直接使うと、依存配列に currentStats を入れる必要が出る。
     // すると「データが変わるたびに関数が作り直し」になってしまう。
-    //
     // 代わりに「Ref（黒板）」を見に行くことで、
     // 「関数自体は作り直さずに、中身だけ最新データを使う」ことが可能になる。
     const stats = latestStatsRef.current;
@@ -75,15 +73,44 @@ export const useGameControl = (props: GameControlProps) => {
     proc(finalStats);
     setGameState("finishing");
 
-    // 依存配列には「めったに変わらない関数（setter）」だけ入れればOK。
-    // これでこの関数は、コンポーネントの寿命が尽きるまで「不変」になる。
   }, [setGameState, setLastGameStats]);
 
-  // -------------------------------------------------------
-  // ■ 3. 【実行】 タイマー管理 & 終了監視
-  // -------------------------------------------------------
+  // timeLeftを参照していたが、再実行するたびにintervalを作るためにintervalを消し続けるという無駄が発生していた
+  // intervalの中身はtickを呼ぶだけ。tickがtimeLeftを管理してくれるため依存配列に不要。
+  // ユーザーがそのタブを見ているかどうか判断する為にvisibilitychangeを使用。
+  // 存在しないintervalを操作して挙動がおかしくなるのを防ぐために必ずクリーンアップを実施
   useEffect(() => {
-    // ガード節：ゲーム中じゃなければ即終了
+    if (gameState !== "playing" || playPhase !== "game") return;
+    let intervalId: number | null = null;
+
+    const startTimer = () => {
+      intervalId = window.setInterval(() => {
+        tick(TIMER_DECREMENT);
+      }, TIMER_COUNT_DOWN);
+    };
+
+    const stopTimer = () => {
+      if (intervalId !== null) {
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) stopTimer();
+      else startTimer();
+    };
+
+    startTimer();
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      stopTimer();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [gameState, playPhase, tick]);
+
+  useEffect(() => {
     if (gameState !== "playing" || playPhase !== "game") return;
 
     // ゲーム開始時（残り時間がある時）は、ガードを解除して「待機状態」にする
@@ -96,26 +123,13 @@ export const useGameControl = (props: GameControlProps) => {
     if (timeLeft <= 0) {
       if (!isProcessedRef.current) {
         isProcessedRef.current = true;
-        handleGameFinish(); // ★上で定義した「不変の関数」を実行！
+        handleGameFinish();
       }
       return;
     }
 
-    // 減らすことだけを考える
-    const interval = window.setInterval(() => {
-      tick(TIMER_DECREMENT);
-    }, TIMER_COUNT_DOWN);
-
-    // クリーンアップ：再レンダリングやアンマウント時に古いタイマーを消す
-    return () => clearInterval(interval);
   }, [gameState, playPhase, timeLeft, tick, handleGameFinish]);
-  // ↑ handleGameFinish は useCallback のおかげで変化しないので、
-  //   実質 timeLeft の変化だけに反応して動く（今回はこれでOK）
 
-  // -------------------------------------------------------
-  // ■ 4. 【演出】 アニメーションシーケンス
-  // -------------------------------------------------------
-  // 「ロジック（計算）」と「ビュー（演出）」を分けたことで、コードがスッキリした
   useEffect(() => {
     if (gameState !== "finishing") return;
 

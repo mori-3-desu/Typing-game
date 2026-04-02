@@ -5,7 +5,12 @@
     { "path": "./tsconfig.node.json" }
   ],
   "compilerOptions": {
+    "strict": true,
     "noUnusedLocals": true,      // 使ってない変数があったらエラーにする
-    "noUnusedParameters": true   // 使ってない引数があったらエラーにする
+    "noUnusedParameters": true,   // 使ってない引数があったらエラーにする
+    "noImplicitReturns": true, // 関数の戻り値が揃ってないとエラー
+    "noFallthroughCasesInSwitch": true, // switchのフォークスルーをエラーに
+    "exactOptionalPropertyTypes": true, // undefinedと省略を区別
+    "noUncheckedIndexedAccess": true // 配列悪説の型を T | undefinedにする
   }
 }

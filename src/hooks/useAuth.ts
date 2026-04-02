@@ -11,7 +11,7 @@ export const useAuth = () => {
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    // ① 監視役: 状態の反映のみ（ログイン実行は絶対にしない）
+    // 監視役: 状態の反映のみ（ログイン実行は絶対にしない）
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -31,7 +31,7 @@ export const useAuth = () => {
           data: { session },
           // ここで getSession を使う理由は「能動的に今の状態を確認したいから」
           // onAuthStateChangeの初回発火を待つより、ここで明示的にチェックする方が
-          // ロジックの実行順序として確実です。
+          // ロジックの実行順序として確実
         } = await supabase.auth.getSession();
         if (!session) {
           const { error: signInError } =
@@ -41,7 +41,6 @@ export const useAuth = () => {
       } catch (e) {
         setError(e as Error);
       } finally {
-        // 成功・失敗に関わらずロード状態を抜ける
         setIsLoading(false);
       }
     };
