@@ -1198,21 +1198,8 @@ background-clip: text;
 ### P1 — 中期対応
 
 #### ② useGameKeyHandler — resultSkipCoolDown タイマーの追跡化
-
-`startTimerIdRef` によるタイマー管理は完了済みですが、リザルトスキップクールダウンの `setTimeout` のみ ID が未追跡の状態です。
-
-```ts
-// 現状：タイマーIDが捨てられており、unmount時にキャンセルできない
-isResultSkipCoolDownRef.current = true;
-setTimeout(() => {
-  isResultSkipCoolDownRef.current = false;
-}, 500);
-```
-
-`startTimerIdRef` と同様に `useRef` でタイマー ID を保持し、クリーンアップ関数でキャンセルできる形に統一します。
-リザルト画面が 0.5 秒以内に破棄されるケースは極めてまれなため実害は小さいですが、タイマー管理を一貫させるために対応します。
-
-**完了条件**: unmount 時に未管理タイマーが残らないこと。
+ ### 2026.4.2 完了
+ - clearTimerが増えたらReact.RefObjectを検討します
 
 #### ③ E2Eテスト導入（Playwright）
 

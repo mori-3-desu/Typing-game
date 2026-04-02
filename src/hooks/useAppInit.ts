@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect,useState } from "react";
+
 import { DatabaseService } from "../services/database";
+import type { WordDataMap } from "../types";
 import { initAudio } from "../utils/audio";
 import { DIFFICULTY_SETTINGS } from "../utils/constants";
-import type { WordDataMap } from "../types";
 
 const preloadImages = () => {
   const images = [

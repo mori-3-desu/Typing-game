@@ -2,16 +2,18 @@ import "./App.css";
 
 import { useEffect, useState } from "react";
 
-// --- Components ---
 import { HowToPlay } from "./components/modals/HowToPlay";
 import { Ranking } from "./components/modals/Ranking";
 import { Setting } from "./components/modals/Setting";
+import { BrightnessOverlay } from "./components/screens/BrightnessOverlay";
 import { DifficultySelectScreen } from "./components/screens/Difficulty";
 import { GameCanvas } from "./components/screens/GameCanvas";
 import { GameScreen } from "./components/screens/GameScreen";
 import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
+import { ScalerWrapper } from "./components/screens/ScalerWrapper";
 import { TitleScreen } from "./components/screens/TitleScreen";
+import { useAppInit } from "./hooks/useAppInit";
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";
 import { useGameControl } from "./hooks/useGameControl";
@@ -22,34 +24,25 @@ import { useSaveName } from "./hooks/useSaveName";
 import { useScreenRouter } from "./hooks/useScreenRouter";
 import { useTitleFlow } from "./hooks/useTitleFlow";
 import { useTypingGame } from "./hooks/useTypingGame";
-
-// 計算ロジック (分離済み)
 import { ScoreService } from "./services/scoreService";
-import {
-  type DifficultyLevel,
-  type GameResultStats,
-  type GameState,
-  type PlayPhase,
-  type TitlePhase,
+import type {
+  DifficultyLevel,
+  GameResultStats,
+  GameState,
+  PlayPhase,
+  TitlePhase,
 } from "./types";
 import { playSE } from "./utils/audio";
-
-// --- Utils & Hooks ---
 import {
   ALL_BACKGROUNDSDATA,
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
-
 import {
   buildDisplayData,
   createGameStats,
   getShareUrl,
 } from "./utils/gameUtils";
-
-import { useAppInit } from "./hooks/useAppInit";
-import { ScalerWrapper } from "./components/screens/ScalerWrapper";
-import { BrightnessOverlay } from "./components/screens/BrightnessOverlay";
 
 function App() {
   const {
@@ -69,43 +62,26 @@ function App() {
   const [gameState, setGameState] = useState<GameState>("loading");
   const [difficulty, setDifficulty] = useState<DifficultyLevel>("NORMAL");
   const [playPhase, setPlayPhase] = useState<PlayPhase>("ready");
-
   const [showConfig, setShowConfig] = useState(false);
   const [showHowToPlay, setShowHowToPlay] = useState(false);
-
   const [hoverDifficulty, setHoverDifficulty] =
     useState<DifficultyLevel | null>(null);
-
-  const {
-    highScore,
-    isNewRecord,
-    scoreDiff,
-    resultAnimStep,
-    saveScore,
-    processResult,
-    playResultAnimation,
-    skipAnimation,
-    resetResultState,
-  } = useGameResult(difficulty);
-
   const [playerName, setPlayerName] = useState(() => {
     return localStorage.getItem(STORAGE_KEYS.PLAYER_NAME) || "";
   });
   const [isNameConfirmed, setIsNameConfirmed] = useState(() => {
     return !!localStorage.getItem(STORAGE_KEYS.PLAYER_NAME);
   });
-
   const [titlePhase, setTitlePhase] = useState<TitlePhase>("normal");
-
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [isInputLocked, setIsInputLocked] = useState(true);
   const [showTitle, setShowTitle] = useState(false);
   const [enableBounce, setEnableBounce] = useState(false);
   const [isTitleExiting, setIsTitleExiting] = useState(false);
-
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
 
   const { ngWordsList, dbWordData } = useAppInit();
+  const { userId, isLoading, error } = useAuth();
 
   const {
     score,
@@ -140,6 +116,23 @@ function App() {
     tick,
     currentSpeed,
   } = useTypingGame(difficulty, dbWordData);
+
+  const { saveName } = useSaveName({
+    userId,
+    setPlayerName,
+  });
+
+  const {
+    highScore,
+    isNewRecord,
+    scoreDiff,
+    resultAnimStep,
+    saveScore,
+    processResult,
+    playResultAnimation,
+    skipAnimation,
+    resetResultState,
+  } = useGameResult(difficulty);
 
   const {
     currentBgSrc,
@@ -184,24 +177,6 @@ function App() {
     currentWordMiss,
   };
 
-  const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
-    gameState,
-    playPhase,
-    difficulty,
-    timeLeft,
-    currentStats: myGameStats,
-    tick,
-    setGameState,
-    processResult,
-  });
-
-  const { userId, isLoading, error } = useAuth();
-
-  const { saveName } = useSaveName({
-    userId,
-    setPlayerName,
-  });
-
   const {
     handleStartSequence,
     handleCancelInput,
@@ -231,27 +206,79 @@ function App() {
     setShowHowToPlay,
   });
 
+  const {
+    showRanking,
+    rankingData,
+    isRankingLoading,
+    isDevRankingMode,
+    rankingDataMode,
+    fetchRanking,
+    handleShowDevScore,
+    closeRanking,
+  } = useRanking({ difficulty, setDifficulty });
+
+  const { lastGameStats, isFinishExit, isWhiteFade } = useGameControl({
+    gameState,
+    playPhase,
+    difficulty,
+    timeLeft,
+    currentStats: myGameStats,
+    tick,
+    setGameState,
+    processResult,
+  });
+
+  useGameKeyHandler({
+    gameState,
+    playPhase,
+    difficulty,
+    handleKeyInput,
+    handleBackspace,
+    startGame,
+    setPlayPhase,
+    backToDifficulty,
+    resetToReady,
+    retryGame,
+    lastGameStats,
+    rank,
+    resultAnimStep,
+    skipAnimation,
+  });
+
+  // ここから下は設計を見直す箇所であるため、一時的に
+  // App.tsxに置いている
   useEffect(() => {
+    if (!dbWordData) return;
+
     const startTime = performance.now();
+    const timers: number[] = [];
+
+    // 配列方式にしてtimeoutをクリアする
+    const schedule = (fn: () => void, delay: number) => {
+      timers.push(window.setTimeout(fn, delay));
+    };
+
     const checkLoad = setInterval(() => {
-      const elapsedTime = performance.now() - startTime;
+      const elapsed = performance.now() - startTime;
+      if (elapsed < UI_TIMINGS.MIN_LOADING_TIME) return;
 
-      if (dbWordData && elapsedTime > UI_TIMINGS.MIN_LOADING_TIME) {
-        clearInterval(checkLoad);
-        setGameState("title");
+      clearInterval(checkLoad);
+      setGameState("title");
 
-        setTimeout(() => {
-          setShowTitle(true);
+      schedule(() => {
+        setShowTitle(true);
+      }, UI_TIMINGS.TITLE.SHOW_DELAY);
 
-          setTimeout(() => {
-            setEnableBounce(true);
-            setIsInputLocked(false);
-          }, UI_TIMINGS.TITLE.BOUNCE_DELAY);
-        }, UI_TIMINGS.TITLE.SHOW_DELAY);
-      }
+      schedule(() => {
+        setEnableBounce(true);
+        setIsInputLocked(false);
+      }, UI_TIMINGS.TITLE.SHOW_DELAY + UI_TIMINGS.TITLE.BOUNCE_DELAY);
     }, 100);
 
-    return () => clearInterval(checkLoad);
+    return () => {
+      clearInterval(checkLoad);
+      timers.forEach(clearTimeout);
+    };
   }, [dbWordData]);
 
   useEffect(() => {
@@ -271,36 +298,22 @@ function App() {
     setGameState("hiscore_review");
   };
 
-  const {
-    showRanking,
-    rankingData,
-    isRankingLoading,
-    isDevRankingMode,
-    rankingDataMode,
-    fetchRanking,
-    handleShowDevScore,
-    closeRanking,
-  } = useRanking({ difficulty, setDifficulty });
-
-  useGameKeyHandler({
-    gameState,
-    playPhase,
-    difficulty,
-    handleKeyInput,
-    handleBackspace,
-    startGame,
-    setPlayPhase,
-    backToDifficulty,
-    resetToReady,
-    retryGame,
-    lastGameStats,
-    rank,
-    resultAnimStep,
-    skipAnimation,
-  });
+  const hiscoreModeResult = () => {
+    // ハイスコアモードでリザルト画面を使いまわしているため
+    // "hiscore_review"時の処理とリザルト画面演出スキップの分岐を設けている
+    // 設計を見直す必要があるためひとまず臨時でクリック音が鳴らないよう
+    // resultAnimStepを入れてクリックで音が鳴らないようにしている。
+    if (gameState === "hiscore_review") {
+      playSE("decision");
+      backToDifficulty();
+      return;
+    }
+    if (resultAnimStep < 5) {
+      skipAnimation(displayData.rank);
+    }
+  };
 
   const displayData = buildDisplayData(gameState, reviewData, lastGameStats);
-
   const tweetUrl = () => getShareUrl(displayData.score, displayData.rank);
 
   return (
@@ -426,21 +439,7 @@ function App() {
                   onBackToTitle={backToTitle}
                   onShowRanking={fetchRanking}
                   onTweet={tweetUrl}
-                  onClickScreen={() => {
-                    // ハイスコアモードでリザルト画面を使いまわしているため
-                    // "hiscore_review"時の処理とリザルト画面演出スキップの分岐を設けている
-                    // ここもだが全体的に処理の流れを追うのが大変になっている
-                    // 設計を見直す必要があるためひとまず臨時でクリック音が鳴らないよう
-                    // resultAnimStepを入れてクリックで音が鳴らないようにしている。
-                    if (gameState === "hiscore_review") {
-                      playSE("decision");
-                      backToDifficulty();
-                      return;
-                    }
-                    if (resultAnimStep < 5) {
-                      skipAnimation(displayData.rank);
-                    }
-                  }}
+                  onClickScreen={hiscoreModeResult}
                 />
               )}
 

@@ -72,17 +72,51 @@ export const useGameKeyHandler = ({
   resultAnimStep,
   skipAnimation,
 }: UseGameKeyHandlerProps) => {
-  // Ready画面で「Enter」を連打された時に、ゲーム開始処理が重複しないようにする鍵
-  const isStartingRef = useRef(false);
+  const isStartingRef = useRef(false); // Ready画面で「Enter」を連打された時に、ゲーム開始処理が重複しないようにする鍵
+  const isResultSkipCoolDownRef = useRef(false); // リザルト画面で「スキップ」した直後の誤操作（リトライ等）を防ぐためのクールダウン
+  const isComposingRef = useRef(false); // IME（日本語入力）中かどうかを厳密に管理するフラグ
+  const startTimerIdRef = useRef<number | null>(null); // タイマーID保管用
+  const coolDownTimerRef = useRef<number | null>(null); // リザルトスキップのクリーンアップ用
 
-  // リザルト画面で「スキップ」した直後の誤操作（リトライ等）を防ぐためのクールダウン
-  const isResultSkipCoolDownRef = useRef(false);
+  // clearTimerが増えたらReact.RefObjectで共通化を検討する。
+  const clearStartTimer = () => {
+    if (startTimerIdRef.current) {
+      clearTimeout(startTimerIdRef.current);
+      startTimerIdRef.current = null;
+    }
+    isStartingRef.current = false;
+  };
 
-  // IME（日本語入力）中かどうかを厳密に管理するフラグ
-  const isComposingRef = useRef(false);
+  const clearCoolDownTimer = () => {
+    if (coolDownTimerRef.current) {
+      clearTimeout(coolDownTimerRef.current)
+      coolDownTimerRef.current = null
+    }
+    isResultSkipCoolDownRef.current = false
+  }
 
-  // タイマーID保管用（クリーンアップで消せるようにuseRefで管理）
-  const startTimerIdRef = useRef<number | undefined>(undefined);
+  const handleGameStart = () => {
+    // 連打防止: 既に開始処理中なら何もしない
+    if (isStartingRef.current) return;
+    isStartingRef.current = true;
+
+    playSE("start");
+    setPlayPhase("go");
+
+    // 1秒後にゲーム開始
+    startTimerIdRef.current = window.setTimeout(() => {
+      setPlayPhase("game");
+      startGame();
+      playBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
+      clearStartTimer();
+    }, 1000);
+  };
+
+  const handleReadyCancel = () => {
+    clearStartTimer();
+    playSE("decision");
+    backToDifficulty();
+  };
 
   // -------------------------------------------------------------
   // Ready画面のキー処理
@@ -92,31 +126,18 @@ export const useGameKeyHandler = ({
   const handleReadyPhaseKey = useEffectEvent((e: KeyboardEvent) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
-
-      // ★ 連打防止: 既に開始処理中なら何もしない
-      if (isStartingRef.current) return;
-      isStartingRef.current = true; // 鍵をかける
-
-      playSE("start");
-      setPlayPhase("go");
-
-      // 1秒後にゲーム開始
-      startTimerIdRef.current = window.setTimeout(() => {
-        setPlayPhase("game");
-        startGame();
-        playBGM(DIFFICULTY_SETTINGS[difficulty].bgm);
-        // 処理が終わったら鍵を開ける（念のため）
-        isStartingRef.current = false;
-      }, 1000);
+      handleGameStart();
     } else if (e.key === "Escape") {
       e.preventDefault();
-      // タイマーが動いていたらキャンセル（ゾンビタイマー防止）
-      if (startTimerIdRef.current) clearTimeout(startTimerIdRef.current);
-      isStartingRef.current = false; // 鍵を強制解除
-      playSE("decision");
-      backToDifficulty();
+      handleReadyCancel();
     }
   });
+
+  // 英語モードなら入力されたキーをそのまま渡す、日本語モードならローマ字モードで小文字に変換
+  const normalizeKey = (e: KeyboardEvent): string => {
+    const isEnglishMode = DIFFICULTY_SETTINGS[difficulty].isEnglish ?? false;
+    return isEnglishMode ? e.key : e.key.toLowerCase();
+  };
 
   // -------------------------------------------------------------
   // ゲームプレイ中のキー処理
@@ -129,25 +150,29 @@ export const useGameKeyHandler = ({
 
     if (e.key === "Escape") {
       e.preventDefault();
-      resetToReady(); // 中断
+      resetToReady();
       return;
     }
     if (e.key === "Backspace") {
-      handleBackspace(); // 文字削除
+      handleBackspace();
       return;
     }
 
-    // 難易度からフラグを取得しておく
-    const currentConfig = DIFFICULTY_SETTINGS[difficulty];
-    const isEnglishMode = currentConfig.isEnglish ?? false;
-
     // 単一文字入力（a-zなど）のみ通す
     if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      // 英語モードなら入力されたキーをそのまま渡す、日本語モードならローマ字モードで小文字に変換
-      const inputChar = isEnglishMode ? e.key : e.key.toLowerCase();
-      handleKeyInput(inputChar);
+      handleKeyInput(normalizeKey(e));
     }
   });
+
+  const skipWithCooldown = (rank: string) => {
+    skipAnimation(rank);
+
+    // スキップ直後に誤操作しないよう、0.5秒の不感時間を設ける
+    isResultSkipCoolDownRef.current = true;
+    coolDownTimerRef.current = window.setTimeout(() => {
+      clearCoolDownTimer();
+    }, 500);
+  };
 
   // -------------------------------------------------------------
   // リザルト画面のキー処理
@@ -161,24 +186,17 @@ export const useGameKeyHandler = ({
       // アニメーション途中ならスキップして即return
       // これにより、同じキー入力で「スキップ」と「遷移」が同時に起きるのを防ぐ
       if (resultAnimStep < 5) {
-        skipAnimation(currentRank);
-
-        // スキップ直後に誤操作しないよう、0.5秒の不感時間を設ける
-        isResultSkipCoolDownRef.current = true;
-        setTimeout(() => {
-          isResultSkipCoolDownRef.current = false;
-        }, 500);
+        skipWithCooldown(currentRank);
         return;
       }
 
-      if (!isResultSkipCoolDownRef.current) {
-        if (e.key === "Enter") {
-          playSE("decision");
-          retryGame();
-        } else {
-          playSE("decision");
-          backToDifficulty();
-        }
+      if (isResultSkipCoolDownRef.current) return;
+      playSE("decision");
+
+      if (e.key === "Enter") {
+        retryGame();
+      } else {
+        backToDifficulty();
       }
     }
   });
@@ -254,10 +272,8 @@ export const useGameKeyHandler = ({
         true,
       );
       window.removeEventListener("compositionend", handleCompositionEnd, true);
-
-      // 画面遷移時にタイマーやフラグを確実にリセットする
-      if (startTimerIdRef.current) clearTimeout(startTimerIdRef.current);
-      isStartingRef.current = false;
+      clearStartTimer();
+      clearCoolDownTimer();
     };
   }, []); // 依存配列は空！(useEffectEventのおかげ)
 };
