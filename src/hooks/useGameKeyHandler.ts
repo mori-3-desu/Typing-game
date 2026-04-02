@@ -29,7 +29,7 @@ const IGNORED_KEYS = new Set([
   "ArrowRight",
 ]);
 
-// ■ ブラウザのデフォルト動作を「常に」防ぐべきキー
+// ブラウザのデフォルト動作を「常に」防ぐべきキー
 // Spaceキーでのページスクロールなどを防ぎ、ゲームのような操作感を実現します
 const PREVENT_DEFAULT_KEYS = new Set([
   " ",
@@ -89,11 +89,11 @@ export const useGameKeyHandler = ({
 
   const clearCoolDownTimer = () => {
     if (coolDownTimerRef.current) {
-      clearTimeout(coolDownTimerRef.current)
-      coolDownTimerRef.current = null
+      clearTimeout(coolDownTimerRef.current);
+      coolDownTimerRef.current = null;
     }
-    isResultSkipCoolDownRef.current = false
-  }
+    isResultSkipCoolDownRef.current = false;
+  };
 
   const handleGameStart = () => {
     // 連打防止: 既に開始処理中なら何もしない
@@ -153,6 +153,7 @@ export const useGameKeyHandler = ({
       resetToReady();
       return;
     }
+
     if (e.key === "Backspace") {
       handleBackspace();
       return;
@@ -205,13 +206,13 @@ export const useGameKeyHandler = ({
   // メインのキー入力ハンドラ（ガード処理 + 状態ごとの振り分け）
   // -------------------------------------------------------------
   const onKeyDown = useEffectEvent((e: KeyboardEvent) => {
-    // ▼ 1. Tabキー封じ（URLバーなどにフォーカスが移るのを防ぐ）
+    // Tabキー封じ（URLバーなどにフォーカスが移るのを防ぐ）
     if (e.key === "Tab") {
       e.preventDefault();
       return;
     }
 
-    // ▼ 2. スクロール防止（Spaceキー等で画面が動かないようにする）
+    // スクロール防止（Spaceキー等で画面が動かないようにする）
     if (PREVENT_DEFAULT_KEYS.has(e.key)) {
       e.preventDefault();
     }
@@ -275,5 +276,5 @@ export const useGameKeyHandler = ({
       clearStartTimer();
       clearCoolDownTimer();
     };
-  }, []); // 依存配列は空！(useEffectEventのおかげ)
+  }, []);
 };

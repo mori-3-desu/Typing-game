@@ -26,6 +26,7 @@ supabase/.temp/
 *.sw?
 .claude/
 claude.local
+CLAUDE.md
 *.local
 .env
 .env.local
