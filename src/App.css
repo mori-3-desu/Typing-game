@@ -45,7 +45,6 @@
 
   /* --- Backgrounds --- */
   --body-bg: #222;
-  --pop-bg: #cfd8dc;
   --game-word-bg: #0f26d4;
   --config-bg: rgba(20, 10, 40, 0.75);
 
@@ -417,24 +416,21 @@ body {
   }
 }
 
-/* タイトル画面 UI */
+/* タイトル画面*/
 .title-screen {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  place-items: center;
   z-index: var(--z-title);
 }
 
 .title-content-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  place-items: center;
   gap: 60px;
 }
 
@@ -461,8 +457,8 @@ body {
 
 .game-title {
   font-size: 115px;
-  color: var(--color-lightorange);
   font-weight: 600;
+  color: var(--color-lightorange);
   text-shadow: var(--title-shadow);
 }
 
@@ -506,7 +502,6 @@ body {
     opacity 0.6s ease-in;
 }
 
-/* --- 共通の立体感定義（これを変数に入れて使い回す！） --- */
 .menu-btn {
   /* 変数定義：内側のツヤと影のセット */
   --btn-inner-shine:
@@ -528,7 +523,6 @@ body {
   background: var(--title-menu-grad);
   border: 3px solid var(--color-white);
 
-  /* ★変数を呼び出して、外側の影だけをここで指定 */
   box-shadow:
     var(--btn-inner-shine),
     0 10px 20px rgba(0, 0, 0, 0.3),
@@ -536,7 +530,6 @@ body {
 
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
 
-  /* 軽量化ポイント：allではなく変化するものだけ指定する */
   transition:
     transform 0.2s ease-out,
     box-shadow 0.2s ease-out;
@@ -561,7 +554,7 @@ body {
 }
 
 /* =========================================
-   ★タイトル画面：名前入力モーダル (Twilight Pop Style)
+   タイトル画面：名前入力モーダル (Twilight Pop Style)
    ========================================= */
 
 /* ポップなモーダルの枠 */
@@ -572,22 +565,20 @@ body {
     #e281ff 70%,
     #ff65fc 100%
   );
+  --pop-label-shadow: 2px 2px 0 #ffe5e5, 4px 4px 0 rgba(0, 0, 0, 0.05);
 
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
-  /* ★サイズ調整: 横長 & 高さ固定 */
   width: 750px;
   height: 350px;
   max-width: 90%;
 
-  /* 中身を上下左右中央に配置する設定 */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  gap: 5px;
+
+  color: var(--color-gray);
+  font-weight: 800;
 
   /* トワイライト風デザイン */
   background: var(--modal-grad);
@@ -599,60 +590,44 @@ body {
     /* ② その外側の影（元のやつ） */ 10px 10px 0 rgba(255, 183, 77, 0.4);
   padding: 20px;
   z-index: var(--z-modal);
-  text-align: center;
-  color: VAR(--color-gray);
-  /* 全体のフォント統一 */
-  font-family: "M PLUS Rounded 1c", "Arial Rounded MT Bold", sans-serif;
-  font-weight: 800;
-}
 
-/* ラベルテキスト */
-.pop-label {
-  --pop-label-shadow: 2px 2px 0 #ffe5e5, 4px 4px 0 rgba(0, 0, 0, 0.05);
-  font-size: 1.8rem;
-  color: var(--color-pink);
-  margin-bottom: 15px;
-  display: block;
-  letter-spacing: 2px;
-  text-shadow: var(--pop-label-shadow);
-  line-height: 1.2;
-}
+  & .pop-label {
+    font-size: 29px;
+    color: var(--color-pink);
+    letter-spacing: 2px;
+    text-shadow: var(--pop-label-shadow);
+  }
 
-/* 入力ボックス */
-.pop-input {
-  border: 4px solid var(--color-purple);
-  background: var(--color-white);
-  border-radius: 50px;
-  padding: 12px 30px;
-  font-size: 2rem;
-  font-family: inherit;
-  font-weight: 800;
-  color: var(--color-darkgray);
-  text-align: center;
-  width: 70%; /* 横幅いっぱい */
-  outline: none;
-  transition: all 0.2s;
-  box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.05);
-}
+  & .pop-note {
+    font-size: 1.2rem;
+    color: var(--color-white);
+    margin-top: 10px;
+    font-weight: bold;
+    opacity: 0.9;
+  }
 
-.pop-input:focus {
-  border-color: var(--color-orange);
-  transform: scale(1.05);
-  background: var(--color-white);
-}
+  & .pop-input {
+    border: 4px solid var(--color-purple);
+    background: var(--color-white);
+    border-radius: 50px;
+    padding: 12px 40px;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--color-darkgray);
+    text-align: center;
+    outline: none;
+    box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.05);
 
-.pop-input::placeholder {
-  color: var(--color-offwhite);
-  font-weight: normal;
-}
+    &:focus {
+      border-color: var(--color-orange);
+      background: var(--color-white);
+    }
 
-/* 注釈テキスト */
-.pop-note {
-  font-size: 1.2rem;
-  color: var(--color-white);
-  margin-top: 10px;
-  font-weight: bold;
-  opacity: 0.9;
+    &::placeholder {
+      color: var(--color-offwhite);
+      font-weight: normal;
+    }
+  }
 }
 
 /* 確認画面の名前表示 */
@@ -660,18 +635,15 @@ body {
   font-size: 2.6rem; /* 名前を少し大きく */
   font-weight: 900;
   color: var(--color-white);
-  margin: 10px 0 20px 0;
 
-  /* 文字周りの装飾 */
-  display: inline-block;
-  padding: 0 20px;
   text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
 }
 
-/* --- ボタン設定 --- */
-
 /* ボタン共通 (ベースはグレー/戻るボタン用) */
 .pop-btn {
+  --pop-btn-grad: #cfd8dc;
+  --pop-btn-shadow: 0 6px 0 #90a4ae;
+
   border: none;
   border-radius: 50px;
   padding: 10px 40px;
@@ -681,47 +653,41 @@ body {
   cursor: pointer;
   margin: -5px 10px 10px;
   transition: all 0.1s;
-  position: relative;
-  top: 0;
 
-  /* デフォルト色（戻るボタンなど） */
-  background: var(--pop-bg);
-  color: var(--color-darkblue);
-  box-shadow: 0 6px 0 #90a4ae;
-}
-
-/* メインボタン (OK/はい) - 上書き設定 */
-.pop-btn.primary {
-  --pop-btn-grad: linear-gradient(
-    135deg,
-    hsl(42, 100%, 65%) 0%,
-    #ffa442 40%,
-    #d8a4ff 100%
-  );
   background: var(--pop-btn-grad);
-  color: var(--color-white);
-  box-shadow: 0 6px 0 #d96441;
-}
+  color: var(--color-darkblue);
+  box-shadow: var(--pop-btn-shadow);
 
-/* ホバー・クリック時の動き */
-.pop-btn:hover {
-  top: -2px;
-  filter: brightness(1.1);
-}
+  &.primary {
+    --pop-btn-grad: linear-gradient(
+      135deg,
+      hsl(42, 100%, 65%) 0%,
+      #ffa442 40%,
+      #d8a4ff 100%
+    );
+    color: var(--color-white);
+    --pop-btn-shadow: 0 6px 0 #d96441;
 
-/* 戻るボタンの影(hover) */
-.pop-btn:hover {
-  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2);
-}
+    &:hover {
+      transform: translateY(-2px);
+      filter: brightness(1.1);
+      box-shadow: 0 6px 0 #d96441;
+    }
+    &:active {
+      transform: translateY(6px);
+      box-shadow: 0 0 0;
+    }
+  }
 
-/* メインボタンの影(hover) */
-.pop-btn.primary:hover {
-  box-shadow: 0 8px 0 #d84315;
-}
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 0 rgba(0, 0, 0, 0.2);
+  }
 
-.pop-btn:active {
-  top: 6px;
-  box-shadow: 0 0 0; /* 影なし */
+  &:active {
+    transform: translateY(6px);
+    box-shadow: 0 0 0;
+  }
 }
 
 /* 難易度選択画面 UI */
@@ -1854,36 +1820,52 @@ body {
   }
 }
 
-/* --- FINISH Banner --- */
-#finish-banner {
+.finish-banner-wrapper {
   position: absolute;
-  top: -250px;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: var(--z-game-finish);
+  pointer-events: none;
+}
+
+.finish-banner {
   font-size: 180px;
   font-weight: bold;
   color: var(--color-gold);
   text-shadow:
     0 0 20px rgba(255, 221, 0, 0.8),
     4px 4px 0 var(--color-black);
-  z-index: var(--z-game-finish);
-  transition:
-    top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    opacity 0.5s;
-  opacity: 0;
+
+  &.show {
+    animation: drop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  &.exit {
+    animation: drop-out 0.5s ease-in forwards;
+  }
 }
 
-#finish-banner.show {
-  top: 35%;
-  opacity: 1;
+@keyframes drop-in {
+  from {
+    transform: translateY(-250%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-#finish-banner.exit {
-  top: -250px;
-  opacity: 0;
-  transition:
-    top 0.5s ease-in,
-    opacity 0.5s ease-in;
+@keyframes drop-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-250%);
+    opacity: 0;
+  }
 }
 
 .bg-blur {

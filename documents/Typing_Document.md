@@ -1215,16 +1215,13 @@ background-clip: text;
 - フォルダとファイル分けを行うので優先度を下げます(useTypingGame.ts等)
 
 #### ④ CI整備（GitHub Actions）
-
-以下のチェックを PR の必須条件として設定します。
-
-- `npm run lint`
-- `npx vitest run`
-- `npm run build`
+### 2026.4.3 完了
 
 #### ⑤ A11y 基礎改善
 
 モーダルの `role` 属性・`aria-*` 属性・フォーカストラップを整備する。
+- TitleScreen.tsx完了(2026.4.3)
+- GameScreen.tsx完了(2026.4.3)
 
 #### ⑥ リファクタリング（dead code 削除・共通化）
 

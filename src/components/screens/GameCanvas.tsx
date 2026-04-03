@@ -60,7 +60,6 @@ export const GameCanvas = ({ gameState, playPhase }: Props) => {
     }
   }, [gameState, playPhase]);
 
-  // ★ここを修正: アニメーションループをuseEffectに統合
   useEffect(() => {
     // ゲーム中または終了演出中でなければ、ループを開始しない（リターンする）
     if (gameState !== "playing" && gameState !== "finishing") return;

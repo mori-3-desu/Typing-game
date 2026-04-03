@@ -11,7 +11,6 @@ type Props = {
   gameState: "playing" | "finishing";
   playPhase: "ready" | "go" | "game";
   difficulty: DifficultyLevel;
-  score: number;
   displayScore: number;
   combo: number;
   comboClass: string;
@@ -30,8 +29,33 @@ type Props = {
   perfectPopups: { id: number }[];
   scorePopups: ScorePopup[];
   timePopups: TimePopup[];
-  isRainbowMode: boolean;
   isFinishExit: boolean;
+};
+
+/**
+ * 句読点は全角で微妙に中心からずれる為、インデントを調整する。
+ * ワードデータに「、」で終わるものは存在しないため「。」のみチェック。
+ */
+const applyIndentIfHasPeriod = (jpText: string): string => {
+  if (!jpText.endsWith("。")) return "";
+  return "has-punctuation";
+};
+
+const gameTimerClass = (timeLeft: number, hasTimePopups: boolean): string => {
+  if (hasTimePopups) return "time-plus";
+  if (timeLeft <= 0) return "timer-zero";
+  if (timeLeft <= 10) return "timer-pinch";
+  return "timer-normal";
+};
+
+/**
+ * ミスタイプは小さく揺らす(light)
+ * 最後の単語まで気づかずにミスした場合は大きく揺らす(error)
+ */
+const gameShakeClass = (shakeStatus: string): string => {
+  if (shakeStatus === "light") return "light-shake";
+  if (shakeStatus === "error") return "error-shake";
+  return "";
 };
 
 export const GameScreen = ({
@@ -61,8 +85,6 @@ export const GameScreen = ({
   // まだ ready の時は表示しない、などの制御
   if (playPhase === "ready") return null;
 
-  const hasPunctuation = jpText.endsWith("。") || jpText.endsWith("、");
-
   return (
     <div id="game-hud" style={{ zIndex: 10 }}>
       {playPhase === "game" && gameState !== "finishing" && (
@@ -79,13 +101,16 @@ export const GameScreen = ({
           — Escキーで最初からやり直す —
         </div>
       )}
-      <div
-        id="finish-banner"
-        className={`${gameState === "finishing" ? "show" : ""} ${
-          isFinishExit ? "exit" : ""
-        }`}
-      >
-        FINISH!
+
+      <div className="finish-banner-wrapper">
+        {(gameState === "finishing") && (
+          <div
+            aria-live="assertive"
+            className={`finish-banner ${isFinishExit ? "exit" : "show"}`}
+          >
+            FINISH!
+          </div>
+        )}
       </div>
 
       <div className="score-container">
@@ -116,21 +141,19 @@ export const GameScreen = ({
       >
         <div
           key={jpText}
-          className={`text-word
-            ${
-              shakeStatus === "light"
-                ? "light-shake"
-                : shakeStatus === "error"
-                  ? "error-shake"
-                  : ""
-            }`}
+          className={`text-word ${gameShakeClass(shakeStatus)}`}
         >
+          {/* EXTRAはスペースも判定範囲なので視覚的に表示する */}
           <div className="romaji-line">
+            {/* typedLog
+            は末尾への追加のみ。並び替えが起きないため index
+            を key に使用 */}
             {romaState.typedLog.map((log, index) => (
               <span key={index} style={{ color: log.color }}>
                 {log.char === " " ? "␣" : log.char}
               </span>
             ))}
+
             <span
               className="text-yellow"
               style={{ textDecoration: "underline" }}
@@ -142,7 +165,7 @@ export const GameScreen = ({
             </span>
           </div>
 
-          <div className={`jp-line ${hasPunctuation ? "has-punctuation" : ""}`}>
+          <div className={`jp-line ${applyIndentIfHasPeriod(jpText)}`}>
             {jpText}
           </div>
 
@@ -193,31 +216,20 @@ export const GameScreen = ({
         <img src="/images/cloud.webp" id="tmr-img" alt="雲" />
         <span
           id="tmr-text"
-          className={
-            timePopups.length > 0
-              ? "time-plus"
-              : timeLeft <= 0
-                ? "timer-zero"
-                : timeLeft <= 10
-                  ? "timer-pinch"
-                  : "timer-normal"
-          }
+          className={gameTimerClass(timeLeft, timePopups.length > 0)}
         >
           {Math.ceil(timeLeft)}
         </span>
       </div>
 
-      {/* ▼▼▼ ここに追加！スコアと同じ書き方です ▼▼▼ */}
       {timePopups.map((p) => (
         <div
           key={p.id}
-          // CSSクラスを適用（bonus-pop と、normal か large を付与）
           className={`bonus-pop ${p.isLarge ? "large" : "normal"}`}
         >
           {p.text}
         </div>
       ))}
-      {/* ▲▲▲ ここまで ▲▲▲ */}
 
       <div className={`combo-meter theme-${difficulty.toLowerCase()}`}>
         <div className="meter-header">
