@@ -401,7 +401,6 @@ function App() {
                   gameState={gameState}
                   playPhase={playPhase}
                   difficulty={difficulty}
-                  score={score}
                   displayScore={displayScore}
                   combo={combo}
                   comboClass={comboClass}
@@ -420,7 +419,6 @@ function App() {
                   perfectPopups={perfectPopups}
                   scorePopups={scorePopups}
                   timePopups={timePopups}
-                  isRainbowMode={isRainbowMode}
                   isFinishExit={isFinishExit}
                 />
               )}
