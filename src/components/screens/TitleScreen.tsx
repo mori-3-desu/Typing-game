@@ -97,10 +97,14 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
       {titlePhase === "input" && (
         <div
           className="pop-modal-frame fade-in-pop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
           onClick={(e) => e.stopPropagation()}
         >
           <label
             htmlFor="player-name-input"
+            id="modal-title"
             className="pop-label"
             style={{ textAlign: "center", width: "100%", margin: 0 }}
           >
@@ -119,7 +123,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             maxLength={10}
             placeholder="Guest"
             autoFocus
-            style={{ marginTop: "15px", transition: "all 0.3s" }}
           />
 
           <div
@@ -158,11 +161,11 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
               justifyContent: "center",
             }}
           >
-            <SoundBtn className="pop-btn" onClick={handleCancelInput}>
-              キャンセル
-            </SoundBtn>
             <SoundBtn className="pop-btn primary" onClick={handleNameSubmit}>
               OK
+            </SoundBtn>
+            <SoundBtn className="pop-btn" onClick={handleCancelInput}>
+              戻る
             </SoundBtn>
           </div>
         </div>
@@ -172,26 +175,25 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
       {titlePhase === "confirm" && (
         <div
           className="pop-modal-frame fade-in-pop"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-check-name"
           onClick={(e) => e.stopPropagation()}
         >
-          <label className="pop-label">
+          <p className="pop-label" id="modal-check-name">
             以下の名前で始めます。
             <br />
             よろしいですか？
-          </label>
+          </p>
+          
           <div className="confirm-name-disp">{playerName}</div>
-          <div
-            style={{
-              marginTop: "25px",
-              display: "flex",
-              justifyContent: "center",
-            }}
-          >
-            <SoundBtn className="pop-btn" onClick={handleBackToInput}>
-              戻る
-            </SoundBtn>
+          
+          <div>
             <SoundBtn className="pop-btn primary" onClick={handleFinalConfirm}>
               はい
+            </SoundBtn>
+            <SoundBtn className="pop-btn" onClick={handleBackToInput}>
+              いいえ
             </SoundBtn>
           </div>
           <p className="pop-note">※名前は後からでも変更できます。</p>
