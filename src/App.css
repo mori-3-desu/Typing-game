@@ -1820,36 +1820,52 @@ body {
   }
 }
 
-/* --- FINISH Banner --- */
-.finish-banner {
+.finish-banner-wrapper {
   position: absolute;
-  top: -250px;
-  left: 50%;
-  transform: translateX(-50%);
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: var(--z-game-finish);
+  pointer-events: none;
+}
+
+.finish-banner {
   font-size: 180px;
   font-weight: bold;
   color: var(--color-gold);
   text-shadow:
     0 0 20px rgba(255, 221, 0, 0.8),
     4px 4px 0 var(--color-black);
-  z-index: var(--z-game-finish);
-  transition:
-    top 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-    opacity 0.5s;
-  opacity: 0;
+
+  &.show {
+    animation: drop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  }
+
+  &.exit {
+    animation: drop-out 0.5s ease-in forwards;
+  }
 }
 
-.finish-banner.show {
-  top: 35%;
-  opacity: 1;
+@keyframes drop-in {
+  from {
+    transform: translateY(-250%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
-.finish-banner.exit {
-  top: -250px;
-  opacity: 0;
-  transition:
-    top 0.5s ease-in,
-    opacity 0.5s ease-in;
+@keyframes drop-out {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-250%);
+    opacity: 0;
+  }
 }
 
 .bg-blur {
