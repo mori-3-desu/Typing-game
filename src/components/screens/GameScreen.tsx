@@ -101,13 +101,16 @@ export const GameScreen = ({
           — Escキーで最初からやり直す —
         </div>
       )}
-      <div
-        className={`finish-banner ${gameState === "finishing" ? "show" : ""} ${
-          isFinishExit ? "exit" : ""
-        }`}
-        aria-live="assertive"
-      >
-        FINISH!
+
+      <div className="finish-banner-wrapper">
+        {(gameState === "finishing") && (
+          <div
+            aria-live="assertive"
+            className={`finish-banner ${isFinishExit ? "exit" : "show"}`}
+          >
+            FINISH!
+          </div>
+        )}
       </div>
 
       <div className="score-container">
@@ -150,7 +153,7 @@ export const GameScreen = ({
                 {log.char === " " ? "␣" : log.char}
               </span>
             ))}
-            
+
             <span
               className="text-yellow"
               style={{ textDecoration: "underline" }}
