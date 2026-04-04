@@ -1,4 +1,4 @@
-import { type FC } from "react";
+import type { FC } from "react";
 
 import { SoundBtn } from "../../common/SoundBtn";
 
@@ -6,14 +6,26 @@ type Props = {
   onClose: () => void;
 };
 
+const KEY_GUIDE_DATA = [
+  { char: "し", val: "si / shi" },
+  { char: "つ", val: "tu / tsu" },
+  { char: "ち", val: "ti / chi" },
+  { char: "ん", val: "n / nn" },
+];
+
 export const HowToPlay: FC<Props> = ({ onClose }) => {
   return (
     <div className="config-overlay" onClick={onClose}>
       <div
         className="config-modal how-to-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 className="config-title">遊び方</h2>
+        <h2 id="modal-title" className="config-title">
+          遊び方
+        </h2>
 
         <div className="howto-grid-container">
           <div className="howto-col left-col">
@@ -95,35 +107,20 @@ export const HowToPlay: FC<Props> = ({ onClose }) => {
                 お好きな難易度で挑戦してください！
               </p>
             </div>
-            <div
-              className="howto-section"
-            >
+            <div className="howto-section">
               <h3 className="howto-heading-sub">ローマ字対応</h3>
-              <p className="howto-text">
-                様々な入力分岐に対応しています。
-              </p>
+              <p className="howto-text">様々な入力分岐に対応しています。</p>
               <div className="key-example-box">
-                <div className="key-row">
-                  <span className="key-char">し</span>
-                  <span className="key-val">si / shi</span>
-                </div>
-                <div className="key-row">
-                  <span className="key-char">つ</span>
-                  <span className="key-val">tu / tsu</span>
-                </div>
-                <div className="key-row">
-                  <span className="key-char">ち</span>
-                  <span className="key-val">ti / chi</span>
-                </div>
-                <div className="key-row">
-                  <span className="key-char">ん</span>
-                  <span className="key-val">n / nn</span>
-                </div>
-                <p
-                  className="warning"
-                >
-                  ※母音の前や末尾は{" "}
-                  <span className="highlight-gold">nn</span> 必須
+                {KEY_GUIDE_DATA.map((item) => (
+                  <div className="key-row" key={item.char}>
+                    <span className="key-char">{item.char}</span>
+                    <span className="key-val">{item.val}</span>
+                  </div>
+                )
+                )}
+                <p className="warning">
+                  ※母音の前や末尾は <span className="highlight-gold">nn</span>{" "}
+                  必須
                 </p>
               </div>
             </div>

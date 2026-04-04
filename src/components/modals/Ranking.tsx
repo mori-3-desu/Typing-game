@@ -13,6 +13,18 @@ type Props = {
   onFetchRanking: (diff?: DifficultyLevel) => void;
 };
 
+const formatJpDate = (dataString: string): string => {
+  const d = new Date(dataString);
+  return d.toLocaleString("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 export const Ranking = ({
   difficulty,
   rankingData,
@@ -25,41 +37,43 @@ export const Ranking = ({
   onFetchRanking,
 }: Props) => {
   const expectedMode = isDevRankingMode ? "dev" : "global";
+  const btnIcon = isDevRankingMode ? "🌏" : "👑";
+  const devText = isDevRankingMode ? "- 作成者のスコア -" : "";
+  const btnLabel = isDevRankingMode
+    ? "全国ランキングに戻る"
+    : "開発者のスコアを表示する";
   const canShowRankingData = !isLoading && rankingDataMode === expectedMode;
-  
+
+  const RankingMode = (
+    difficulty: DifficultyLevel,
+  ): React.MouseEventHandler<HTMLButtonElement> => {
+    return () =>
+      isDevRankingMode ? onFetchRanking(difficulty) : onShowDevScore();
+  };
+
   return (
     <div className="ranking-overlay" onClick={onClose}>
       <div
         className={`ranking-modal rank-theme-${difficulty.toLowerCase()}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* --- ヘッダー部分 (そのまま) --- */}
         <div className="ranking-header">
-          <h2 className="ranking-title">
-            {difficulty}{" "}
-            <span style={{ fontSize: "0.4em", opacity: 0.8 }}>
-              {isDevRankingMode ? "- 作成者のスコア -" : ""}
-            </span>
+          <h2 id="modal-title" className="ranking-title">
+            {difficulty} <span style={{ fontSize: "0.4em" }}>{devText}</span>
           </h2>
+
           <div className="ranking-header-buttons">
-            {!isDevRankingMode && (
-              <SoundBtn
-                className="close-btn dev-btn"
-                onClick={onShowDevScore}
-                title="製作者スコアを見る"
-              >
-                👑
-              </SoundBtn>
-            )}
-            {isDevRankingMode && (
-              <SoundBtn
-                className="close-btn global-btn"
-                onClick={() => { onFetchRanking(difficulty); }}
-                title="全国ランキングに戻る"
-              >
-                🌏
-              </SoundBtn>
-            )}
+            <SoundBtn
+              className="close-btn dev-btn"
+              onClick={RankingMode(difficulty)}
+              title={btnLabel}
+              aria-label={btnLabel}
+            >
+              {btnIcon}
+            </SoundBtn>
             <SoundBtn className="close-btn" onClick={onClose} title="閉じる">
               ↩
             </SoundBtn>
@@ -67,38 +81,17 @@ export const Ranking = ({
         </div>
 
         {/* --- リスト部分 --- */}
+        {/* ここは全体的に見づらいので設計を見直す */}
         <div className="ranking-list">
           {!canShowRankingData ? (
             <div className="loading-container">
-              <div className="loading-spinner"></div>
+              <div className="loading-spinner" role="status"></div>
             </div>
           ) : isDevRankingMode ? (
             rankingData.length > 0 ? (
               rankingData.map((item) => (
                 <div key={item.id} className="dev-score-pop-container">
                   <div className="dev-score-card" style={{ color: "inherit" }}>
-                    <SoundBtn
-                      className="dev-pop-back-btn"
-                      onClick={() => onFetchRanking(difficulty)}
-                      title="ランキングに戻る"
-                      style={{
-                        position: "absolute",
-                        top: "15px",
-                        right: "15px",
-                        width: "30px",
-                        height: "30px",
-                        borderRadius: "50%",
-                        border: "2px solid rgba(255,255,255,0.5)",
-                        background: "rgba(0,0,0,0.3)",
-                        color: "#fff",
-                        fontSize: "1rem",
-                        cursor: "pointer",
-                        display: "grid",
-                        placeItems: "center"
-                      }}
-                    >
-                      ↩
-                    </SoundBtn>
                     <div className="dev-label">CREATOR'S RECORD</div>
                     <div
                       className="rank-name-row"
@@ -109,18 +102,8 @@ export const Ranking = ({
                       }}
                     >
                       <span style={{ fontSize: "1.2rem" }}>👑 {item.name}</span>
-                      <span style={{ fontSize: "0.8rem", opacity: 0.7 }}>
-                        {(() => {
-                          const d = new Date(item.created_at);
-                          return d.toLocaleString("ja-JP", {
-                            timeZone: "Asia/Tokyo",
-                            year: "numeric",
-                            month: "numeric",
-                            day: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          });
-                        })()}
+                      <span style={{ fontSize: "0.8rem" }}>
+                        {formatJpDate(item.created_at)}
                       </span>
                     </div>
                     <div className="dev-main-score">
@@ -160,20 +143,10 @@ export const Ranking = ({
               </div>
             )
           ) : (
-            // === 通常ランキング ===
             <>
               {rankingData.map((item, index) => {
                 const rank = index + 1;
                 const isMe = item.user_id === userId;
-                const d = new Date(item.created_at);
-                const dateStr = d.toLocaleString("ja-JP", {
-                  timeZone: "Asia/Tokyo",
-                  year: "numeric",
-                  month: "numeric",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
 
                 return (
                   <div
@@ -190,7 +163,7 @@ export const Ranking = ({
                     <div className="rank-info">
                       <div className="rank-name-row">
                         <span className="rank-name">{item.name}</span>
-                        <span className="rank-date">{dateStr}</span>
+                        <span className="rank-date">{formatJpDate(item.created_at)}</span>
                       </div>
                       <div className="rank-score">
                         {item.score.toLocaleString()}
