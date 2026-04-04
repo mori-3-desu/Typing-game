@@ -12,7 +12,7 @@ https://github.com/user-attachments/assets/aeb8b6c2-9415-4c85-a0cc-e5637062761f
 
 ## 🔗 URL
 
-- **App**: https://www.criticaltyping.com
+- **App**: https://typing-game-eta-lime.vercel.app/
 - **Repository**: https://github.com/mori-3-desu/Typing-game
 - **記事も公開しています**: https://qiita.com/mori-3-desu
 
