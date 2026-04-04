@@ -1,8 +1,7 @@
-import { useEffect, useId, useState } from "react";
-
+import { Slider } from "../../common/Slider";
 import { SoundBtn } from "../../common/SoundBtn";
 import { playSE } from "../../utils/audio";
-import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/constants";
+import { PlayerNameEditor } from "./PlayerNameEditor";
 
 type Props = {
   playerName: string;
@@ -13,7 +12,6 @@ type Props = {
   showRomaji: boolean;
   ngWordsList: string[];
 
-  // 状態を変更する関数たち
   setIsMuted: (val: boolean) => void;
   setBgmVol: (val: number) => void;
   setSeVol: (val: number) => void;
@@ -24,25 +22,11 @@ type Props = {
   onClose: () => void;
 };
 
-const validateName = (name: string, ngWordsList: string[]): string | null => {
-  if (!name) {
-    return "名前を入力してください";
-  }
-
-  if (name.length > PLAYER_NAME_CHARS.MAX) {
-    return `名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`;
-  }
-
-  const isNg = ngWordsList.some((word) =>
-    name.toLowerCase().includes(word.toLowerCase()),
-  );
-
-  if (isNg) {
-    return "不適切な文字が含まれています";
-  }
-
-  return null;
-};
+const handleCheckChange =
+  (setter: (checked: boolean) => void) =>
+  (e: React.ChangeEvent<HTMLInputElement>) => {
+    setter(e.currentTarget.checked);
+  };
 
 export const Setting = ({
   playerName,
@@ -60,154 +44,26 @@ export const Setting = ({
   onSaveName,
   onClose,
 }: Props) => {
-  const [tempPlayerName, setTempPlayerName] = useState(playerName);
-  const [nameError, setNameError] = useState("");
-  const [isNameChange, setIsNameChange] = useState("");
-
-  const nameInputId = useId();
-
-  // モーダルが開いた時に現在の名前をセット
-  useEffect(() => {
-    setTempPlayerName(playerName);
-  }, [playerName]);
-
-  const handleNameChange = () => {
-    const trimmedName = tempPlayerName.trim();
-    setNameError("");
-
-    const errorMessage = validateName(trimmedName, ngWordsList);
-
-    if (errorMessage) {
-      setNameError(errorMessage);
-      return;
-    }
-
-    onSaveName(trimmedName);
-
-    setIsNameChange("名前を保存しました！");
-    setTimeout(() => {
-      setIsNameChange("");
-    }, UI_TIMINGS.MESSAGE_AUTO_CLOSE);
-  };
-
   return (
     <div className="config-overlay" onClick={onClose}>
-      <div className="config-modal" onClick={(e) => e.stopPropagation()}>
-        <h2 className="config-title" style={{ flexShrink: 0 }}>
+      <div
+        className="config-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h2 id="modal-title" className="config-title" style={{ flexShrink: 0 }}>
           SETTING
         </h2>
 
         <div className="config-scroll-area scroll-gold">
           {/* 名前変更エリア */}
-          <div className="config-item">
-            <label
-              htmlFor="{nameInputId}"
-              style={{
-                display: "flex",
-                cursor: "pointer",
-                marginBottom: "5px",
-              }}
-            >
-              Player Name
-            </label>
-            {nameError && (
-              <span
-                className="error-fade-in"
-                style={{
-                  fontSize: "0.9rem",
-                  marginLeft: "auto",
-                  marginRight: "5px",
-                }}
-              >
-                ⚠ ERROR
-              </span>
-            )}
-
-            <div
-              style={{
-                display: "flex",
-                gap: "20px",
-                alignItems: "center",
-              }}
-            >
-              <input
-                id={nameInputId}
-                type="text"
-                className={`pop-input-field ${
-                  nameError ? "input-error-shake" : ""
-                }`}
-                value={tempPlayerName}
-                maxLength={PLAYER_NAME_CHARS.MAX}
-                onChange={(e) => {
-                  setTempPlayerName(e.target.value);
-                  if (nameError) setNameError("");
-                }}
-                placeholder="Guest"
-                style={{
-                  flex: 1,
-                  margin: 0,
-                  fontSize: "18px",
-                  textAlign: "left",
-                  transition: "all 0.3s",
-                }}
-              />
-              <SoundBtn
-                className="btn-change-name"
-                onClick={handleNameChange}
-                style={{
-                  whiteSpace: "nowrap",
-                  padding: "10px 20px",
-                  fontSize: "0.9rem",
-                  height: "46px",
-                }}
-              >
-                変更
-              </SoundBtn>
-            </div>
-            <div
-              style={{
-                height: "20px",
-                marginTop: "5px",
-                marginLeft: "5px",
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              {nameError ? (
-                <p
-                  className="error-fade-in"
-                  style={{
-                    fontSize: "0.85rem",
-                    margin: 0,
-                    color: "#ff4d4d",
-                  }}
-                >
-                  {nameError}
-                </p>
-              ) : isNameChange ? (
-                <p
-                  className="fade-in"
-                  style={{
-                    fontSize: "0.85rem",
-                    margin: 0,
-                    color: "#4dff88",
-                  }}
-                >
-                  ✓ {isNameChange}
-                </p>
-              ) : (
-                <p
-                  style={{
-                    fontSize: "0.8rem",
-                    color: "rgba(255,255,255,0.5)",
-                    margin: 0,
-                  }}
-                >
-                  ※変更可能、名前はランキングに反映されます
-                </p>
-              )}
-            </div>
-          </div>
+          <PlayerNameEditor
+            playerName={playerName}
+            ngWordsList={ngWordsList}
+            onSaveName={onSaveName}
+          />
 
           {/* その他設定項目 */}
           <div className="config-item">
@@ -215,7 +71,7 @@ export const Setting = ({
               <input
                 type="checkbox"
                 checked={isMuted}
-                onChange={(e) => setIsMuted(e.target.checked)}
+                onChange={handleCheckChange(setIsMuted)}
               />
               <span className="checkbox-text">音量をミュートにする</span>
             </label>
@@ -226,7 +82,7 @@ export const Setting = ({
               <input
                 type="checkbox"
                 checked={showRomaji}
-                onChange={(e) => setShowRomaji(e.target.checked)}
+                onChange={handleCheckChange(setShowRomaji)}
               />
               <span className="checkbox-text">ローマ字ガイドを表示する</span>
             </label>
@@ -240,19 +96,14 @@ export const Setting = ({
           />
 
           <div className="config-item">
-            <div className="slider-label-row">
-              <span>明るさ調整</span>
-              <span>{Math.round(brightness * 100)}%</span>
-            </div>
-
-            <input
-              type="range"
+            <Slider
+              label="明るさ調整"
+              displayValue={`${Math.round(brightness * 100)}%`}
               min="0.5"
               max="1"
               step="0.1"
               value={brightness}
-              onChange={(e) => setBrightness(parseFloat(e.target.value))}
-              className="volume-slider"
+              onValueChange={setBrightness}
             />
           </div>
 
@@ -264,40 +115,31 @@ export const Setting = ({
           />
 
           <div className={`config-item ${isMuted ? "disabled" : ""}`}>
-            <div className="slider-label-row">
-              <span>BGM音量</span>
-              <span>{Math.round(bgmVol * 100)}%</span>
-            </div>
-
-            <input
-              type="range"
+            <Slider
+              label="BGM音量"
+              displayValue={`${Math.round(bgmVol * 100)}%`}
               min="0"
               max="1"
               step="0.05"
               value={bgmVol}
-              onChange={(e) => setBgmVol(parseFloat(e.target.value))}
+              onValueChange={setBgmVol}
               disabled={isMuted}
-              className="volume-slider"
             />
           </div>
 
           <div className={`config-item ${isMuted ? "disabled" : ""}`}>
-            <div className="slider-label-row">
-              <span>効果音(SE)音量</span>
-              <span>{Math.round(seVol * 100)}%</span>
-            </div>
-            <input
-              type="range"
+            <Slider
+              label="効果音(SE)音量"
+              displayValue={`${Math.round(seVol * 100)}%`}
               min="0"
               max="1"
               step="0.05"
               value={seVol}
-              onChange={(e) => setSeVol(parseFloat(e.target.value))}
+              onValueChange={setSeVol}
               onPointerUp={() => {
                 if (!isMuted) playSE("decision");
               }}
               disabled={isMuted}
-              className="volume-slider"
             />
           </div>
 
