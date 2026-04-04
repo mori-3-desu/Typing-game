@@ -284,7 +284,7 @@ export const ResultScreen = ({
                   onShowRanking();
                 }}
               >
-                <img src="/images/ranking.png" alt="Ranking" />
+                <img src="/images/ranking.png" alt="ランキングを表示" />
               </SoundBtn>
               <a
                 href={onTweet(resultData.score, resultData.rank)}
@@ -313,8 +313,10 @@ export const ResultScreen = ({
               className="result-share-group"
               style={{ position: "absolute", right: "10px" }}
             >
+              {/* 難易度選択のハイスコアリザルト表示、別に切り出す */}
               <SoundBtn
                 className="share-icon-box"
+                aria-label="難易度選択に戻る"
                 onClick={(e) => {
                   e.stopPropagation();
                   onBackToDifficulty();
