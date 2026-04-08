@@ -11,6 +11,7 @@ type UseSaveNameParams = {
 
 // 未入力時はGuestで始めるようにしている
 // また未入力時はそのままストレージにセットし、通信をカットしている
+// 無駄なリクエストを防ぐためにuserIdチェックは残してある
 export const useSaveName = ({ userId, setPlayerName }: UseSaveNameParams) => {
   const saveName = (name: string) => {
     if (!name) {
@@ -25,7 +26,7 @@ export const useSaveName = ({ userId, setPlayerName }: UseSaveNameParams) => {
     // userId がない（認証が終わっていない）場合は処理を中断
     if (!userId) return;
 
-    DatabaseService.updateUserName(userId, name).catch(() => {
+    DatabaseService.updateUserName(name).catch(() => {
       setPlayerName("Guest");
       storage.set(STORAGE_KEYS.PLAYER_NAME, "Guest");
     });
