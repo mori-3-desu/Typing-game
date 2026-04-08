@@ -1220,8 +1220,13 @@ background-clip: text;
 #### ⑤ A11y 基礎改善
 
 モーダルの `role` 属性・`aria-*` 属性・フォーカストラップを整備する。
-- TitleScreen.tsx完了(2026.4.3)
-- GameScreen.tsx完了(2026.4.3)
+モーダル共通化で対応(フォーカストラップ)
+- TitleScreen.tsx(2026.4.3)
+- GameScreen.tsx(2026.4.3)
+- Setting.tsx(2026.4.4)
+- HowToPlay.tsx(2026.4.4)
+- Ranking.tsx(2026.4.4)
+- ResultScreen.tsx(2026.4.4)
 
 #### ⑥ リファクタリング（dead code 削除・共通化）
 
@@ -1304,3 +1309,4 @@ const createInitialState = (): ConfigState => {
     return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 ```
+- Ranting.tsx、ResultScreen.tsx設計を見直す。

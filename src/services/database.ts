@@ -2,11 +2,12 @@ import { supabase } from "../supabase";
 import {
   type DifficultyLevel,
   type RankingScore,
-  type UpdateHighscoreParams,
+  type ScoreRequestBody,
   type WordDataMap,
   type WordRow,
 } from "../types";
-import { LIMIT_DATA } from "../utils/constants";
+
+const API_BASE = import.meta.env.VITE_API_URL;
 
 // 🛡️ 型ガード関数（Type Guard）
 // 文字列が本当に "EASY" | "NORMAL" | "HARD" | "EXTRA"のいずれかかチェックする守衛さん
@@ -81,13 +82,30 @@ export const DatabaseService = {
   },
 
   /**
-   * ハイスコア更新処理
-   * Database側の関数(RPC)を呼び出して、一発で更新・挿入を行う
+   * スコア送信（POST /api/scores）
+   * JWTをAuthorizationヘッダーに付けてSpring Boot APIに送信
+   * サーバー側でハイスコア判定・upsertを行う
    */
-  async updateHighscore(params: UpdateHighscoreParams) {
-    const { error } = await supabase.rpc("update_highscore", params);
-    if (error) throw error;
-    return true;
+  async postScore(body: ScoreRequestBody): Promise<void> {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error("未ログイン状態ではスコアを送信できません");
+    }
+
+    const response = await fetch(`${API_BASE}/api/scores`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Score POST failed: ${response.status}`);
+    }
   },
 
   /**
@@ -100,35 +118,18 @@ export const DatabaseService = {
   async getScores(
     difficulty: DifficultyLevel,
     isCreator: boolean,
-    limit: number,
     signal?: AbortSignal,
   ): Promise<RankingScore[]> {
-    const query = supabase
-      .from("scores")
-      .select(
-        "id, user_id, name, score, created_at, correct, miss, backspace, combo, speed, is_creator",
-      )
-      .eq("difficulty", difficulty)
-      .eq("is_creator", isCreator)
-      .order("score", { ascending: false })
-      .limit(limit);
+    const response = await fetch(
+      `${API_BASE}/api/scores/ranking/${difficulty}?creator=${isCreator}`,
+      { signal },
+    );
 
-    if (signal) {
-      query.abortSignal(signal);
+    if (!response.ok) {
+      throw new Error(`HTTP error status: ${response.status}`);
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      if (signal?.aborted) {
-        throw new Error("Aborted");
-      }
-      throw error;
-    }
-
-    if (signal?.aborted) return [];
-
-    return data || [];
+    return (await response.json()) as RankingScore[];
   },
 
   /**
@@ -139,7 +140,7 @@ export const DatabaseService = {
     difficulty: DifficultyLevel,
     signal?: AbortSignal,
   ): Promise<RankingScore[]> {
-    return this.getScores(difficulty, false, LIMIT_DATA.RANKING_LIMIT, signal);
+    return this.getScores(difficulty, false, signal);
   },
 
   /**
@@ -150,20 +151,32 @@ export const DatabaseService = {
     difficulty: DifficultyLevel,
     signal?: AbortSignal,
   ): Promise<RankingScore[]> {
-    return this.getScores(difficulty, true, 1, signal);
+    return this.getScores(difficulty, true, signal);
   },
 
   /**
    * ユーザー名の更新
    * 名前だけを変更したい場合に使用
    */
-  async updateUserName(userId: string, newName: string) {
-    const { error } = await supabase
-      .from("scores")
-      .update({ name: newName })
-      .eq("user_id", userId);
+  async updateUserName(newName: string) {
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    if (!session) {
+      throw new Error("未ログイン状態では名前を更新出来ません");
+    }
 
-    if (error) throw error;
-    return true;
+    const response = await fetch(`${API_BASE}/api/scores/name`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify({ name: newName }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`newName PATCH failed: ${response.status}`);
+    }
   },
 };

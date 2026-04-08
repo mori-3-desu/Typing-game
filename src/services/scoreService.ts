@@ -1,7 +1,7 @@
 import type {
   DifficultyLevel,
   GameResultStats,
-  UpdateHighscoreParams,
+  ScoreRequestBody,
 } from "../types";
 import { STORAGE_KEYS } from "../utils/constants";
 import { DatabaseService } from "./database";
@@ -50,18 +50,16 @@ export const ScoreService = {
     stats: GameResultStats,
     playerName: string,
   ): Promise<void> {
-    const rpcParams: UpdateHighscoreParams = {
-      p_difficulty: difficulty,
-      p_score: stats.score,
-      p_data: {
-        name: playerName,
-        correct: stats.correct,
-        miss: stats.miss,
-        backspace: stats.backspace,
-        combo: stats.combo,
-        speed: stats.speed,
-      },
+    const rpcParams: ScoreRequestBody = {
+      difficulty: difficulty,
+      score: stats.score,
+      name: playerName,
+      correct: stats.correct,
+      miss: stats.miss,
+      backspace: stats.backspace,
+      combo: stats.combo,
+      speed: stats.speed,
     };
-    await DatabaseService.updateHighscore(rpcParams);
+    await DatabaseService.postScore(rpcParams);
   },
 } as const;

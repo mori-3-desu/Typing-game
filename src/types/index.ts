@@ -68,17 +68,16 @@ export type GameControlProps = {
   currentStats: GameStats;
 };
 
-export type UpdateHighscoreParams = {
-  p_difficulty: DifficultyLevel; // "EASY" | "NORMAL" | "HARD" | "EXTRA"しか許さない！
-  p_score: number;
-  p_data: {
-    name: string;
-    correct: number;
-    miss: number;
-    backspace: number;
-    combo: number;
-    speed: number;
-  };
+// Spring Boot API の POST /api/scores が受け取る形式（ScoreRequest.java と対応）
+export type ScoreRequestBody = {
+  name: string;
+  score: number;
+  difficulty: DifficultyLevel;
+  correct: number;
+  miss: number;
+  backspace: number;
+  combo: number;
+  speed: number;
 };
 
 // ■ ランキングのデータ
