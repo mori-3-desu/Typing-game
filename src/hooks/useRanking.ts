@@ -34,8 +34,7 @@ export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
   };
 
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
-    if (showRanking || isRankingLoading) return;
-
+    if (isRankingLoading) return;
     const searchDiff = targetDiff ?? difficulty;
     if (targetDiff) setDifficulty(targetDiff);
     setShowRanking(true);
@@ -58,7 +57,7 @@ export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
   };
 
   const handleShowDevScore = async () => {
-    if (isDevRankingMode || isRankingLoading) return;
+    if (isRankingLoading) return;
 
     beginFetch();
     const signal = createSignal();
@@ -80,6 +79,7 @@ export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
     abortRef.current?.abort();
     setShowRanking(false);
     setIsRankingLoading(false);
+    setIsDevRankingMode(false);
     setRankingDataMode(null);
     setRankingData([]);
   };
