@@ -8,79 +8,79 @@ type UseRankingProps = {
   setDifficulty: (diff: DifficultyLevel) => void;
 };
 
+// abortに変更、バックエンドで受け取る形にしたので
+// 無駄なリクエストを防ぐ。
 export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
   const [showRanking, setShowRanking] = useState(false);
   const [rankingData, setRankingData] = useState<RankingScore[]>([]);
   const [isRankingLoading, setIsRankingLoading] = useState(false);
   const [isDevRankingMode, setIsDevRankingMode] = useState(false);
-  const [rankingDataMode, setIsRankingDataMode] = useState<
+  const [rankingDataMode, setRankingDataMode] = useState<
     "global" | "dev" | null
   >(null);
-  const rankingRequestIdRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
 
-  // 整理券を発行し、画面を共通リセットする
+  // 画面を共通リセットする
   const beginFetch = () => {
-    rankingRequestIdRef.current += 1;
     setIsRankingLoading(true);
-    setIsRankingDataMode(null);
+    setRankingDataMode(null);
     setRankingData([]);
-    return rankingRequestIdRef.current;
   };
 
-  // 自分が最新のリクエストかどうかを確認する
-  const isLatest = (id: number) => id === rankingRequestIdRef.current;
+  const createSignal = () => {
+    abortRef.current?.abort();
+    abortRef.current = new AbortController();
+    return abortRef.current.signal;
+  };
 
   const fetchRanking = async (targetDiff?: DifficultyLevel) => {
-    const requestId = beginFetch();
-    const searchDiff = targetDiff || difficulty;
+    if (isRankingLoading) return;
+    const searchDiff = targetDiff ?? difficulty;
     if (targetDiff) setDifficulty(targetDiff);
-
     setShowRanking(true);
     setIsDevRankingMode(false);
+    beginFetch();
+
+    const signal = createSignal();
 
     try {
-      const data = await DatabaseService.getRanking(searchDiff);
-
-      // 通信が終わった時点で、自分が「最新の整理券」を持っているか確認
-      // 違っていれば、それは「古いリクエスト」なので画面に反映せずに捨てる
-      if (!isLatest(requestId)) return;
-
+      const data = await DatabaseService.getRanking(searchDiff, signal);
       setRankingData(data);
-      setIsRankingDataMode("global");
+      setRankingDataMode("global");
     } catch (error) {
-      if (!isLatest(requestId)) return;
+      if (error instanceof Error && error.name === "AbortError") return;
       console.error("Ranking fetch error:", error);
     } finally {
-      if (isLatest(requestId)) setIsRankingLoading(false);
+      // 古い処理がstateを参照して更新させないようにする。
+      if (!signal?.aborted) setIsRankingLoading(false);
     }
   };
 
   const handleShowDevScore = async () => {
-    if (isDevRankingMode || isRankingLoading) return;
+    if (isRankingLoading) return;
 
-    const requestId = beginFetch();
+    beginFetch();
+    const signal = createSignal();
 
     try {
-      const data = await DatabaseService.getDevScore(difficulty);
-
-      if (!isLatest(requestId)) return;
-
+      const data = await DatabaseService.getDevScore(difficulty, signal);
       setRankingData(data);
-      setIsRankingDataMode("dev");
+      setRankingDataMode("dev");
       setIsDevRankingMode(true);
     } catch (error) {
-      if (!isLatest(requestId)) return;
+      if (error instanceof Error && error.name === "AbortError") return;
       console.error("DevScore fetch error:", error);
     } finally {
-      if (isLatest(requestId)) setIsRankingLoading(false);
+      if (!signal?.aborted) setIsRankingLoading(false);
     }
   };
 
   const closeRanking = () => {
-    rankingRequestIdRef.current += 1;
+    abortRef.current?.abort();
     setShowRanking(false);
     setIsRankingLoading(false);
-    setIsRankingDataMode(null);
+    setIsDevRankingMode(false);
+    setRankingDataMode(null);
     setRankingData([]);
   };
 
