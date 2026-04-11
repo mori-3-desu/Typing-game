@@ -326,7 +326,7 @@ function App() {
             Error: {error instanceof Error ? error.message : "Unknown error"}
           </div>
         ) : (
-          <div id="game-wrapper">
+          <div className="game-wrapper">
             {ALL_BACKGROUNDSDATA.map((bg) => (
               <div
                 key={bg.key}
