@@ -1,5 +1,6 @@
 import { Slider } from "../../common/Slider";
 import { SoundBtn } from "../../common/SoundBtn";
+import { useEscapekey } from "../../hooks/useEscapeKey";
 import { playSE } from "../../utils/audio";
 import { PlayerNameEditor } from "./PlayerNameEditor";
 
@@ -44,6 +45,8 @@ export const Setting = ({
   onSaveName,
   onClose,
 }: Props) => {
+
+  useEscapekey(onClose);
   return (
     <div className="config-overlay" onClick={onClose}>
       <div

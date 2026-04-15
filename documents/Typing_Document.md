@@ -1223,16 +1223,20 @@ background-clip: text;
 モーダルの `role` 属性・`aria-*` 属性・フォーカストラップを整備する。
 モーダル共通化で対応(フォーカストラップ)
 - TitleScreen.tsx(2026.4.3)
+- Difficulty.tsx(2026.4.15)
 - GameScreen.tsx(2026.4.3)
 - Setting.tsx(2026.4.4)
 - HowToPlay.tsx(2026.4.4)
 - Ranking.tsx(2026.4.4)
 - ResultScreen.tsx(2026.4.4)
+- inert対応(2026.4.15)
 
 #### ⑥ リファクタリング（dead code 削除・共通化）
 
 App.tsx 分割と並行して、使われていないコードの削除と重複処理の共通化を進めます。
 分割の過程でコードの全体像が見えやすくなるため、そのタイミングで整理するのが効率的と判断しています。
+
+useTypinggameのロジックフォルダ作成しさらに分割
 
 #### ⑦ CSS の id → class への統一
 

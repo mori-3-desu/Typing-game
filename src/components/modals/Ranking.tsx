@@ -1,4 +1,5 @@
 import { SoundBtn } from "../../common/SoundBtn";
+import { useEscapekey } from "../../hooks/useEscapeKey";
 import { type DifficultyLevel, type RankingScore } from "../../types";
 
 type Props = {
@@ -51,6 +52,7 @@ export const Ranking = ({
       isDevRankingMode ? onFetchRanking(difficulty) : onShowDevScore();
   };
 
+  useEscapekey(onClose);
   return (
     <div className="ranking-overlay" onClick={onClose}>
       <div

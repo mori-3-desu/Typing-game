@@ -313,6 +313,7 @@ function App() {
     }
   };
 
+  const isAnyModalOpen = showRanking || showHowToPlay || showConfig;
   const displayData = buildDisplayData(gameState, reviewData, lastGameStats);
   const tweetUrl = () => getShareUrl(displayData.score, displayData.rank);
 
@@ -359,103 +360,105 @@ function App() {
 
             {gameState === "loading" && <LoadingScreen />}
 
-            <main>
-              {gameState === "title" && (
-                <TitleScreen
-                  showTitle={showTitle}
-                  enableBounce={enableBounce}
-                  titlePhase={titlePhase}
-                  isTitleExiting={isTitleExiting}
-                  isNameConfirmed={isNameConfirmed}
-                  playerName={playerName}
-                  setPlayerName={setPlayerName}
-                  nameError={nameError}
-                  setNameError={setNameError}
-                  handleStartSequence={handleStartSequence}
-                  handleOpenHowToPlay={handleOpenHowToPlay}
-                  handleOpenConfig={handleOpenConfig}
-                  handleCancelInput={handleCancelInput}
-                  handleNameSubmit={handleNameSubmit}
-                  handleBackToInput={handleBackToInput}
-                  handleFinalConfirm={handleFinalConfirm}
-                />
-              )}
+            <div inert={isAnyModalOpen || undefined}>
+              <main>
+                {gameState === "title" && (
+                  <TitleScreen
+                    showTitle={showTitle}
+                    enableBounce={enableBounce}
+                    titlePhase={titlePhase}
+                    isTitleExiting={isTitleExiting}
+                    isNameConfirmed={isNameConfirmed}
+                    playerName={playerName}
+                    setPlayerName={setPlayerName}
+                    nameError={nameError}
+                    setNameError={setNameError}
+                    handleStartSequence={handleStartSequence}
+                    handleOpenHowToPlay={handleOpenHowToPlay}
+                    handleOpenConfig={handleOpenConfig}
+                    handleCancelInput={handleCancelInput}
+                    handleNameSubmit={handleNameSubmit}
+                    handleBackToInput={handleBackToInput}
+                    handleFinalConfirm={handleFinalConfirm}
+                  />
+                )}
 
-              {gameState === "difficulty" && (
-                <DifficultySelectScreen
-                  difficulty={difficulty}
-                  setDifficulty={setDifficulty}
-                  hoverDifficulty={hoverDifficulty}
-                  setHoverDifficulty={setHoverDifficulty}
-                  isInputLocked={isInputLocked}
-                  isTransitioning={isTransitioning}
-                  handleSelectDifficulty={handleSelectDifficulty}
-                  backToTitle={backToTitle}
-                  fetchRanking={fetchRanking}
-                  handleShowHighScoreDetail={handleShowHighScoreDetail}
-                />
-              )}
+                {gameState === "difficulty" && (
+                  <DifficultySelectScreen
+                    difficulty={difficulty}
+                    setDifficulty={setDifficulty}
+                    hoverDifficulty={hoverDifficulty}
+                    setHoverDifficulty={setHoverDifficulty}
+                    isInputLocked={isInputLocked}
+                    isTransitioning={isTransitioning}
+                    handleSelectDifficulty={handleSelectDifficulty}
+                    backToTitle={backToTitle}
+                    fetchRanking={fetchRanking}
+                    handleShowHighScoreDetail={handleShowHighScoreDetail}
+                  />
+                )}
 
-              {(gameState === "playing" || gameState === "finishing") && (
-                <GameScreen
-                  gameState={gameState}
-                  playPhase={playPhase}
-                  difficulty={difficulty}
-                  displayScore={displayScore}
-                  combo={combo}
-                  comboClass={comboClass}
-                  timeLeft={timeLeft}
-                  gaugeValue={gaugeValue}
-                  gaugeMax={gaugeMax}
-                  completedWords={completedWords}
-                  currentSpeed={currentSpeed}
-                  jpText={jpText}
-                  romaState={romaState}
-                  showRomaji={showRomaji}
-                  allSegments={allSegments}
-                  shakeStatus={shakeStatus}
-                  rank={rank}
-                  bonusPopups={bonusPopups}
-                  perfectPopups={perfectPopups}
-                  scorePopups={scorePopups}
-                  timePopups={timePopups}
-                  isFinishExit={isFinishExit}
-                />
-              )}
+                {(gameState === "playing" || gameState === "finishing") && (
+                  <GameScreen
+                    gameState={gameState}
+                    playPhase={playPhase}
+                    difficulty={difficulty}
+                    displayScore={displayScore}
+                    combo={combo}
+                    comboClass={comboClass}
+                    timeLeft={timeLeft}
+                    gaugeValue={gaugeValue}
+                    gaugeMax={gaugeMax}
+                    completedWords={completedWords}
+                    currentSpeed={currentSpeed}
+                    jpText={jpText}
+                    romaState={romaState}
+                    showRomaji={showRomaji}
+                    allSegments={allSegments}
+                    shakeStatus={shakeStatus}
+                    rank={rank}
+                    bonusPopups={bonusPopups}
+                    perfectPopups={perfectPopups}
+                    scorePopups={scorePopups}
+                    timePopups={timePopups}
+                    isFinishExit={isFinishExit}
+                  />
+                )}
 
-              {(gameState === "result" || gameState === "hiscore_review") && (
-                <ResultScreen
-                  gameState={gameState}
-                  difficulty={difficulty}
-                  resultData={displayData}
-                  highScore={gameState === "result" ? highScore : undefined}
-                  scoreDiff={scoreDiff}
-                  isNewRecord={gameState === "result" ? isNewRecord : false}
-                  resultAnimStep={resultAnimStep}
-                  onRetry={retryGame}
-                  onBackToDifficulty={backToDifficulty}
-                  onBackToTitle={backToTitle}
-                  onShowRanking={fetchRanking}
-                  onTweet={tweetUrl}
-                  onClickScreen={hiscoreModeResult}
-                />
-              )}
-
-              {showRanking && (
-                <Ranking
-                  difficulty={difficulty}
-                  rankingData={rankingData}
-                  userId={userId}
-                  isDevRankingMode={isDevRankingMode}
-                  rankingDataMode={rankingDataMode}
-                  isLoading={isRankingLoading}
-                  onClose={closeRanking}
-                  onShowDevScore={handleShowDevScore}
-                  onFetchRanking={fetchRanking}
-                />
-              )}
-            </main>
+                {(gameState === "result" || gameState === "hiscore_review") && (
+                  <ResultScreen
+                    gameState={gameState}
+                    difficulty={difficulty}
+                    resultData={displayData}
+                    highScore={gameState === "result" ? highScore : undefined}
+                    scoreDiff={scoreDiff}
+                    isNewRecord={gameState === "result" ? isNewRecord : false}
+                    resultAnimStep={resultAnimStep}
+                    onRetry={retryGame}
+                    onBackToDifficulty={backToDifficulty}
+                    onBackToTitle={backToTitle}
+                    onShowRanking={fetchRanking}
+                    onTweet={tweetUrl}
+                    onClickScreen={hiscoreModeResult}
+                  />
+                )}
+              </main>
+            </div>
           </div>
+        )}
+
+        {showRanking && (
+          <Ranking
+            difficulty={difficulty}
+            rankingData={rankingData}
+            userId={userId}
+            isDevRankingMode={isDevRankingMode}
+            rankingDataMode={rankingDataMode}
+            isLoading={isRankingLoading}
+            onClose={closeRanking}
+            onShowDevScore={handleShowDevScore}
+            onFetchRanking={fetchRanking}
+          />
         )}
 
         {showHowToPlay && <HowToPlay onClose={handleCloseHowToPlay} />}
