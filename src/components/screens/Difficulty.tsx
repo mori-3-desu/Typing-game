@@ -32,11 +32,8 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   fetchRanking,
   handleShowHighScoreDetail,
 }) => {
-  // 表示用の難易度とハイスコアを計算
   const displayDiff = hoverDifficulty || difficulty;
   const displayHighScore = ScoreService.getHighScore(displayDiff);
-
-  // 設定データ
   const currentSetting = DIFFICULTY_SETTINGS[displayDiff];
 
   const handleMouseEnter = (diff: DifficultyLevel) => {
@@ -53,7 +50,10 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   };
 
   return (
-    <div className="difficulty-view" style={{ position: "absolute", zIndex: 5 }}>
+    <div
+      className="difficulty-view"
+      style={{ position: "absolute", zIndex: 5 }}
+    >
       <h1 className="diff-view-title">SELECT DIFFICULTY</h1>
       <div className="diff-main-container">
         <div
@@ -63,6 +63,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
           {DIFFICULTY_ORDER.map((diff) => (
             <SoundBtn
               key={diff}
+              aria-current={difficulty === diff ? "true" : undefined}
               className={`diff-btn ${diff.toLowerCase()}`}
               onMouseEnter={() => handleMouseEnter(diff)}
               onClick={() => handleSelectDifficulty(diff)}
@@ -104,7 +105,10 @@ export const DifficultySelectScreen: React.FC<Props> = ({
               </span>
             </div>
           </div>
-          <h2 className="display-diff-name" style={{ color: currentSetting.color }}>
+          <h2
+            className="display-diff-name"
+            style={{ color: currentSetting.color }}
+          >
             {displayDiff}
           </h2>
 
@@ -121,7 +125,6 @@ export const DifficultySelectScreen: React.FC<Props> = ({
                     key={index}
                     style={{
                       color: isWarning ? "#ffff00" : "inherit",
-                      // ちょっと文字を小さくして注釈っぽくするのもアリです
                       fontSize: isWarning ? "0.85em" : "inherit",
                     }}
                   >

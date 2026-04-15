@@ -1,7 +1,7 @@
 import type { Dispatch, SetStateAction } from "react";
 
 import type { GameState,TitlePhase } from "../types";
-import { playSE, startSelectBgm } from "../utils/audio";
+import { startSelectBgm } from "../utils/audio";
 import {
   PLAYER_NAME_CHARS,
   UI_TIMINGS,
@@ -123,7 +123,6 @@ export const useTitleFlow = ({
   };
 
   const handleCloseHowToPlay = () => {
-    playSE("decision");
     setShowHowToPlay(false);
   };
 
