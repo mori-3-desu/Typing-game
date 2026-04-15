@@ -86,7 +86,7 @@ export const GameScreen = ({
   if (playPhase === "ready") return null;
 
   return (
-    <div id="game-hud" style={{ zIndex: 10 }}>
+    <div className="game-hud" style={{ zIndex: 10 }}>
       {playPhase === "game" && gameState !== "finishing" && (
         <div
           className="blink-guide"
@@ -212,11 +212,10 @@ export const GameScreen = ({
         </div>
       </div>
 
-      <div id="tmr-box">
-        <img src="/images/cloud.webp" id="tmr-img" alt="雲" />
+      <div className="tmr-box">
+        <img src="/images/cloud.webp" className="tmr-img" alt="雲" />
         <span
-          id="tmr-text"
-          className={gameTimerClass(timeLeft, timePopups.length > 0)}
+          className={`tmr-text ${gameTimerClass(timeLeft, timePopups.length > 0)}`}
         >
           {Math.ceil(timeLeft)}
         </span>

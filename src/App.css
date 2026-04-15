@@ -239,7 +239,7 @@ body {
   border-radius: 20px;
 }
 
-#game-wrapper {
+.game-wrapper {
   width: var(--scale-standard-width);
   height: var(--scale-standard-height);
   position: relative;
@@ -258,7 +258,7 @@ body {
   opacity: 0;
 }
 
-#myCanvas {
+.my-canvas {
   position: absolute;
   top: 0;
   left: 0;
@@ -280,9 +280,9 @@ body {
 }
 
 /* =========================================
-   ★ローディング画面（ネコミミぷるぷるVer）
+   ローディング画面
    ========================================= */
-#loading-screen {
+.loading-screen {
   position: absolute;
   top: 0;
   left: 0;
@@ -314,7 +314,7 @@ body {
   transform: var(--ui-tilt);
 }
 
-/* --- ★激かわ：ぷるぷるネコミミキーキャップ --- */
+/* --- ぷるぷるネコミミキーキャップ --- */
 .key.cat {
   position: relative;
   width: 60px;
@@ -350,7 +350,6 @@ body {
   pointer-events: none;
 }
 
-/* --- ★新アニメーション：変数を活用してスッキリ化 --- */
 @keyframes catBounce {
   0%,
   100% {
@@ -554,10 +553,8 @@ body {
 }
 
 /* =========================================
-   タイトル画面：名前入力モーダル (Twilight Pop Style)
+   タイトル画面：名前入力モーダル
    ========================================= */
-
-/* ポップなモーダルの枠 */
 .pop-modal-frame {
   --modal-grad: linear-gradient(
     130deg,
@@ -691,7 +688,7 @@ body {
 }
 
 /* 難易度選択画面 UI */
-#difficulty-view {
+.difficulty-view {
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -792,7 +789,7 @@ body {
   --btn-bg: linear-gradient(135deg, #ffff00 0%, #fff891 100%);
   --btn-edge: #d4d600;
   --btn-glow: rgba(255, 255, 255, 0.2);
-  color: #5c5c00; /* ハードだけ文字色を変える特例 */
+  color: #5c5c00;
 }
 
 .diff-btn.extra {
@@ -867,7 +864,7 @@ body {
   box-shadow: var(--shine-icon-active); /* ★変数適用 */
 }
 
-/* --- 📊 ハイスコア表示ボックス --- */
+/* --- ハイスコア表示ボックス --- */
 .diff-hiscore-box {
   min-width: 310px;
   justify-content: space-between;
@@ -876,7 +873,7 @@ body {
   background: var(--glass-bg-dark);
   border-radius: 20px;
   border: none;
-  box-shadow: var(--shine-darkbox-base); /* ★変数適用 */
+  box-shadow: var(--shine-darkbox-base);
 
   display: flex;
   align-items: center;
@@ -899,7 +896,7 @@ body {
   margin: 0;
 }
 
-/* --- 📝 詳細ボタン --- */
+/* --- 詳細ボタン --- */
 .hiscore-detail-btn {
   width: 28px;
   height: 28px;
@@ -914,24 +911,24 @@ body {
   cursor: pointer;
   font-size: 1rem;
 
-  box-shadow: var(--shine-detail-base); /* ★変数適用 */
+  box-shadow: var(--shine-detail-base);
   transition: all 0.2s ease;
 }
 
 .hiscore-detail-btn:hover {
   transform: scale(1.15);
   background: rgba(255, 255, 255, 0.3);
-  box-shadow: var(--shine-detail-hover); /* ★変数適用 */
+  box-shadow: var(--shine-detail-hover);
 }
 
 .hiscore-detail-btn:active {
   transform: scale(0.9);
   background: rgba(255, 255, 255, 0.4);
-  box-shadow: var(--shine-detail-active); /* ★変数適用 */
+  box-shadow: var(--shine-detail-active);
 }
 
-/* --- テキスト系・その他（変更なし） --- */
-#menu-hiscore-val {
+/* --- テキスト系・その他  --- */
+.menu-hiscore-val {
   font-family: var(--font-main);
   font-variant-numeric: tabular-nums;
   font-weight: bold;
@@ -944,7 +941,7 @@ body {
   display: inline-block;
 }
 
-#display-diff-name {
+.display-diff-name {
   font-family: "Fredoka One", cursive;
   font-size: 3.5rem;
   color: var(--color-white);
@@ -982,30 +979,31 @@ body {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
 }
 
-#display-diff-time {
+.display-diff-time {
   color: var(--color-aquablue);
   letter-spacing: 1px;
-}
-#display-diff-time::before {
-  content: "TIME:⏳";
-  font-size: 2.6rem;
-  text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
+
+  &::before {
+    content: "TIME:⏳";
+    font-size: 2.6rem;
+    text-shadow: 0 0 5px rgba(0, 255, 255, 0.6);
+  }
 }
 
-#display-diff-chars {
+.display-diff-chars {
   color: var(--color-pink);
-}
 
-#display-diff-chars::before {
-  content: "CHAR:⌨️";
-  font-size: 2.6rem;
-  text-shadow: 0 0 5px rgba(255, 100, 100, 0.6);
+  &::before {
+    content: "CHAR:⌨️";
+    font-size: 2.6rem;
+    text-shadow: 0 0 5px rgba(255, 100, 100, 0.6);
+  }
 }
 
 /* =========================================
-   ★プレイ画面 UI (HUD)
+   プレイ画面
    ========================================= */
-#game-hud {
+.game-hud {
   position: absolute;
   top: 0;
   left: 0;
@@ -1015,7 +1013,6 @@ body {
   pointer-events: none;
 }
 
-/* App.css の一番下などに追加 */
 .blink-guide {
   animation: blink-anim 1.5s infinite ease-in-out;
   color: rgba(255, 255, 255, 0.9);
@@ -1133,6 +1130,7 @@ body {
   filter: drop-shadow(2px 2px 0px rgba(0, 0, 0, 0.5));
   text-shadow: none;
 }
+
 @keyframes popup-normal {
   0% {
     opacity: 0;
@@ -1186,7 +1184,7 @@ body {
   }
 }
 
-#tmr-box {
+.tmr-box {
   position: relative;
   top: -70px;
   left: 15.5px;
@@ -1197,13 +1195,13 @@ body {
   align-items: center;
 }
 
-#tmr-img {
+.tmr-img {
   position: absolute;
   width: 100%;
   height: auto;
 }
 
-#tmr-text {
+.tmr-text {
   --shadow-color: var(--color-aquablue);
   position: relative;
   right: -2.5px;
@@ -1217,9 +1215,9 @@ body {
     -2px -2px 0 var(--color-white),
     2px 2px 0 var(--color-white),
     4px 4px 0 var(--shadow-color),
-    /* 👈 ここがポイント！ */ 8px 8px 20px rgba(0, 0, 0, 0.4);
+    8px 8px 20px rgba(0, 0, 0, 0.4);
 
-  /* アニメーションの設定も親に持たせてOK */
+  /* アニメーションの設定も親に持たせる */
   transition:
     transform 0.2s,
     color 0.2s,

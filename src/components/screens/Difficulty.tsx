@@ -53,7 +53,7 @@ export const DifficultySelectScreen: React.FC<Props> = ({
   };
 
   return (
-    <div id="difficulty-view" style={{ position: "absolute", zIndex: 5 }}>
+    <div className="difficulty-view" style={{ position: "absolute", zIndex: 5 }}>
       <h1 className="diff-view-title">SELECT DIFFICULTY</h1>
       <div className="diff-main-container">
         <div
@@ -99,12 +99,12 @@ export const DifficultySelectScreen: React.FC<Props> = ({
                 </SoundBtn>
                 <span className="label">HI-SCORE</span>
               </div>
-              <span id="menu-hiscore-val">
+              <span className="menu-hiscore-val">
                 {displayHighScore.toLocaleString()}
               </span>
             </div>
           </div>
-          <h2 id="display-diff-name" style={{ color: currentSetting.color }}>
+          <h2 className="display-diff-name" style={{ color: currentSetting.color }}>
             {displayDiff}
           </h2>
 
@@ -134,10 +134,10 @@ export const DifficultySelectScreen: React.FC<Props> = ({
           </p>
 
           <div className="diff-info-footer">
-            <div className="status-item" id="display-diff-time">
+            <div className="status-item display-diff-time">
               {DIFFICULTY_SETTINGS[displayDiff].time}s
             </div>
-            <div className="status-item" id="display-diff-chars">
+            <div className="status-item display-diff-chars">
               {DIFFICULTY_SETTINGS[displayDiff].chars}
             </div>
           </div>
