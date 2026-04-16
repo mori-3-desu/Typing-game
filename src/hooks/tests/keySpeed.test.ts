@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { useTypingGame } from "../../features/typing-game/hooks/useTypingGame";
 import { type WordDataMap } from "../../types";
-import { useTypingGame } from "../useTypingGame";
 
 // 1. 新しい audio.ts の仕様に合わせてモックも更新！
 vi.mock("../../utils/audio", () => ({
@@ -59,6 +59,6 @@ describe("入力速度(Speed)の計算テスト", () => {
     act(() => result.current.handleBackspace());
 
     // 計算式: correctCount(1) / elapsedTime(1.0) = 1.00 key/s
-    expect(result.current.currentSpeed).toBe(1.00);
+    expect(result.current.currentSpeed).toBe(1.0);
   });
 });

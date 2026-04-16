@@ -13,6 +13,12 @@ import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 import { ScalerWrapper } from "./components/screens/ScalerWrapper";
 import { TitleScreen } from "./components/screens/TitleScreen";
+import { useTypingGame } from "./features/typing-game/hooks/useTypingGame";
+import {
+  buildDisplayData,
+  createGameStats,
+  getShareUrl,
+} from "./features/typing-game/utils/gameUtils";
 import { useAppInit } from "./hooks/useAppInit";
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";
@@ -23,7 +29,6 @@ import { useRanking } from "./hooks/useRanking";
 import { useSaveName } from "./hooks/useSaveName";
 import { useScreenRouter } from "./hooks/useScreenRouter";
 import { useTitleFlow } from "./hooks/useTitleFlow";
-import { useTypingGame } from "./hooks/useTypingGame";
 import { ScoreService } from "./services/scoreService";
 import type {
   DifficultyLevel,
@@ -38,11 +43,6 @@ import {
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
-import {
-  buildDisplayData,
-  createGameStats,
-  getShareUrl,
-} from "./utils/gameUtils";
 
 function App() {
   const {

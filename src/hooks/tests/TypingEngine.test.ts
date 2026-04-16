@@ -1,6 +1,6 @@
-import { describe, expect,it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import { TypingEngine } from "../useTypingEngine";
+import { TypingEngine } from "../../features/typing-game/logic/typingEngine";
 
 describe("TypingEngine ロジックテスト", () => {
   // 単体入力のバックスペース
@@ -91,7 +91,7 @@ describe("TypingEngine ロジックテスト", () => {
     expect(engine.input("y").status).toBe("OK");
     expect(engine.input("a").status).toBe("NEXT");
   });
-  
+
   it("セグメント下限ガード: インデックス0かつ空の状態でBSを連打しても、indexは0を維持しペナルティを返し続ける", () => {
     const engine = new TypingEngine("ringo");
 
@@ -103,7 +103,7 @@ describe("TypingEngine ロジックテスト", () => {
     // 1. ステータスは常にペナルティ
     expect(thirdResult.status).toBe("EMPTY");
     // 2. インデックスがマイナス（-1など）に突き抜けていないか
-    expect(engine.segIndex).toBe(0); 
+    expect(engine.segIndex).toBe(0);
     // 3. 最初のセグメントが消滅していないか
     expect(engine.segments.length).toBeGreaterThan(0);
     // 4. 中身が空文字であること(変な文字やundefinedが入っていないか)
@@ -111,7 +111,7 @@ describe("TypingEngine ロジックテスト", () => {
   });
   it("空文字の単語: セグメントが0件でもBSがクラッシュせずEMPTYを返す", () => {
     const engine = new TypingEngine("");
-    
+
     expect(engine.segments.length).toBe(0);
     expect(engine.backspace().status).toBe("EMPTY");
     expect(engine.segIndex).toBe(0);

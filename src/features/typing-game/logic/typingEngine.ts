@@ -6,7 +6,7 @@
  * - TypingEngine: 文章全体を管理し、どの作業員にキーを渡すか指示する「現場監督」
  */
 
-import { JUDGE_COLOR } from "../utils/constants";
+import { JUDGE_COLOR } from "../../../utils/constants";
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
 
 // 静的ソート（アプリ起動時に1回だけ実行）
@@ -108,7 +108,7 @@ export class Segment {
     // ※先にすり替えると "kyo" に "c" が通過してしまうバグの原因になる
     const nextBuffer = this.inputBuffer + key;
     const hasFutureRoute = this.patterns.some((p) => p.startsWith(nextBuffer));
-    
+
     // handlekeyは正解時とミス時で振り分けるだけ
     return hasFutureRoute ? this.accept(key) : this.advanceOnMiss();
   }
