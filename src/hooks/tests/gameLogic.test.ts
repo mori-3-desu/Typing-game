@@ -1,8 +1,8 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { useTypingGame } from "../../features/typing-game/hooks/useTypingGame";
 import { type WordDataMap } from "../../types";
-import { useTypingGame } from "../useTypingGame";
 
 // utils/audio.ts の中身に合わせてモック化
 vi.mock("../../utils/audio", () => ({

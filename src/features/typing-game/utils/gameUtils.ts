@@ -2,13 +2,13 @@ import {
   type DifficultyLevel,
   type GameResultStats,
   type GameState,
-} from "../types";
+} from "../../../types";
 import {
   COMBO_THRESHOLDS,
   LIMIT_DATA,
   RANK_THRESHOLDS,
   SCORE_COMBO_MULTIPLIER,
-} from "./constants";
+} from "../../../utils/constants";
 
 type CalculateStatsParams = {
   score: number;
@@ -83,8 +83,7 @@ export const buildDisplayData = (
   reviewData: GameResultStats | null,
   lastGameStats: GameResultStats | null,
 ): GameResultStats => {
-  if (gameState === "hiscore_review" && reviewData)
-    return reviewData;
+  if (gameState === "hiscore_review" && reviewData) return reviewData;
 
   if (gameState === "result" && lastGameStats) return lastGameStats;
   return createGameStats();
