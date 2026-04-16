@@ -341,6 +341,7 @@ export const useTypingGame = (
       const config = COMBO_LEVELS.find((num) => combo <= num.threshold);
 
       if (config && combo % config.interval === 0) {
+        playSE("combo");
         const timeBonus = config.bonus;
         const isLarge = config.isLarge;
 
