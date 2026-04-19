@@ -8,6 +8,7 @@ import {
   LIMIT_DATA,
   RANK_THRESHOLDS,
   SCORE_COMBO_MULTIPLIER,
+  SCORE_CONFIG,
 } from "../../../utils/constants";
 
 type CalculateStatsParams = {
@@ -43,15 +44,37 @@ export const getComboClass = (val: number) => {
   return "";
 };
 
-export const getScoreMultiplier = (currentCombo: number) => {
-  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_1)
-    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_BASE;
-  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_2)
-    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MID;
-  if (currentCombo <= SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_3)
-    return SCORE_COMBO_MULTIPLIER.MULTIPLIER_HIGH;
+const SCORE_BONUS = [
+  {
+    thresholds: SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_1,
+    multiplier: SCORE_COMBO_MULTIPLIER.MULTIPLIER_BASE,
+  },
+  {
+    thresholds: SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_2,
+    multiplier: SCORE_COMBO_MULTIPLIER.MULTIPLIER_MID,
+  },
+  {
+    thresholds: SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_3,
+    multiplier: SCORE_COMBO_MULTIPLIER.MULTIPLIER_HIGH,
+  },
+] as const;
+
+const getScoreMultiplier = (currentCombo: number) => {
+  if (currentCombo < 0) return 0;
+
+  const config = SCORE_BONUS.find((item) => currentCombo <= item.thresholds);
+
+  if(config) {
+    return config.multiplier; 
+  } 
+
   return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
 };
+
+export const calcHitScore = (combo: number): number => {
+  const multiplier = getScoreMultiplier(combo);
+  return SCORE_CONFIG.BASE_POINT * multiplier;
+}
 
 export const getShareUrl = (score: number, rank: string): string => {
   const text = encodeURIComponent(

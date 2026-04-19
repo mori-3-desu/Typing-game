@@ -939,7 +939,9 @@ if (isComposingRef.current || e.isComposing || e.keyCode === 229) return;
 
 ### ④ useRanking（`useRanking.ts`）
 
-**requestId パターン（競合状態の防止）**
+<details>
+<summary><strong>旧実装：**requestId パターン（競合状態の防止）**<strong></summary>
+
 
 ```ts
 const isLatest = (id: number) => id === rankingRequestIdRef.current;
@@ -950,8 +952,12 @@ if (!isLatest(requestId)) return;
 
 ランキング取得中に別の難易度に切り替えると、古いリクエストが後から返ってきて画面を上書きする「レース状態」が起きます。
 リクエスト開始時に `ref` をインクリメントして「整理券番号」を発行し、レスポンス受信時に番号が一致するか確認することで**古いレスポンスを無視**します。
+</details>
 
-`AbortController` で通信自体をキャンセルする方法もありますが、今回は古い値を参照して画面を上書きするのを防ぎたいといった問題だったため、実装がシンプルで同等の安全性を得られる`ref`管理を採用しました。
+フロントでSQL書いて更新していた問題をバックエンド経由で行うことで解消したため、通信量削減のために`AbortController` を採用する方針に変更しました。
+リクエストは完走するので通信量は減らせない
+この瞬間まではメモリ上に存在するので非同期のタイミングやバグで一瞬使われてしまう。
+後ほど追記いたします。
 
 ---
 
@@ -1088,6 +1094,8 @@ document.addEventListener("visibilitychange", () => {
 
 タブが非表示のとき `AudioContext` をサスペンドすることで、**BGM の音声処理による CPU 消費を抑制**しています。
 ブラウザが自動でやる場合もありますが、明示的に制御することで挙動を確実にしています。
+
+requestAnimationFrameも検討
 
 ---
 
