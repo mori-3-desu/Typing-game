@@ -21,9 +21,9 @@ import {
 import { gameReducer, initialState } from "../logic/gameReducer";
 import { Segment, TypingEngine } from "../logic/typingEngine";
 import {
+  calcHitScore,
   calculateRank,
   getComboClass,
-  getScoreMultiplier,
 } from "../utils/gameUtils";
 
 // エンジン内では「セグメントごと」にログを持っているが、
@@ -358,8 +358,7 @@ export const useTypingGame = (
 
       applyComboTimerPlus(nextCombo);
 
-      const multiplier = getScoreMultiplier(nextCombo);
-      const addScore = SCORE_CONFIG.BASE_POINT * multiplier;
+      const addScore = calcHitScore(nextCombo);
 
       dispatch({ type: "CORRECT_HIT", addScore, gaugeGain: GAUGE_CONFIG.GAIN });
       addScorePopup(addScore);
