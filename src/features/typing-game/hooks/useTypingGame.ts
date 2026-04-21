@@ -3,7 +3,6 @@ import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import type {
   DifficultyLevel,
   RomaState,
-  ScorePopup,
   TypedLog,
   WordDataMap,
 } from "../../../types";
@@ -15,16 +14,12 @@ import {
   GAUGE_CONFIG,
   JUDGE_COLOR,
   SCORE_CONFIG,
-  SCORE_DIRECTION,
   UI_ANIMATION_CONFIG,
 } from "../../../utils/constants";
+import type { GameAction } from "../logic/gameReducer";
 import { gameReducer, initialState } from "../logic/gameReducer";
 import { Segment, TypingEngine } from "../logic/typingEngine";
-import {
-  calcHitScore,
-  calculateRank,
-  getComboClass,
-} from "../utils/gameUtils";
+import { calcHitScore, calculateRank, decideScoreType, getComboClass } from "../utils/gameUtils";
 
 // エンジン内では「セグメントごと」にログを持っているが、
 // 画面表示用には「全履歴を一直線の配列」にしたいので、ここで結合する。
@@ -103,7 +98,6 @@ export const useTypingGame = (
     missedWordsRecord,
     missedCharsRecord,
     shakeStatus,
-    bonusPopups,
     scorePopups,
     timePopups,
     perfectPopups,
@@ -127,73 +121,56 @@ export const useTypingGame = (
     [],
   );
 
-  // --- Helpers ---
-  const addPopup = useCallback(
-    (text: string, type: "normal" | "large" | "miss") => {
+  const showTrackedPopup = useCallback(
+    (
+      buildAddAction: (id: number) => GameAction,
+      buildRemoveAction: (id: number) => GameAction,
+      duration: number,
+    ) => {
       popupIdRef.current += 1;
       const newId = popupIdRef.current;
-      dispatch({ type: "ADD_POPUP", popup: { id: newId, text, type } });
-
+      dispatch(buildAddAction(newId));
       scheduleTrackedTimeout(() => {
-        dispatch({ type: "REMOVE_POPUP", id: newId });
-      }, UI_ANIMATION_CONFIG.POPUP_DURATION_MS);
+        dispatch(buildRemoveAction(newId));
+      }, duration);
     },
     [scheduleTrackedTimeout],
   );
 
   const addScorePopup = useCallback(
     (amount: number) => {
-      popupIdRef.current += 1;
-      const newId = popupIdRef.current;
-      let type: ScorePopup["type"] = "popup-normal";
-      if (amount < SCORE_DIRECTION.PENALTY) type = "popup-miss";
-      else if (amount >= SCORE_DIRECTION.RAINBOW) type = "popup-rainbow";
-      else if (amount >= SCORE_DIRECTION.GOLD) type = "popup-gold";
-
-      dispatch({
-        type: "ADD_SCORE_POPUP",
-        popup: {
-          id: newId,
-          text: amount > 0 ? `+${amount}` : `${amount}`,
-          type,
-        },
-      });
-
-      scheduleTrackedTimeout(() => {
-        dispatch({ type: "REMOVE_SCORE_POPUP", id: newId });
-      }, UI_ANIMATION_CONFIG.POPUP_DURATION_MS);
+      const type = decideScoreType(amount);
+      const text = amount > 0 ? `+${amount}` : `${amount}`;
+      showTrackedPopup(
+        (id) => ({ type: "ADD_SCORE_POPUP", popup: { id, text, type } }),
+        (id) => ({ type: "REMOVE_SCORE_POPUP", id }),
+        UI_ANIMATION_CONFIG.POPUP_DURATION_MS,
+      );
     },
-    [scheduleTrackedTimeout],
+    [showTrackedPopup],
   );
 
   const triggerPerfect = useCallback(() => {
-    popupIdRef.current += 1;
-    const newId = popupIdRef.current;
-    dispatch({ type: "ADD_PERFECT_POPUP", popup: { id: newId } });
+    showTrackedPopup(
+      (id) => ({ type: "ADD_PERFECT_POPUP", popup: { id } }),
+      (id) => ({ type: "REMOVE_PERFECT_POPUP", id }),
+      UI_ANIMATION_CONFIG.POPUP_DURATION_MS,
+    );
+  }, [showTrackedPopup]);
 
-    scheduleTrackedTimeout(() => {
-      dispatch({ type: "REMOVE_PERFECT_POPUP", id: newId });
-    }, UI_ANIMATION_CONFIG.POPUP_DURATION_MS);
-  }, [scheduleTrackedTimeout]);
-
-  const addTime = useCallback(
+  const addTimePopUp = useCallback(
     (sec: number, isLarge: boolean = false) => {
       dispatch({ type: "ADD_TIME", sec });
-
-      popupIdRef.current += 1;
-      const newId = popupIdRef.current;
-
-      dispatch({
-        type: "ADD_TIME_POPUP",
-        popup: { id: newId, text: `+${sec}秒`, isLarge },
-      });
-
-      // 3. 一定時間後に、そのIDのポップアップだけ消す
-      scheduleTrackedTimeout(() => {
-        dispatch({ type: "REMOVE_TIME_POPUP", id: newId });
-      }, UI_ANIMATION_CONFIG.TIME_DURATION_MS);
+      showTrackedPopup(
+        (id) => ({
+          type: "ADD_TIME_POPUP",
+          popup: { id, text: `+${sec}秒`, isLarge },
+        }),
+        (id) => ({ type: "REMOVE_TIME_POPUP", id }),
+        UI_ANIMATION_CONFIG.TIME_DURATION_MS,
+      );
     },
-    [scheduleTrackedTimeout],
+    [showTrackedPopup],
   );
 
   // 新しい時間経過関数
@@ -345,10 +322,10 @@ export const useTypingGame = (
         const timeBonus = config.bonus;
         const isLarge = config.isLarge;
 
-        addTime(timeBonus, isLarge);
+        addTimePopUp(timeBonus, isLarge);
       }
     },
-    [addTime],
+    [addTimePopUp],
   );
 
   const processCorrectHit = useCallback(
@@ -445,10 +422,10 @@ export const useTypingGame = (
   useEffect(() => {
     if (gaugeValue >= gaugeMax) {
       playSE("gauge");
-      addTime(GAUGE_CONFIG.RECOVER_SEC, true);
+      addTimePopUp(GAUGE_CONFIG.RECOVER_SEC, true);
       dispatch({ type: "GAUGE_MAX_REACHED" });
     }
-  }, [gaugeValue, gaugeMax, addTime]);
+  }, [gaugeValue, gaugeMax, addTimePopUp]);
 
   // ※こちらは内部でクリーンアップ完結しているのでそのまま
   useEffect(() => {
@@ -505,7 +482,6 @@ export const useTypingGame = (
     missedWordsRecord,
     missedCharsRecord,
     isRainbowMode,
-    bonusPopups,
     perfectPopups,
     scorePopups,
     timePopups,
@@ -515,6 +491,5 @@ export const useTypingGame = (
     resetGame,
     tick,
     currentSpeed,
-    addPopup,
   };
 };

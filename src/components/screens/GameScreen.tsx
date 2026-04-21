@@ -1,6 +1,5 @@
 import {
   type DifficultyLevel,
-  type Popup,
   type RomaState,
   type ScorePopup,
   type Segment,
@@ -25,7 +24,6 @@ type Props = {
   allSegments: Segment[];
   shakeStatus: string;
   rank: string;
-  bonusPopups: Popup[];
   perfectPopups: { id: number }[];
   scorePopups: ScorePopup[];
   timePopups: TimePopup[];
@@ -76,7 +74,6 @@ export const GameScreen = ({
   allSegments,
   shakeStatus,
   rank,
-  bonusPopups,
   perfectPopups,
   scorePopups,
   timePopups,
@@ -190,11 +187,6 @@ export const GameScreen = ({
           </div>
         </div>
 
-        {bonusPopups.map((p) => (
-          <div key={p.id} className={`bonus-pop ${p.type}`}>
-            {p.text}
-          </div>
-        ))}
         <div className={`rank-monitor rank-${rank.toLowerCase()}`}>
           RANK <span className="rank-value">{rank}</span>
         </div>

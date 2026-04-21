@@ -2,6 +2,7 @@ import {
   type DifficultyLevel,
   type GameResultStats,
   type GameState,
+  type ScorePopup,
 } from "../../../types";
 import {
   COMBO_THRESHOLDS,
@@ -9,6 +10,7 @@ import {
   RANK_THRESHOLDS,
   SCORE_COMBO_MULTIPLIER,
   SCORE_CONFIG,
+  SCORE_DIRECTION,
 } from "../../../utils/constants";
 
 type CalculateStatsParams = {
@@ -58,6 +60,13 @@ const SCORE_BONUS = [
     multiplier: SCORE_COMBO_MULTIPLIER.MULTIPLIER_HIGH,
   },
 ] as const;
+
+export const decideScoreType = (amount: number): ScorePopup["type"] => {     if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
+  if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
+  if (amount >= SCORE_DIRECTION.RAINBOW) return "popup-rainbow";         
+  if (amount >= SCORE_DIRECTION.GOLD) return "popup-gold";
+  return "popup-normal";
+};
 
 const getScoreMultiplier = (currentCombo: number) => {
   if (currentCombo < 0) return 0;

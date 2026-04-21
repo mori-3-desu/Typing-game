@@ -109,7 +109,6 @@ function App() {
     missedWordsRecord,
     missedCharsRecord,
     isRainbowMode,
-    bonusPopups,
     perfectPopups,
     scorePopups,
     timePopups,
@@ -417,7 +416,6 @@ function App() {
                     allSegments={allSegments}
                     shakeStatus={shakeStatus}
                     rank={rank}
-                    bonusPopups={bonusPopups}
                     perfectPopups={perfectPopups}
                     scorePopups={scorePopups}
                     timePopups={timePopups}
