@@ -1,5 +1,4 @@
 import type {
-  BonusPopup,
   MissedWord,
   PerfectPopup,
   RomaState,
@@ -29,7 +28,6 @@ interface GameState {
   missedWordsRecord: MissedWord[];
   missedCharsRecord: Record<string, number>;
   shakeStatus: "none" | "light" | "error";
-  bonusPopups: BonusPopup[];
   scorePopups: ScorePopup[];
   timePopups: TimePopup[];
   perfectPopups: PerfectPopup[];
@@ -54,13 +52,12 @@ export const initialState: GameState = {
   missedWordsRecord: [],
   missedCharsRecord: {},
   shakeStatus: "none",
-  bonusPopups: [],
   scorePopups: [],
   timePopups: [],
   perfectPopups: [],
 };
 
-type GameAction =
+export type GameAction =
   | { type: "RESET"; initialTime: number }
   | {
       type: "LOAD_WORD";
@@ -90,8 +87,6 @@ type GameAction =
   | { type: "RECORD_MISSED_WORD"; word: string; misses: number }
   | { type: "GAUGE_MAX_REACHED" }
   | { type: "SET_SHAKE"; status: "none" | "light" | "error" }
-  | { type: "ADD_POPUP"; popup: BonusPopup }
-  | { type: "REMOVE_POPUP"; id: number }
   | { type: "ADD_SCORE_POPUP"; popup: ScorePopup }
   | { type: "REMOVE_SCORE_POPUP"; id: number }
   | { type: "ADD_PERFECT_POPUP"; popup: PerfectPopup }
@@ -209,13 +204,6 @@ export const gameReducer = (
       };
     case "SET_SHAKE":
       return { ...state, shakeStatus: action.status };
-    case "ADD_POPUP":
-      return { ...state, bonusPopups: [...state.bonusPopups, action.popup] };
-    case "REMOVE_POPUP":
-      return {
-        ...state,
-        bonusPopups: state.bonusPopups.filter((p) => p.id !== action.id),
-      };
     case "ADD_SCORE_POPUP":
       return { ...state, scorePopups: [...state.scorePopups, action.popup] };
     case "REMOVE_SCORE_POPUP":
