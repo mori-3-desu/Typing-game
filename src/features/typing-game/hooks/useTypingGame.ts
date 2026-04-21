@@ -16,8 +16,8 @@ import {
   SCORE_CONFIG,
   UI_ANIMATION_CONFIG,
 } from "../../../utils/constants";
-import { gameReducer, initialState } from "../logic/gameReducer";
 import type { GameAction } from "../logic/gameReducer";
+import { gameReducer, initialState } from "../logic/gameReducer";
 import { Segment, TypingEngine } from "../logic/typingEngine";
 import { calcHitScore, calculateRank, decideScoreType, getComboClass } from "../utils/gameUtils";
 
