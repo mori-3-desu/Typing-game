@@ -13,6 +13,7 @@ const selectNextWord = (
   excludeJp: string,
   random: () => number = Math.random,
 ): Word => {
+  if (list.length === 0) throw new Error("WordList is empty");
   const candidates = list.filter((word) => word.jp !== excludeJp);
 
   // バグ等で候補が空になったら元のリストを使う
