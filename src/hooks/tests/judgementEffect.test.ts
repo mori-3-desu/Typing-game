@@ -35,6 +35,7 @@ describe("キー判定テスト（データ固定版）", () => {
     EASY: [{ jp: "テスト", roma: "test" }],
     NORMAL: [],
     HARD: [],
+    EXTRA: [],
   };
 
   it("正解キー(t)を打つと緑判定(OK/NEXT)になり、正解数が増える", () => {

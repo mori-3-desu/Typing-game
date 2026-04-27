@@ -19,7 +19,13 @@ import {
 import type { GameAction } from "../logic/gameReducer";
 import { gameReducer, initialState } from "../logic/gameReducer";
 import { Segment, TypingEngine } from "../logic/typingEngine";
-import { calcHitScore, calculateRank, decideScoreType, getComboClass } from "../utils/gameUtils";
+import { buildWordSetup } from "../logic/wordSetup";
+import {
+  calcHitScore,
+  calculateRank,
+  decideScoreType,
+  getComboClass,
+} from "../utils/gameUtils";
 
 // エンジン内では「セグメントごと」にログを持っているが、
 // 画面表示用には「全履歴を一直線の配列」にしたいので、ここで結合する。
@@ -74,7 +80,6 @@ export const useTypingGame = (
   const [displayScore, setDisplayScore] = useState(0);
 
   const engineRef = useRef<TypingEngine | null>(null);
-  const prevWordRef = useRef<string | null>(null);
   const popupIdRef = useRef(0);
 
   const timeoutIdsRef = useRef<Set<number>>(new Set());
@@ -121,6 +126,7 @@ export const useTypingGame = (
     [],
   );
 
+  // ポップアップを被らせないようにrefで管理、共通化
   const showTrackedPopup = useCallback(
     (
       buildAddAction: (id: number) => GameAction,
@@ -186,7 +192,6 @@ export const useTypingGame = (
     dispatch({
       type: "UPDATE_DISPLAY",
       romaState: buildRomaState(engineRef.current),
-      // ★重要テクニック:
       // engine.segments をそのまま渡すと「参照」が変わらないためReactが変更を無視する可能性がある。
       // [...Array] (スプレッド構文) で「新しい配列」としてコピーして渡すことで、
       // 確実に再レンダリング（色が変わるなど）をトリガーさせる。
@@ -194,68 +199,24 @@ export const useTypingGame = (
     });
   }, []);
 
-  // todo: 責務が多い（単語選択・重複排除・エンジン初期化・初期状態生成・dispatch）
-  // selectNextWord（純粋関数）/ initializeEngine / dispatch の3段階に分離を検討したい
   const loadRandomWord = useCallback(() => {
     // データ未ロード時の安全策
     if (!wordData) return;
-    const list = wordData[difficulty];
-    if (!list || list.length === 0) return;
+    const { nextWord, engine, romaState } = buildWordSetup(
+      wordData[difficulty],
+      jpText,
+      difficulty
+    );
 
-    let nextWord;
+    engineRef.current = engine;
 
-    // 【2. 重複排除ロジック (Deduplication)】
-    // 「さっき打った単語がまた出てきた」というUX低下を防ぐ処理
-    if (list.length === 1) {
-      // リストが1個しかないなら、それを使うしかない
-      nextWord = list[0];
-    } else {
-      // 直前の単語 (prevWordRef) と同じものを候補から外す
-      // filter計算量は O(N)。単語数が数千件レベルなら一瞬なので問題なし。
-      const candidates = list.filter((word) => word.jp !== prevWordRef.current);
-
-      // (保険) バグ等で候補が空になったら元のリストを使う
-      const targetList = candidates.length > 0 ? candidates : list;
-
-      // 【3. ランダム抽選】
-      const randomIndex = Math.floor(Math.random() * targetList.length);
-      nextWord = targetList[randomIndex];
-    }
-
-    // 【4. 履歴の更新】
-    // 今選んだ単語を記録しておき、次回の抽選で除外できるようにする
-    prevWordRef.current = nextWord.jp;
-
-    const currentConfig = DIFFICULTY_SETTINGS[difficulty]; // 先ずは設定を取り出す
-    const isEnglishMode = currentConfig.isEnglish ?? false; // 上記のイングリッシュフラグを代入する
-
-    // 【5. エンジンの再インスタンス化 (Re-instantiation)】
-    // 新しい単語のローマ字を渡し、判定ロジック(Class)を新品にする。
-    // これにより、前の単語の入力履歴などはすべてリセットされる。
-    // 更に上記のisEnglishモードでtrueなら英語(ローマ字判定解除)モードに
-    engineRef.current = new TypingEngine(nextWord.roma, isEnglishMode);
-
-    // 【6. 初期状態の作成】
-    // まだ一文字も打っていない状態（1文字目がターゲット）のデータを作る
-    let initialRomaState = { typedLog: [], current: "", remaining: "" };
-    if (engineRef.current.segments.length > 0) {
-      const firstSeg = engineRef.current.segments[0];
-      initialRomaState = {
-        typedLog: [],
-        current: firstSeg.getCurrentChar(), // 例: "k"
-        remaining: firstSeg.getRemaining(), // 例: "a"
-      };
-    }
-
-    // 【7. 画面への反映】
-    // Reducerに「新しい単語になったよ！初期状態はこれだよ！」と伝える
     dispatch({
       type: "LOAD_WORD",
       jp: nextWord.jp,
-      romaState: initialRomaState,
-      segments: [...engineRef.current.segments],
+      romaState,
+      segments: [...engine.segments],
     });
-  }, [difficulty, wordData]); // 難易度かデータが変わった時だけ関数を作り直す
+  }, [difficulty, wordData, jpText]);
 
   // todo: startGame / resetGame はタイピング判定・スコア計算とは層が違うフロー制御
   // useGameFlow のような専用フックへの切り出しを検討したい
@@ -268,7 +229,6 @@ export const useTypingGame = (
       initialTime: DIFFICULTY_SETTINGS[difficulty].time,
     });
     setDisplayScore(0);
-    prevWordRef.current = null;
   }, [difficulty]);
 
   // todo: loadRandomWord の薄いラッパーになっており役割が曖昧

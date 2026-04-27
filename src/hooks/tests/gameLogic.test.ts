@@ -30,8 +30,6 @@ vi.mock("../../utils/constants", async (importOriginal) => {
   };
 });
 
-// ★変更点: ファイルのモック(vi.mock('../data/words'))はもう不要なので削除！
-
 describe("ゲームルールと難易度のテスト", () => {
   // ★テスト用のダミーデータを作成
   // 以前の「モック」の代わりに、これを引数として渡します
@@ -39,6 +37,7 @@ describe("ゲームルールと難易度のテスト", () => {
     EASY: [{ jp: "あ".repeat(30), roma: "a".repeat(30) }], // 長い単語（ゲージテスト用）
     NORMAL: [{ jp: "テスト", roma: "test" }],
     HARD: [{ jp: "テスト", roma: "test" }],
+    EXTRA: [{ jp: "ポケモン", roma: "pokemonn" }], // 追加する
   };
 
   describe("難易度ごとの初期設定", () => {

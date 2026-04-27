@@ -61,9 +61,10 @@ const SCORE_BONUS = [
   },
 ] as const;
 
-export const decideScoreType = (amount: number): ScorePopup["type"] => {     if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
+export const decideScoreType = (amount: number): ScorePopup["type"] => {
   if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
-  if (amount >= SCORE_DIRECTION.RAINBOW) return "popup-rainbow";         
+  if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
+  if (amount >= SCORE_DIRECTION.RAINBOW) return "popup-rainbow";
   if (amount >= SCORE_DIRECTION.GOLD) return "popup-gold";
   return "popup-normal";
 };
@@ -73,9 +74,9 @@ const getScoreMultiplier = (currentCombo: number) => {
 
   const config = SCORE_BONUS.find((item) => currentCombo <= item.thresholds);
 
-  if(config) {
-    return config.multiplier; 
-  } 
+  if (config) {
+    return config.multiplier;
+  }
 
   return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
 };
@@ -83,7 +84,7 @@ const getScoreMultiplier = (currentCombo: number) => {
 export const calcHitScore = (combo: number): number => {
   const multiplier = getScoreMultiplier(combo);
   return SCORE_CONFIG.BASE_POINT * multiplier;
-}
+};
 
 export const getShareUrl = (score: number, rank: string): string => {
   const text = encodeURIComponent(
