@@ -1,6 +1,8 @@
 import { JUDGE_COLOR } from "../../../utils/constants";
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
 
+export type BackspaceStatus = "EMPTY" | "BACK" | "BACK_EXPANDED"; // 共有されてるので型フォルダへ
+
 /**
  * 現場の作業員（Segment クラス）
  * 1つの日本語ブロック（例："か"、"しゃ"、"ん"）に対する、ユーザーの入力状態を管理する
@@ -72,21 +74,6 @@ export class Segment {
   }
 
   /**
-   * nn拡張からのリセット（バックスペース用）
-   * "nn" に拡張した後にバックスペースを押されたら、中途半端に "n" に戻すのではなく、
-   * 一気に未入力状態（""）に戻す仕様。
-   */
-  tryShrinkFromDoubleN(): boolean {
-    if (this.isExpanded && this.inputBuffer === "nn") {
-      this.inputBuffer = ""; // 一気に消す
-      this.typedLog = [];
-      this.isExpanded = false;
-      return true; // 戻す処理が成功したよ、と監督に伝える
-    }
-    return false;
-  }
-
-  /**
    * コア処理：ユーザーが打ったキーを受け取って、判定結果を返す
    */
   handleKey(key: string): string {
@@ -97,6 +84,20 @@ export class Segment {
 
     // handlekeyは正解時とミス時で振り分けるだけ
     return hasFutureRoute ? this.accept(key) : this.advanceOnMiss();
+  }
+
+  backspace(): BackspaceStatus {
+    if (this.inputBuffer.length <= 0) return "EMPTY";
+    if (this.tryShrinkFromDoubleN()) return "BACK_EXPANDED";
+
+    this.inputBuffer = this.inputBuffer.slice(0, -1);
+    this.typedLog.pop();
+    return "BACK";
+  }
+
+  // このブロックの入力が完了しているか
+  isDone() {
+    return this.patterns.includes(this.inputBuffer);
   }
 
   // handleKeyを通じてのみ行われる処理のため、
@@ -122,17 +123,18 @@ export class Segment {
     return this.isDone() ? "MISS_NEXT" : "MISS_ADVANCE";
   }
 
-  backspace(): boolean {
-    if (this.inputBuffer.length > 0) {
-      this.inputBuffer = this.inputBuffer.slice(0, -1);
-      this.typedLog.pop();
-      return true;
-    }
-    return false; // もう消す文字がない
-  }
+  /**
+   * nn拡張からのリセット（バックスペース用）
+   *
+   *「nn」に拡張された後にバックスペースが押された場合、
+   * 中途半端に "n" に戻すのではなく、一気に未入力状態（""）に戻す。
+   */
+  private tryShrinkFromDoubleN(): boolean {
+    if (!this.isExpanded || this.inputBuffer !== "nn") return false;
 
-  // このブロックの入力が完了しているか
-  isDone() {
-    return this.patterns.includes(this.inputBuffer);
+    this.inputBuffer = ""; // 一気に消す
+    this.typedLog = [];
+    this.isExpanded = false;
+    return true;
   }
 }

@@ -2,12 +2,12 @@
  * @file typingEngine.ts
  * @description タイピングゲームのコアロジック（UIを持たない純粋な頭脳）
  * * 【全体の設計思想】
- * - Segment: 「しゃ」や「か」など、1つのまとまり（ブロック）を担当する「現場の作業員」
+ *
  * - TypingEngine: 文章全体を管理し、どの作業員にキーを渡すか指示する「現場監督」
  */
 
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
-import { Segment } from "./segment";
+import { Segment, type BackspaceStatus } from "./segment";
 
 // 静的ソート（アプリ起動時に1回だけ実行）
 // 長い文字（"shi" など）から先にマッチさせるため、文字数の多い順にソートしておく
@@ -112,37 +112,45 @@ export class TypingEngine {
   /**
    * バックスペース（戻る）処理の総合窓口
    */
-  backspace(): { status: string } {
-    if (this.segments.length === 0) {
+  backspace(): BackspaceStatus {
+    if (this.cannotGoBack()) {
       this.segIndex = 0;
-      return { status: "EMPTY" };
+      return "EMPTY";
     }
 
-    if (this.segIndex === 0 && this.segments[0].inputBuffer.length === 0) {
-      return { status: "EMPTY" }; // 一番最初で未入力ならもう戻れない
-    }
-
-    // 現在地が最後尾をオーバーしていたら修正するガード処理
-    if (this.segIndex >= this.segments.length) {
-      this.segIndex = this.segments.length - 1;
-    }
-
-    let segment = this.segments[this.segIndex];
-
-    // 今のブロックが未入力なら、1つ前のブロックに戻る（segIndexを戻す）
-    if (segment.inputBuffer.length === 0 && this.segIndex > 0) {
-      this.segIndex--;
-      segment = this.segments[this.segIndex];
-    }
-
-    // 例外処理："nn" に拡張された「ん」なら、特殊な戻し方をする
-    if (segment.tryShrinkFromDoubleN()) {
-      return { status: "BACK_EXPANDED" };
-    }
+    this.keepIndexAtLast();
+    this.moveToPrevSegmentIfEmpty();
+    const segment = this.segments[this.segIndex];
 
     // 通常のバックスペース処理
     segment.backspace();
-    return { status: "BACK" };
+    return "BACK";
+  }
+
+  // 戻れるかの判定
+  private cannotGoBack(): boolean {
+    if (this.segments.length === 0) return true;
+    if (this.segIndex === 0 && this.segments[0].inputBuffer.length === 0) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // ここは入力しすぎによる見えない文字消去のUX低下を防ぐために
+  // 末尾からセグメントが増えていかないように設計している
+  private keepIndexAtLast(): void {
+    if (this.segIndex >= this.segments.length) {
+      this.segIndex = this.segments.length - 1;
+    }
+  }
+
+  // 消去の際、ブロックが未入力なら、1つ前のブロックに戻る（segIndexを戻す）
+  private moveToPrevSegmentIfEmpty(): void {
+    const current = this.segments[this.segIndex];
+    if (current.inputBuffer.length === 0 && this.segIndex > 0) {
+      this.segIndex--;
+    }
   }
 
   // Reactコンポーネント（画面側）に、今の状態をまとめて渡すためのメソッド
