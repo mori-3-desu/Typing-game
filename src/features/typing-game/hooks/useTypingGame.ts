@@ -18,8 +18,8 @@ import {
 } from "../../../utils/constants";
 import type { GameAction } from "../logic/gameReducer";
 import { gameReducer, initialState } from "../logic/gameReducer";
-import { TypingEngine } from "../logic/typingEngine";
 import { Segment } from "../logic/segment";
+import { TypingEngine } from "../logic/typingEngine";
 import { buildWordSetup } from "../logic/wordSetup";
 import {
   calcHitScore,
