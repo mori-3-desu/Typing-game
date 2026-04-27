@@ -7,7 +7,7 @@
  */
 
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
-import { Segment, type BackspaceStatus } from "./segment";
+import { type BackspaceStatus,Segment } from "./segment";
 
 // 静的ソート（アプリ起動時に1回だけ実行）
 // 長い文字（"shi" など）から先にマッチさせるため、文字数の多い順にソートしておく
