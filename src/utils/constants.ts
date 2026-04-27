@@ -37,7 +37,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   },
   EXTRA: {
     bg: "/images/extra.webp",
-    time: 15,
+    time: 150,
     chars: "特殊",
     text: "プログラミング用語や英語等なんでも出てきます\n※␣は空文字です!\n※CAPS LOCK等のボタンも反応します",
     bgm: "/bgm/ぽかぽか日和.mp3",

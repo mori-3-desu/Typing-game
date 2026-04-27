@@ -6,7 +6,7 @@ import type {
   TimePopup,
 } from "../../../types";
 import { GAUGE_CONFIG } from "../../../utils/constants";
-import { Segment } from "./typingEngine";
+import { Segment } from "./segment";
 
 // --- State Definitions ---
 interface GameState {
