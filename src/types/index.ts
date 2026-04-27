@@ -29,7 +29,7 @@ export type DifficultyConfig = {
   text: string; // 難易度毎の説明文
   bgm: string; // 曲
   color: string; // 難易度ごとのテーマカラー
-  isEnglish?: boolean // EXTRAのみ付与
+  isEnglish?: boolean; // EXTRAのみ付与
 };
 
 // ---------------------------------------------------------
@@ -177,4 +177,7 @@ export type TimePopup = {
 
 export type PerfectPopup = { id: number };
 
-export type WordDataMap = Record<string, { jp: string; roma: string }[]>;
+export type Word = { readonly jp: string; readonly roma: string }; // 基本の型
+export type WordList = ReadonlyArray<Word>; // ArrayPrototypeしようするために分けてある
+export type WordDataMap = Readonly<Record<DifficultyLevel, WordList>>; // 公開用、変更不可にする
+export type MutableWordDataMap = Record<DifficultyLevel, Word[]> // データ整形用

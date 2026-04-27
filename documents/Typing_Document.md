@@ -1323,3 +1323,6 @@ const createInitialState = (): ConfigState => {
   }, []);
 ```
 - Ranting.tsx、ResultScreen.tsx設計を見直す。
+- interfaceの責務を分離
+  - 次に検討箇所を修正
+  - バリデーション追加がいいですね

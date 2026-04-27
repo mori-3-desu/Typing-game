@@ -39,6 +39,7 @@ describe("ゲームルールと難易度のテスト", () => {
     EASY: [{ jp: "あ".repeat(30), roma: "a".repeat(30) }], // 長い単語（ゲージテスト用）
     NORMAL: [{ jp: "テスト", roma: "test" }],
     HARD: [{ jp: "テスト", roma: "test" }],
+    EXTRA: [], // 追加する
   };
 
   describe("難易度ごとの初期設定", () => {

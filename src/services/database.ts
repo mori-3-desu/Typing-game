@@ -1,9 +1,9 @@
 import { supabase } from "../supabase";
 import {
   type DifficultyLevel,
+  type MutableWordDataMap,
   type RankingScore,
   type ScoreRequestBody,
-  type WordDataMap,
   type WordRow,
 } from "../types";
 
@@ -43,7 +43,7 @@ export const DatabaseService = {
     if (ngError) throw ngError;
 
     // 3. データの整形とバリデーション
-    const formattedData: WordDataMap = {
+    const formattedData: MutableWordDataMap = {
       EASY: [],
       NORMAL: [],
       HARD: [],

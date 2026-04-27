@@ -35,6 +35,7 @@ describe("入力速度(Speed)の計算テスト", () => {
     EASY: [{ jp: "テスト", roma: "test" }],
     NORMAL: [],
     HARD: [],
+    EXTRA: [],
   };
 
   it("MissやBackspaceが混ざっても、速度計算には影響しないこと", () => {
