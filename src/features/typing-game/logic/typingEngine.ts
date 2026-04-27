@@ -1,13 +1,13 @@
 /**
- * @file useTypingEngine.ts
+ * @file typingEngine.ts
  * @description タイピングゲームのコアロジック（UIを持たない純粋な頭脳）
  * * 【全体の設計思想】
  * - Segment: 「しゃ」や「か」など、1つのまとまり（ブロック）を担当する「現場の作業員」
  * - TypingEngine: 文章全体を管理し、どの作業員にキーを渡すか指示する「現場監督」
  */
 
-import { JUDGE_COLOR } from "../../../utils/constants";
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
+import { Segment } from "./segment";
 
 // 静的ソート（アプリ起動時に1回だけ実行）
 // 長い文字（"shi" など）から先にマッチさせるため、文字数の多い順にソートしておく
@@ -16,150 +16,13 @@ const SORTED_ROMA_KEYS = Object.keys(ROMA_VARIATIONS).sort(
 );
 
 /**
- * 現場の作業員（Segment クラス）
- * 1つの日本語ブロック（例："か"、"しゃ"、"ん"）に対する、ユーザーの入力状態を管理する
- */
-export class Segment {
-  canonical: string; // 正解のベースとなる文字（例："しゃ"）
-  patterns: string[]; // 入力パターンの候補（例：["sya", "sha"]）
-  inputBuffer: string; // ユーザーが現在までに打った文字（例："s"）
-  typedLog: { char: string; color: string }[]; // 画面の色分け用の履歴
-  isExpanded: boolean; // 「ん」が "n" から "nn" に拡張されたかどうかのフラグ
-
-  constructor(canonical: string, isEnglish: boolean = false) {
-    this.canonical = canonical;
-
-    // EXTRAモードなら辞書を引かずにその文字だけを正解にする
-    const initialPatterns = isEnglish
-      ? [canonical]
-      : ROMA_VARIATIONS[canonical] || [canonical];
-
-    this.patterns = initialPatterns;
-    this.inputBuffer = "";
-    this.typedLog = [];
-    this.isExpanded = false;
-  }
-
-  // 画面に薄く表示する「お手本（ガイド）」を取得する
-  get display() {
-    if (this.inputBuffer === "") return this.patterns[0]; // まだ打ってないなら基本パターンを出す
-    // ユーザーの入力（例:"sh"）に一致する未来のパターン("sha")を探す
-    const match = this.patterns.find((p) => p.startsWith(this.inputBuffer));
-    return match ? match : this.patterns[0];
-  }
-
-  // 次に打つべき「1文字」を取得（"sha"で"s"まで打ってたら"h"を返す）
-  getCurrentChar() {
-    return this.display[this.inputBuffer.length] || "";
-  }
-
-  // まだ打たれていない残りの文字列を取得
-  getRemaining() {
-    return this.display.slice(this.inputBuffer.length + 1);
-  }
-
-  /**
-   * 試し打ちチェック
-   * 状態（buffer）は変更せずに、「もしこのキーが来たら正解ルートに乗れるか？」だけを判定する
-   */
-  canAccept(key: string): boolean {
-    return this.patterns.some((p) => p.startsWith(this.inputBuffer + key));
-  }
-
-  /**
-   * : n単体かどうかチェック
-   * 「ん」を "n" 1文字で済ませた状態かどうか。（次の文字の判定に使う）
-   */
-  isSingleN(): boolean {
-    return this.canonical === "n" && this.inputBuffer === "n";
-  }
-
-  /**
-   * : nnへの拡張を実行
-   * 「ん(n)」の次に子音が来て「やっぱり "nn" じゃないとダメだ！」となった時に、
-   * 自分の入力履歴を強制的に "nn" に書き換える処理。
-   */
-  expandToDoubleN(): void {
-    this.inputBuffer = "nn";
-    this.typedLog.push({ char: "n", color: JUDGE_COLOR.CORRECT });
-    this.isExpanded = true;
-  }
-
-  /**
-   * nn拡張からのリセット（バックスペース用）
-   * "nn" に拡張した後にバックスペースを押されたら、中途半端に "n" に戻すのではなく、
-   * 一気に未入力状態（""）に戻す仕様。
-   */
-  tryShrinkFromDoubleN(): boolean {
-    if (this.isExpanded && this.inputBuffer === "nn") {
-      this.inputBuffer = ""; // 一気に消す
-      this.typedLog = [];
-      this.isExpanded = false;
-      return true; // 戻す処理が成功したよ、と監督に伝える
-    }
-    return false;
-  }
-
-  /**
-   * コア処理：ユーザーが打ったキーを受け取って、判定結果を返す
-   */
-  handleKey(key: string): string {
-    // 生のキー入力でルートチェック
-    // ※先にすり替えると "kyo" に "c" が通過してしまうバグの原因になる
-    const nextBuffer = this.inputBuffer + key;
-    const hasFutureRoute = this.patterns.some((p) => p.startsWith(nextBuffer));
-
-    // handlekeyは正解時とミス時で振り分けるだけ
-    return hasFutureRoute ? this.accept(key) : this.advanceOnMiss();
-  }
-
-  // handleKeyを通じてのみ行われる処理のため、
-  // 外部から呼ばれると壊れる可能性があるため、プライベートメソッドを使用
-  private accept(key: string): "NEXT" | "OK" {
-    this.inputBuffer += key;
-    this.typedLog.push({ char: key, color: JUDGE_COLOR.CORRECT });
-    return this.isDone() ? "NEXT" : "OK";
-  }
-
-  private advanceOnMiss(): "MISS" | "MISS_NEXT" | "MISS_ADVANCE" {
-    if (this.isDone()) return "MISS";
-    const currentPattern =
-      this.patterns.find((p) => p.startsWith(this.inputBuffer)) ??
-      this.patterns[0];
-    const expectedChar = currentPattern[this.inputBuffer.length];
-
-    // 何も期待されていない（想定外のバグ防止）
-    if (!expectedChar) return "MISS";
-    // ミスだけど、画面上では赤文字で進める（ゲームの仕様）
-    this.inputBuffer += expectedChar;
-    this.typedLog.push({ char: expectedChar, color: JUDGE_COLOR.MISS });
-    return this.isDone() ? "MISS_NEXT" : "MISS_ADVANCE";
-  }
-
-  backspace(): boolean {
-    if (this.inputBuffer.length > 0) {
-      this.inputBuffer = this.inputBuffer.slice(0, -1);
-      this.typedLog.pop();
-      return true;
-    }
-    return false; // もう消す文字がない
-  }
-
-  // このブロックの入力が完了しているか
-  isDone() {
-    return this.patterns.includes(this.inputBuffer);
-  }
-}
-
-/**
  * 現場監督（TypingEngine クラス）
  * お題の文章を Segment（ブロック）に切り分け、キー入力を適切な Segment に割り振る
  */
 export class TypingEngine {
-  // todo: segments / segIndex は public のため外部から直接書き換えられる。readonly 化または getDisplayState() 経由のみに制限したい
+  private isEnglish: boolean; // 英語モードかローマ字か
   segments: Segment[]; // 文章を構成するブロックの配列
   segIndex: number; // 今、何番目のブロックを入力しているか（現在地）
-  isEnglish: boolean; // 英語モードかローマ字か
 
   constructor(romaText: string, isEnglish: boolean = false) {
     this.isEnglish = isEnglish;
@@ -167,31 +30,39 @@ export class TypingEngine {
     this.segIndex = 0;
   }
 
+  private segmentizeRoma(roma: string): Segment[] {
+    const out: Segment[] = [];
+
+    for (let i = 0; i < roma.length; ) {
+      // 現在地(i)から始まる文字が、辞書のキー（"sha"など）と一致するか長い順に探す
+      // 辞書にない記号などは、そのまま1文字のSegmentにするフォールバック処理
+      const hitKey = SORTED_ROMA_KEYS.find((key) => roma.startsWith(key, i));
+      if (!hitKey) {
+        out.push(new Segment(roma[i]));
+        i++;
+        continue;
+      }
+
+      out.push(new Segment(hitKey));
+      i += hitKey.length;
+    }
+
+    return out;
+  }
+
   /**
    * 文章の解析・切り分け処理
-   * 例：「かいしゃ」 -> ["か", "い", "しゃ"] というSegmentの配列に変換する
+   *
+   * @param roma 解析対象のローマ字（例: "kaisha"）
+   * @returns Segmentの配列（例: "kaisha" → ["ka", "i", "sha"]）
    */
   segmentize(roma: string): Segment[] {
     // 英単語モードなら即座に変換して返す
-    if (this.isEnglish) return [...roma].map((c) => new Segment(c, true));
-
-    // ここから日本語(ローマ字)モード
-    const out: Segment[] = [];
-
-    let i = 0;
-    while (i < roma.length) {
-      // 現在地(i)から始まる文字が、辞書のキー（"sha"など）と一致するか長い順に探す
-      const hitKey = SORTED_ROMA_KEYS.find((key) => roma.startsWith(key, i));
-      if (hitKey) {
-        out.push(new Segment(hitKey));
-        i += hitKey.length;
-      } else {
-        // 辞書にない記号などは、そのまま1文字のSegmentにするフォールバック処理
-        out.push(new Segment(roma[i]));
-        i++;
-      }
+    if (this.isEnglish) {
+      return [...roma].map((c) => new Segment(c, true));
     }
-    return out;
+
+    return this.segmentizeRoma(roma);
   }
 
   /**
