@@ -1,5 +1,4 @@
 import type { DifficultyLevel, RomaState, Word, WordList } from "../../../types";
-import { DIFFICULTY_SETTINGS } from "../../../utils/constants";
 import { TypingEngine } from "./typingEngine";
 
 type WordSetup = {
@@ -36,15 +35,10 @@ const getInitialRomaState = (engine: TypingEngine): RomaState => {
   };
 };
 
-// EXTRAの特殊モードはローマ字判定を不可に
-const getIsEnglishMode = (difficulty: DifficultyLevel): boolean => {
-  return DIFFICULTY_SETTINGS[difficulty].isEnglish ?? false;
-};
-
 // 新しい単語のローマ字を渡し、判定ロジック(Class)を新品にする。
 // これにより、前の単語の入力履歴などはすべてリセットされる。
-const initializeEngine = (word: Word, isEnglish: boolean): TypingEngine => {
-  return new TypingEngine(word.roma, isEnglish);
+const initializeEngine = (word: Word, difficulty: DifficultyLevel): TypingEngine => {
+  return new TypingEngine(word.roma, difficulty);
 };
 
 export const buildWordSetup = (
@@ -53,8 +47,7 @@ export const buildWordSetup = (
   difficulty: DifficultyLevel,
 ): WordSetup => {
   const nextWord = selectNextWord(list, excludeJp);
-  const isEnglishMode = getIsEnglishMode(difficulty);
-  const engine = initializeEngine(nextWord, isEnglishMode);
+  const engine = initializeEngine(nextWord, difficulty);
   const romaState = getInitialRomaState(engine);
 
   return {

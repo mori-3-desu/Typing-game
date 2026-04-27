@@ -1326,3 +1326,5 @@ const createInitialState = (): ConfigState => {
 - interfaceの責務を分離
   - 次に検討箇所を修正
   - バリデーション追加がいいですね
+
+- typingengineクラスのprivate化を実施

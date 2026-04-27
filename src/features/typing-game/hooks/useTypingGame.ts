@@ -18,7 +18,8 @@ import {
 } from "../../../utils/constants";
 import type { GameAction } from "../logic/gameReducer";
 import { gameReducer, initialState } from "../logic/gameReducer";
-import { Segment, TypingEngine } from "../logic/typingEngine";
+import { Segment } from "../logic/segment";
+import { TypingEngine } from "../logic/typingEngine";
 import { buildWordSetup } from "../logic/wordSetup";
 import {
   calcHitScore,
@@ -205,7 +206,7 @@ export const useTypingGame = (
     const { nextWord, engine, romaState } = buildWordSetup(
       wordData[difficulty],
       jpText,
-      difficulty
+      difficulty,
     );
 
     engineRef.current = engine;
