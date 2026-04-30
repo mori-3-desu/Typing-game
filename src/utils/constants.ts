@@ -178,7 +178,7 @@ export const UI_ANIMATION_CONFIG = {
   MISS_DURATION_MS: 200, // ミスタイプ時の揺らす演出
   NO_ALLGREEN_DURATION_MS: 400, // ミスが含まれている状態で最後まで入力された時の揺らす演出
   SCORE_FLUCTUATION_MS: 16, // スコア増減の演出(ダイヤル式、60FPS基準)
-  SCORE_EASING: 5, // スコア増減の速さ(ダイヤルの速さ)
+  SCORE_DECAY_MS: 100, // スコア増減の速さ(ダイヤルの速さ)
 } as const;
 
 // 連打メーターの設定値
