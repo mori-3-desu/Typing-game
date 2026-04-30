@@ -1225,7 +1225,7 @@ body {
 }
 
 /* 演出アニメーション */
-#tmr-text.time-plus {
+.tmr-text.time-plus {
   /* ③ 上書きしたい時だけ、変の中身を入れ替える */
   --shadow-color: var(--color-green);
 
@@ -1235,7 +1235,7 @@ body {
 }
 
 /* ピンチ（残り時間わずか） */
-#tmr-text.timer-pinch {
+.tmr-text.timer-pinch {
   /* ① 影の色変数を「ピンク」に上書き */
   /* これだけで、親で定義した text-shadow の 3番目の色が入れ替わる */
   --shadow-color: #ff9eb5;
@@ -1248,7 +1248,7 @@ body {
 }
 
 /* 終了時 (0秒) */
-#tmr-text.timer-zero {
+.tmr-text.timer-zero {
   color: rgba(255, 36, 113, 1);
   --shadow-color: #ff9eb5; /* 影も赤系に */
 }

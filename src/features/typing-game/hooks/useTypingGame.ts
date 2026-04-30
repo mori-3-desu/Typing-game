@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef } from "react";
 
 import type {
   DifficultyLevel,
@@ -32,6 +32,7 @@ import {
   decideScoreType,
   getComboClass,
 } from "../utils/gameUtils";
+import { useScoreAnimation } from "./useScoreAnimation";
 
 type JudgeContext = {
   result: InputResult;
@@ -90,14 +91,6 @@ const getCurrentTargetChar = (engine: TypingEngine): string | undefined => {
   return engine.segments[engine.segIndex]?.getCurrentChar();
 };
 
-const easingAnimation = (diff: number): number => {
-  const easing = UI_ANIMATION_CONFIG.SCORE_EASING;
-  if (Math.abs(diff) <= 1) return diff;
-
-  const step = diff / easing;
-  return step > 0 ? Math.ceil(step): Math.floor(step);
-};
-
 export const useTypingGame = (
   difficulty: DifficultyLevel,
   wordData: WordDataMap | null,
@@ -107,7 +100,6 @@ export const useTypingGame = (
     timeLeft: DIFFICULTY_SETTINGS[difficulty].time,
   });
 
-  const [displayScore, setDisplayScore] = useState(0);
   const engineRef = useRef<TypingEngine | null>(null);
   const popupIdRef = useRef(0);
   const timeoutIdsRef = useRef<Set<number>>(new Set());
@@ -136,6 +128,7 @@ export const useTypingGame = (
     perfectPopups,
   } = state;
 
+  const { displayScore, reset: resetDisplayScore } = useScoreAnimation(score);
   const rank = calculateRank(difficulty, score);
   const comboClass = getComboClass(combo);
   const isRainbowMode = combo >= COMBO_THRESHOLDS.RAINBOW;
@@ -164,6 +157,7 @@ export const useTypingGame = (
       popupIdRef.current += 1;
       const newId = popupIdRef.current;
       dispatch(buildAddAction(newId));
+      
       scheduleTrackedTimeout(() => {
         dispatch(buildRemoveAction(newId));
       }, duration);
@@ -254,8 +248,8 @@ export const useTypingGame = (
       type: "RESET",
       initialTime: DIFFICULTY_SETTINGS[difficulty].time,
     });
-    setDisplayScore(0);
-  }, [difficulty]);
+    resetDisplayScore();
+  }, [difficulty, resetDisplayScore]);
 
   // todo: loadRandomWord の薄いラッパーになっており役割が曖昧
   // ゲーム開始時固有の処理（SE・アニメーション等）が増えた場合に責務を整理したい
@@ -320,7 +314,6 @@ export const useTypingGame = (
       const nextCombo = currentCombo + 1;
 
       applyComboTimerPlus(nextCombo);
-
       const addScore = calcHitScore(nextCombo);
 
       dispatch({ type: "CORRECT_HIT", addScore, gaugeGain: GAUGE_CONFIG.GAIN });
@@ -337,13 +330,16 @@ export const useTypingGame = (
     });
   }, [jpText, currentWordMiss]);
 
-  const handlePerfectClear = useCallback((engine: TypingEngine): void => {
-    const bonus = calculatePerfectBonus(engine.displayLength);
-    dispatch({ type: "PERFECT_BONUS", bonus });
+  const handlePerfectClear = useCallback(
+    (engine: TypingEngine): void => {
+      const bonus = calculatePerfectBonus(engine.displayLength);
+      dispatch({ type: "PERFECT_BONUS", bonus });
 
-    addScorePopup(bonus);
-    triggerPerfect();
-  }, [addScorePopup, triggerPerfect]);
+      addScorePopup(bonus);
+      triggerPerfect();
+    },
+    [addScorePopup, triggerPerfect],
+  );
 
   // 次はここから
   const processWordCompletion = useCallback(() => {
@@ -366,7 +362,7 @@ export const useTypingGame = (
     loadRandomWord,
     processMiss,
     handlePerfectClear,
-    handleImperfectClear
+    handleImperfectClear,
   ]);
 
   const handlejudgeInput = useCallback(
@@ -407,19 +403,6 @@ export const useTypingGame = (
       dispatch({ type: "GAUGE_MAX_REACHED" });
     }
   }, [gaugeValue, gaugeMax, addTimePopUp]);
-
-  useEffect(() => {
-    if (displayScore !== score) {
-      const diff = score - displayScore;
-      const step = easingAnimation(diff);
-
-      const timer = setTimeout(() => {
-        setDisplayScore((prev) => prev + step);
-      }, UI_ANIMATION_CONFIG.SCORE_FLUCTUATION_MS);
-
-      return () => clearTimeout(timer);
-    }
-  }, [score, displayScore]);
 
   useEffect(() => {
     const timeoutIds = timeoutIdsRef.current;
