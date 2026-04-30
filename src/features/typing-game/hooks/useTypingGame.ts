@@ -249,7 +249,7 @@ export const useTypingGame = (
       initialTime: DIFFICULTY_SETTINGS[difficulty].time,
     });
     resetDisplayScore();
-  }, [difficulty]);
+  }, [difficulty, resetDisplayScore]);
 
   // todo: loadRandomWord の薄いラッパーになっており役割が曖昧
   // ゲーム開始時固有の処理（SE・アニメーション等）が増えた場合に責務を整理したい

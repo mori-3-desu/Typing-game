@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+
 import { UI_ANIMATION_CONFIG } from "../../../utils/constants";
 
 const easingScoreAnimation = (diff: number, deltaTime: number): number => {
