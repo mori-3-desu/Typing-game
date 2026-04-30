@@ -8,8 +8,6 @@ import {
   COMBO_THRESHOLDS,
   LIMIT_DATA,
   RANK_THRESHOLDS,
-  SCORE_COMBO_MULTIPLIER,
-  SCORE_CONFIG,
   SCORE_DIRECTION,
 } from "../../../utils/constants";
 
@@ -40,26 +38,11 @@ export const calculateRank = (
   return "D";
 };
 
-export const getComboClass = (val: number) => {
+export const getComboClass = (val: number): string => {
   if (val >= COMBO_THRESHOLDS.RAINBOW) return "is-rainbow";
   if (val >= COMBO_THRESHOLDS.GOLD) return "is-gold";
   return "";
 };
-
-const SCORE_BONUS = [
-  {
-    thresholds: SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_1,
-    multiplier: SCORE_COMBO_MULTIPLIER.MULTIPLIER_BASE,
-  },
-  {
-    thresholds: SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_2,
-    multiplier: SCORE_COMBO_MULTIPLIER.MULTIPLIER_MID,
-  },
-  {
-    thresholds: SCORE_COMBO_MULTIPLIER.THRESHOLDS_LEVEL_3,
-    multiplier: SCORE_COMBO_MULTIPLIER.MULTIPLIER_HIGH,
-  },
-] as const;
 
 export const decideScoreType = (amount: number): ScorePopup["type"] => {
   if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
@@ -67,23 +50,6 @@ export const decideScoreType = (amount: number): ScorePopup["type"] => {
   if (amount >= SCORE_DIRECTION.RAINBOW) return "popup-rainbow";
   if (amount >= SCORE_DIRECTION.GOLD) return "popup-gold";
   return "popup-normal";
-};
-
-const getScoreMultiplier = (currentCombo: number) => {
-  if (currentCombo < 0) return 0;
-
-  const config = SCORE_BONUS.find((item) => currentCombo <= item.thresholds);
-
-  if (config) {
-    return config.multiplier;
-  }
-
-  return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
-};
-
-export const calcHitScore = (combo: number): number => {
-  const multiplier = getScoreMultiplier(combo);
-  return SCORE_CONFIG.BASE_POINT * multiplier;
 };
 
 export const getShareUrl = (score: number, rank: string): string => {
