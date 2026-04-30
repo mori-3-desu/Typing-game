@@ -112,10 +112,10 @@ export class TypingEngine {
   /**
    * バックスペース（戻る）処理の総合窓口
    */
-  backspace(): BackspaceStatus {
+  backspace(): { status: BackspaceStatus } {
     if (this.cannotGoBack()) {
       this.segIndex = 0;
-      return "EMPTY";
+      return { status: "EMPTY" };
     }
 
     this.keepIndexAtLast();
@@ -123,8 +123,8 @@ export class TypingEngine {
     const segment = this.segments[this.segIndex];
 
     // 通常のバックスペース処理
-    segment.backspace();
-    return "BACK";
+    const result = segment.backspace();
+    return { status: result };
   }
 
   // 戻れるかの判定
