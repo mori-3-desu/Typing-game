@@ -1,7 +1,23 @@
 import { JUDGE_COLOR } from "../../../utils/constants";
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
 
-export type BackspaceStatus = "EMPTY" | "BACK" | "BACK_EXPANDED"; // 共有されてるので型フォルダへ
+export type BackspaceStatus = "EMPTY" | "BACK" | "BACK_EXPANDED";
+
+export type InputStatus =
+  | "OK"
+  | "NEXT"
+  | "EXPANDED"
+  | "MISS"
+  | "MISS_NEXT"
+  | "MISS_ADVANCE"
+  | "END";
+
+export type InputResult = {
+  status: InputStatus;
+};
+
+export const isMissStatus = (status: InputStatus): boolean => status === "MISS" || status === "MISS_NEXT" || status === "MISS_ADVANCE";
+export const isCorrectStatus = (status: InputStatus): boolean => status === "OK" || status === "NEXT" ||  status === "EXPANDED";
 
 /**
  * 現場の作業員（Segment クラス）
@@ -102,13 +118,13 @@ export class Segment {
 
   // handleKeyを通じてのみ行われる処理のため、
   // 外部から呼ばれると壊れる可能性があるため、プライベートメソッドを使用
-  private accept(key: string): "NEXT" | "OK" {
+  private accept(key: string): InputStatus {
     this.inputBuffer += key;
     this.typedLog.push({ char: key, color: JUDGE_COLOR.CORRECT });
     return this.isDone() ? "NEXT" : "OK";
   }
 
-  private advanceOnMiss(): "MISS" | "MISS_NEXT" | "MISS_ADVANCE" {
+  private advanceOnMiss(): InputStatus {
     if (this.isDone()) return "MISS";
     const currentPattern =
       this.patterns.find((p) => p.startsWith(this.inputBuffer)) ??

@@ -18,15 +18,25 @@ import {
 } from "../../../utils/constants";
 import type { GameAction } from "../logic/gameReducer";
 import { gameReducer, initialState } from "../logic/gameReducer";
-import { Segment } from "../logic/segment";
+import { calcHitScore, calculatePerfectBonus } from "../logic/scoreCalculation";
+import {
+  type InputResult,
+  isCorrectStatus,
+  isMissStatus,
+  Segment,
+} from "../logic/segment";
 import { TypingEngine } from "../logic/typingEngine";
 import { buildWordSetup } from "../logic/wordSetup";
 import {
-  calcHitScore,
   calculateRank,
   decideScoreType,
   getComboClass,
 } from "../utils/gameUtils";
+
+type JudgeContext = {
+  result: InputResult;
+  targetChar: string | undefined;
+};
 
 // エンジン内では「セグメントごと」にログを持っているが、
 // 画面表示用には「全履歴を一直線の配列」にしたいので、ここで結合する。
@@ -69,6 +79,25 @@ const COMBO_LEVELS = [
   },
 ];
 
+// どうにかエンジンにUI責務を分離できないかを考える
+const isPerfectTyped = (engine: TypingEngine): boolean => {
+  return engine.segments.every((s) =>
+    s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT),
+  );
+};
+
+const getCurrentTargetChar = (engine: TypingEngine): string | undefined => {
+  return engine.segments[engine.segIndex]?.getCurrentChar();
+};
+
+const easingAnimation = (diff: number): number => {
+  const easing = UI_ANIMATION_CONFIG.SCORE_EASING;
+  if (Math.abs(diff) <= 1) return diff;
+
+  const step = diff / easing;
+  return step > 0 ? Math.ceil(step): Math.floor(step);
+};
+
 export const useTypingGame = (
   difficulty: DifficultyLevel,
   wordData: WordDataMap | null,
@@ -79,10 +108,8 @@ export const useTypingGame = (
   });
 
   const [displayScore, setDisplayScore] = useState(0);
-
   const engineRef = useRef<TypingEngine | null>(null);
   const popupIdRef = useRef(0);
-
   const timeoutIdsRef = useRef<Set<number>>(new Set());
 
   const {
@@ -180,7 +207,6 @@ export const useTypingGame = (
     [showTrackedPopup],
   );
 
-  // 新しい時間経過関数
   const tick = useCallback((amount: number) => {
     dispatch({ type: "TICK", amount });
   }, []);
@@ -194,8 +220,7 @@ export const useTypingGame = (
       type: "UPDATE_DISPLAY",
       romaState: buildRomaState(engineRef.current),
       // engine.segments をそのまま渡すと「参照」が変わらないためReactが変更を無視する可能性がある。
-      // [...Array] (スプレッド構文) で「新しい配列」としてコピーして渡すことで、
-      // 確実に再レンダリング（色が変わるなど）をトリガーさせる。
+      // スプレッド構文で新しい配列で渡すことで再レンダリングをトリガーさせる
       segments: [...engineRef.current.segments],
     });
   }, []);
@@ -206,7 +231,7 @@ export const useTypingGame = (
     const { nextWord, engine, romaState } = buildWordSetup(
       wordData[difficulty],
       jpText,
-      difficulty
+      difficulty,
     );
 
     engineRef.current = engine;
@@ -304,80 +329,75 @@ export const useTypingGame = (
     [applyComboTimerPlus, addScorePopup],
   );
 
+  const handleImperfectClear = useCallback((): void => {
+    dispatch({
+      type: "RECORD_MISSED_WORD",
+      word: jpText,
+      misses: currentWordMiss,
+    });
+  }, [jpText, currentWordMiss]);
+
+  const handlePerfectClear = useCallback((engine: TypingEngine): void => {
+    const bonus = calculatePerfectBonus(engine.displayLength);
+    dispatch({ type: "PERFECT_BONUS", bonus });
+
+    addScorePopup(bonus);
+    triggerPerfect();
+  }, [addScorePopup, triggerPerfect]);
+
+  // 次はここから
   const processWordCompletion = useCallback(() => {
     const engine = engineRef.current;
-    if (!engine) return;
-    const allGreen = engine.segments.every((s) =>
-      s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT),
-    );
 
-    if (allGreen) {
-      playSE("correct");
-      if (currentWordMiss === 0) {
-        const wordLength = engine.segments.reduce(
-          (acc, s) => acc + s.display.length,
-          0,
-        );
-        const bonus = wordLength * SCORE_CONFIG.PERFECT_BONUS_CHAR_REN;
-        dispatch({ type: "PERFECT_BONUS", bonus });
-        addScorePopup(bonus);
-        triggerPerfect();
-      } else {
-        dispatch({
-          type: "RECORD_MISSED_WORD",
-          word: jpText,
-          misses: currentWordMiss,
-        });
-      }
-      loadRandomWord();
+    if (!engine) return;
+    if (!isPerfectTyped(engine)) return processMiss("COMPLETION");
+
+    playSE("correct");
+
+    if (currentWordMiss === 0) {
+      handlePerfectClear(engine);
     } else {
-      processMiss("COMPLETION");
+      handleImperfectClear();
     }
+
+    loadRandomWord();
   }, [
     currentWordMiss,
-    jpText,
     loadRandomWord,
     processMiss,
-    addScorePopup,
-    triggerPerfect,
+    handlePerfectClear,
+    handleImperfectClear
   ]);
+
+  const handlejudgeInput = useCallback(
+    ({ result, targetChar }: JudgeContext): void => {
+      if (isMissStatus(result.status)) {
+        processMiss("INPUT", targetChar);
+        return;
+      }
+
+      if (isCorrectStatus(result.status)) {
+        processCorrectHit(combo);
+      }
+    },
+    [combo, processCorrectHit, processMiss],
+  );
 
   const handleKeyInput = useCallback(
     (key: string) => {
-      if (!engineRef.current) return;
       const engine = engineRef.current;
-      if (engine.segIndex >= engine.segments.length) {
-        const allGreen = engine.segments.every((s) =>
-          s.typedLog.every((t) => t.color === JUDGE_COLOR.CORRECT),
-        );
-        if (!allGreen) {
-          processMiss("COMPLETION");
-          return;
-        }
-      }
-      let targetChar = "";
-      if (engine.segments[engine.segIndex]) {
-        targetChar = engine.segments[engine.segIndex].getCurrentChar();
-      }
-      const result = engine.input(key);
+      if (!engine) return;
 
-      if (result.status.startsWith("MISS")) {
-        processMiss("INPUT", targetChar);
-      } else if (["OK", "NEXT", "EXPANDED"].includes(result.status)) {
-        processCorrectHit(combo);
-      }
+      const targetChar = getCurrentTargetChar(engine);
+      const result = engine.input(key);
+      handlejudgeInput({ result, targetChar });
+
       syncEngineToReact();
       if (engine.segIndex >= engine.segments.length) {
         processWordCompletion();
       }
     },
-    [
-      combo,
-      processMiss,
-      processCorrectHit,
-      processWordCompletion,
-      syncEngineToReact,
-    ],
+    [handlejudgeInput, processWordCompletion, syncEngineToReact],
   );
 
   useEffect(() => {
@@ -388,18 +408,10 @@ export const useTypingGame = (
     }
   }, [gaugeValue, gaugeMax, addTimePopUp]);
 
-  // ※こちらは内部でクリーンアップ完結しているのでそのまま
   useEffect(() => {
     if (displayScore !== score) {
       const diff = score - displayScore;
-      const easing = UI_ANIMATION_CONFIG.SCORE_EASING;
-
-      const step =
-        Math.abs(diff) < easing
-          ? diff > 0
-            ? 1
-            : -1
-          : Math.ceil(diff / easing);
+      const step = easingAnimation(diff);
 
       const timer = setTimeout(() => {
         setDisplayScore((prev) => prev + step);

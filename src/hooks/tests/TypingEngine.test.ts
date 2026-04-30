@@ -31,7 +31,7 @@ describe("TypingEngine ロジックテスト", () => {
 
     // 3. BSで戻る -> 救済なので一気に消える ("")
     const bsResult = engine.backspace();
-    expect(bsResult);
+    expect(bsResult.status).toBe("BACK_EXPANDED");
     expect(engine.segments[1].inputBuffer).toBe("");
   });
 
@@ -101,7 +101,7 @@ describe("TypingEngine ロジックテスト", () => {
     const thirdResult = engine.backspace();
 
     // 1. ステータスは常にペナルティ
-    expect(thirdResult);
+    expect(thirdResult.status).toBe("EMPTY");
     // 2. インデックスがマイナス（-1など）に突き抜けていないか
     expect(engine.segIndex).toBe(0);
     // 3. 最初のセグメントが消滅していないか
@@ -113,7 +113,7 @@ describe("TypingEngine ロジックテスト", () => {
     const engine = new TypingEngine("");
 
     expect(engine.segments.length).toBe(0);
-    expect(engine.backspace());
+    expect(engine.backspace().status).toBe("EMPTY");
     expect(engine.segIndex).toBe(0);
   });
 });

@@ -7,7 +7,7 @@
  */
 
 import { ROMA_VARIATIONS } from "../utils/romajiMap";
-import { type BackspaceStatus,Segment } from "./segment";
+import { type BackspaceStatus, type InputResult, Segment } from "./segment";
 
 // 静的ソート（アプリ起動時に1回だけ実行）
 // 長い文字（"shi" など）から先にマッチさせるため、文字数の多い順にソートしておく
@@ -69,7 +69,7 @@ export class TypingEngine {
    * キーボードからの入力を受け付ける総合窓口
    * todo: 「ん」の特殊処理が Engine 側に混在している。Segment 側で解決できないか検討したい
    */
-  input(key: string): { status: string } {
+  input(key: string): InputResult {
     const segment = this.segments[this.segIndex]; // 今担当しているブロック
     const prevSegment = this.segments[this.segIndex - 1]; // 1つ前のブロック
 
@@ -112,10 +112,10 @@ export class TypingEngine {
   /**
    * バックスペース（戻る）処理の総合窓口
    */
-  backspace(): BackspaceStatus {
+  backspace(): { status: BackspaceStatus } {
     if (this.cannotGoBack()) {
       this.segIndex = 0;
-      return "EMPTY";
+      return { status: "EMPTY" };
     }
 
     this.keepIndexAtLast();
@@ -123,8 +123,8 @@ export class TypingEngine {
     const segment = this.segments[this.segIndex];
 
     // 通常のバックスペース処理
-    segment.backspace();
-    return "BACK";
+    const result = segment.backspace();
+    return { status: result };
   }
 
   // 戻れるかの判定
@@ -151,6 +151,10 @@ export class TypingEngine {
     if (current.inputBuffer.length === 0 && this.segIndex > 0) {
       this.segIndex--;
     }
+  }
+
+  get displayLength(): number {
+    return this.segments.reduce((acc, s) => acc + s.display.length, 0);
   }
 
   // Reactコンポーネント（画面側）に、今の状態をまとめて渡すためのメソッド

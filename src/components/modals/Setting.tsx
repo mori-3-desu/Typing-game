@@ -139,8 +139,7 @@ export const Setting = ({
               step="0.05"
               value={seVol}
               onValueChange={setSeVol}
-              onPointerUp={() => {
-                if (!isMuted) playSE("decision");
+              onPointerUp={() => {playSE("decision");
               }}
               disabled={isMuted}
             />
