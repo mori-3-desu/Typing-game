@@ -19,9 +19,7 @@ const getScoreMultiplier = (currentCombo: number) => {
   if (currentCombo < 0) return 0;
 
   const config = SCORE_BONUS.find((item) => currentCombo <= item.thresholds);
-  if (config) return config.multiplier;
-
-  return SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
+  return config?.multiplier ?? SCORE_COMBO_MULTIPLIER.MULTIPLIER_MAX;
 };
 
 export const calcHitScore = (combo: number): number => {

@@ -8,7 +8,6 @@ import type {
 } from "../../../types";
 import { playSE } from "../../../utils/audio";
 import {
-  COMBO_THRESHOLDS,
   COMBO_TIME_BONUS,
   DIFFICULTY_SETTINGS,
   GAUGE_CONFIG,
@@ -18,6 +17,12 @@ import {
 } from "../../../utils/constants";
 import type { GameAction } from "../logic/gameReducer";
 import { gameReducer, initialState } from "../logic/gameReducer";
+import { COMBO_THRESHOLDS } from "../logic/popup";
+import {
+  decideScoreType,
+  getComboClass,
+} from "../logic/popup";
+import { calculateRank } from "../logic/rank";
 import { calcHitScore, calculatePerfectBonus } from "../logic/scoreCalculation";
 import {
   type InputResult,
@@ -27,11 +32,6 @@ import {
 } from "../logic/segment";
 import { TypingEngine } from "../logic/typingEngine";
 import { buildWordSetup } from "../logic/wordSetup";
-import {
-  calculateRank,
-  decideScoreType,
-  getComboClass,
-} from "../utils/gameUtils";
 import { useScoreAnimation } from "./useScoreAnimation";
 
 type JudgeContext = {
@@ -238,8 +238,6 @@ export const useTypingGame = (
     });
   }, [difficulty, wordData, jpText]);
 
-  // todo: startGame / resetGame はタイピング判定・スコア計算とは層が違うフロー制御
-  // useGameFlow のような専用フックへの切り出しを検討したい
   const resetGame = useCallback(() => {
     timeoutIdsRef.current.forEach(clearTimeout);
     timeoutIdsRef.current.clear();
@@ -251,8 +249,6 @@ export const useTypingGame = (
     resetDisplayScore();
   }, [difficulty, resetDisplayScore]);
 
-  // todo: loadRandomWord の薄いラッパーになっており役割が曖昧
-  // ゲーム開始時固有の処理（SE・アニメーション等）が増えた場合に責務を整理したい
   const startGame = useCallback(() => {
     loadRandomWord();
   }, [loadRandomWord]);
@@ -341,7 +337,6 @@ export const useTypingGame = (
     [addScorePopup, triggerPerfect],
   );
 
-  // 次はここから
   const processWordCompletion = useCallback(() => {
     const engine = engineRef.current;
 
