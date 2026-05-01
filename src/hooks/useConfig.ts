@@ -1,3 +1,7 @@
+
+
+
+
 /**
  * @file useConfig.ts
  * @description ゲーム設定（音量や表示オプション）を管理するカスタムフック

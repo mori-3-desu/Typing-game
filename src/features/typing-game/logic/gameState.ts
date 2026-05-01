@@ -1,15 +1,5 @@
-import {
-  type DifficultyLevel,
-  type GameResultStats,
-  type GameState,
-  type ScorePopup,
-} from "../../../types";
-import {
-  COMBO_THRESHOLDS,
-  LIMIT_DATA,
-  RANK_THRESHOLDS,
-  SCORE_DIRECTION,
-} from "../../../utils/constants";
+import type { GameResultStats, GameState } from "../../../types";
+import { LIMIT_DATA } from "../../../utils/constants";
 
 type CalculateStatsParams = {
   score: number;
@@ -24,41 +14,6 @@ type CalculateStatsParams = {
   missedCharsRecord: { [key: string]: number };
   jpText: string;
   currentWordMiss: number;
-};
-
-export const calculateRank = (
-  difficulty: DifficultyLevel,
-  currentScore: number,
-) => {
-  const th = RANK_THRESHOLDS[difficulty] || RANK_THRESHOLDS.NORMAL;
-  if (currentScore >= th.S) return "S";
-  if (currentScore >= th.A) return "A";
-  if (currentScore >= th.B) return "B";
-  if (currentScore >= th.C) return "C";
-  return "D";
-};
-
-export const getComboClass = (val: number): string => {
-  if (val >= COMBO_THRESHOLDS.RAINBOW) return "is-rainbow";
-  if (val >= COMBO_THRESHOLDS.GOLD) return "is-gold";
-  return "";
-};
-
-export const decideScoreType = (amount: number): ScorePopup["type"] => {
-  if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
-  if (amount < SCORE_DIRECTION.PENALTY) return "popup-miss";
-  if (amount >= SCORE_DIRECTION.RAINBOW) return "popup-rainbow";
-  if (amount >= SCORE_DIRECTION.GOLD) return "popup-gold";
-  return "popup-normal";
-};
-
-export const getShareUrl = (score: number, rank: string): string => {
-  const text = encodeURIComponent(
-    `CRITICAL TYPINGでスコア:${score.toLocaleString()} ランク:${rank} を獲得しました！`,
-  );
-  const hashtags = encodeURIComponent("CRITICALTYPING,タイピング");
-  const url = encodeURIComponent(window.location.origin);
-  return `https://twitter.com/intent/tweet?text=${text}&hashtags=${hashtags}&url=${url}`;
 };
 
 export const createGameStats = (
@@ -116,7 +71,7 @@ export const calculateFinalStats = (
 
   // --- 3. 現在データの救出 (Refの値を使用) ---
   if (currentWordMiss > 0 && jpText) {
-    weakWordMap.set(jpText, weakWordMap.get(jpText) || 0 + currentWordMiss);
+    weakWordMap.set(jpText, (weakWordMap.get(jpText) || 0) + currentWordMiss);
   }
 
   // --- 4. 配列化・ソート・フィルタリング ---

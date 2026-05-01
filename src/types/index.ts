@@ -126,8 +126,6 @@ export type MissedWord = { word: string; misses: number };
 // ログ用
 export type TypedLog = { char: string; color: string };
 
-// types.ts の末尾に追記
-
 // ■ ゲーム全体の進行状態
 export type GameState =
   | "loading"

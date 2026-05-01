@@ -17,8 +17,8 @@ import { useTypingGame } from "./features/typing-game/hooks/useTypingGame";
 import {
   buildDisplayData,
   createGameStats,
-  getShareUrl,
-} from "./features/typing-game/utils/gameUtils";
+} from "./features/typing-game/logic/gameState";
+import { getShareUrl } from "./features/typing-game/utils/shareLink";
 import { useAppInit } from "./hooks/useAppInit";
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";

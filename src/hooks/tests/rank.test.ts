@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { calculateRank } from "../../features/typing-game/utils/gameUtils";
+import { calculateRank } from "../../features/typing-game/logic/rank";
 
 vi.mock("../../utils/audio", () => ({
   // audio.ts の中身をすべて空っぽの関数(vi.fn)に置き換える

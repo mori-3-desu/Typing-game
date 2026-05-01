@@ -199,19 +199,6 @@ export const SCORE_CONFIG = {
   BACKSPACE_PENALTY: 1000, // バックスペース時の減点ポイント
 } as const;
 
-// スコア増加量によって変わる演出
-export const SCORE_DIRECTION = {
-  PENALTY: 0, // 0点以下(useTypingGame.tsで条件をPENALTY > または < PENALTYと書く)
-  GOLD: 1000,
-  RAINBOW: 10000,
-} as const;
-
-// コンボに応じたクラス
-export const COMBO_THRESHOLDS = {
-  GOLD: 100,
-  RAINBOW: 200,
-} as const;
-
 // コンボ数によるスコア倍率
 export const SCORE_COMBO_MULTIPLIER = {
   // ここまで到達したらの閾値(コンボ)
@@ -246,11 +233,4 @@ export const COMBO_TIME_BONUS = {
   BONUS_MAX_SEC: 5,
 } as const;
 
-// ランク基準
-export const RANK_THRESHOLDS = {
-  // ミスなく継続すれば比較的簡単に到達するのでランク追加したりで調整予定
-  EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
-  NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
-  HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
-  EXTRA: { S: 1500000, A: 1000000, B: 750000, C: 400000},
-} as const;
+
