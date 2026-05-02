@@ -18,6 +18,7 @@ import {
   buildDisplayData,
   createGameStats,
 } from "./features/typing-game/logic/gameState";
+import type { GameResultStats, PlayPhase } from "./features/typing-game/types";
 import { getShareUrl } from "./features/typing-game/utils/shareLink";
 import { useAppInit } from "./hooks/useAppInit";
 import { useAuth } from "./hooks/useAuth";
@@ -32,9 +33,7 @@ import { useTitleFlow } from "./hooks/useTitleFlow";
 import { ScoreService } from "./services/scoreService";
 import type {
   DifficultyLevel,
-  GameResultStats,
   GameState,
-  PlayPhase,
   TitlePhase,
 } from "./types";
 import { playSE } from "./utils/audio";

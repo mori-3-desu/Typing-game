@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type { GameResultStats } from "../features/typing-game/types";
 import { ScoreService } from "../services/scoreService";
-import type { DifficultyLevel, GameResultStats, SoundKey } from "../types";
+import type { DifficultyLevel, SoundKey } from "../types";
 import { playSE } from "../utils/audio";
 import { UI_TIMINGS } from "../utils/constants";
 

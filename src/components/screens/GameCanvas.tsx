@@ -1,7 +1,8 @@
 // 規模が多くなったらファイル分けを検討
 import { useEffect, useRef } from "react"; // useCallbackは削除
 
-import { type GameState, type PlayPhase } from "../../types";
+import { type PlayPhase } from "../../features/typing-game/types";
+import { type GameState } from "../../types";
 import { drawGoAnimation, drawReadyAnimation } from "../../utils/canvas";
 import { DISPLAY_SCALE, READY_GO_ANIMATION } from "../../utils/constants";
 

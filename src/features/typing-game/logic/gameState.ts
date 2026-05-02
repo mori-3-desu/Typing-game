@@ -1,5 +1,6 @@
-import type { GameResultStats, GameState } from "../../../types";
+import type { GameState } from "../../../types";
 import { LIMIT_DATA } from "../../../utils/constants";
+import type { GameResultStats } from "../types";
 
 type CalculateStatsParams = {
   score: number;

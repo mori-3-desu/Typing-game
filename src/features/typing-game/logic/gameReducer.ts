@@ -1,11 +1,11 @@
+import { GAUGE_CONFIG } from "../../../utils/constants";
 import type {
   MissedWord,
   PerfectPopup,
   RomaState,
   ScorePopup,
   TimePopup,
-} from "../../../types";
-import { GAUGE_CONFIG } from "../../../utils/constants";
+} from "../types";
 import { Segment } from "./segment";
 
 // --- State Definitions ---

@@ -1,9 +1,6 @@
+import type { ScorePopupType } from "../types";
+
 type ComboClass = "is-rainbow" | "is-gold";
-export type ScorePopupType =
-  | "popup-normal"
-  | "popup-gold"
-  | "popup-rainbow"
-  | "popup-miss";
 
 export const COMBO_THRESHOLDS = {
   GOLD: 100,

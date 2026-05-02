@@ -1,5 +1,6 @@
-import type { DifficultyLevel, RomaState, Word, WordList } from "../../../types";
+import type { DifficultyLevel, Word, WordList } from "../../../types";
 import { DIFFICULTY_SETTINGS } from "../../../utils/constants";
+import type { RomaState } from "../types";
 import { TypingEngine } from "./typingEngine";
 
 type WordSetup = {

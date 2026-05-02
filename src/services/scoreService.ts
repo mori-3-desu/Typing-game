@@ -1,6 +1,6 @@
+import type { GameResultStats } from "../features/typing-game/types";
 import type {
   DifficultyLevel,
-  GameResultStats,
   ScoreRequestBody,
 } from "../types";
 import { STORAGE_KEYS } from "../utils/constants";
