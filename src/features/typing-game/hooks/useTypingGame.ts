@@ -174,6 +174,7 @@ export const useTypingGame = (
       const bonus = calcComboTimeBonus(combo);
       if (!bonus) return;
 
+      playSE("combo");
       dispatch({ type: "ADD_TIME", sec: bonus.sec });
       addTimePopUp(bonus.sec, bonus.isLarge);
     },
