@@ -1,9 +1,9 @@
 import { useCallback, useMemo } from "react";
 
+import { type PlayPhase } from "../features/typing-game/types";
 import {
   type DifficultyLevel,
   type GameState,
-  type PlayPhase,
   type TitlePhase,
 } from "../types";
 import { playSE, startSelectBgm, stopBGM } from "../utils/audio";

@@ -213,24 +213,5 @@ export const SCORE_COMBO_MULTIPLIER = {
   MULTIPLIER_MAX: 10,
 } as const;
 
-// コンボ継続タイムボーナス
-export const COMBO_TIME_BONUS = {
-  // 初期ボーナス値
-  INIT_BONUS_SEC: 0,
-
-  // ボーナスが発生する間隔
-  INTERVAL_LEVEL_1: 20, // 20コンボごと
-  INTERVAL_LEVEL_2: 25, // 25コンボごと
-  INTERVAL_LEVEL_3: 30, // 30コンボごと
-
-  // ここまで到達したらの閾値
-  THRESHOLDS_LEVEL_1: 100, // 100コンボ
-  THRESHOLDS_LEVEL_2: 200, // 200コンボ
-
-  // タイムボーナス加算量
-  BONUS_BASE_SEC: 1,
-  BONUS_MID_SEC: 3,
-  BONUS_MAX_SEC: 5,
-} as const;
 
 

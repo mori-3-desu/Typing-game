@@ -1,10 +1,12 @@
 import { useEffect, useEffectEvent, useRef } from "react";
 
 import {
-  type DifficultyLevel,
   type GameResultStats,
-  type GameState,
   type PlayPhase,
+} from "../features/typing-game/types";
+import {
+  type DifficultyLevel,
+  type GameState,
 } from "../types";
 import { playBGM, playSE } from "../utils/audio";
 import { DIFFICULTY_SETTINGS } from "../utils/constants";

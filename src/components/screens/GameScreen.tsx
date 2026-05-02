@@ -1,10 +1,10 @@
-import {
-  type DifficultyLevel,
-  type RomaState,
-  type ScorePopup,
-  type Segment,
-  type TimePopup,
-} from "../../types";
+import type { Segment } from "../../features/typing-game/logic/segment";
+import type {
+  RomaState,
+  ScorePopup,
+  TimePopup,
+} from "../../features/typing-game/types";
+import { type DifficultyLevel } from "../../types";
 
 type Props = {
   gameState: "playing" | "finishing";

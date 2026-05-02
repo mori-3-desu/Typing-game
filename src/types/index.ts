@@ -32,42 +32,6 @@ export type DifficultyConfig = {
   isEnglish?: boolean; // EXTRAのみ付与
 };
 
-// ---------------------------------------------------------
-// 1. 純粋な「成績データ」だけの型を作る
-// ---------------------------------------------------------
-export type GameStats = {
-  score: number;
-  completedWords: number;
-  correctCount: number;
-  missCount: number;
-  backspaceCount: number;
-  maxCombo: number;
-  currentSpeed: number;
-  rank: string;
-  missedWordsRecord: { word: string; misses: number }[];
-  missedCharsRecord: { [key: string]: number };
-  jpText: string;
-  currentWordMiss: number;
-};
-
-// ---------------------------------------------------------
-// 2. フックが受け取る「引数全体」の型
-//    (ここに GameStats を 'currentStats' として含める)
-// ---------------------------------------------------------
-export type GameControlProps = {
-  // ▼ 制御系 (State, Function)
-  gameState: GameState;
-  playPhase: PlayPhase;
-  difficulty: DifficultyLevel;
-  timeLeft: number;
-  tick: (amount: number) => void;
-  setGameState: (state: GameState) => void;
-  processResult: (stats: GameResultStats) => void;
-
-  // ▼ データ系 (さっき作った型をここで使う！)
-  currentStats: GameStats;
-};
-
 // Spring Boot API の POST /api/scores が受け取る形式（ScoreRequest.java と対応）
 export type ScoreRequestBody = {
   name: string;
@@ -101,31 +65,6 @@ export type WordRow = {
   roma: string;
 };
 
-export type WeakWord = {
-  word: string;
-  misses: number;
-};
-
-// ■ ゲーム結果・履歴データ
-export type GameResultStats = {
-  score: number;
-  words: number;
-  correct: number;
-  miss: number;
-  backspace: number;
-  combo: number;
-  speed: number;
-  rank: string;
-  weakWords: WeakWord[];
-  weakKeys: { [key: string]: number };
-};
-
-// 単語データ
-export type MissedWord = { word: string; misses: number };
-
-// ログ用
-export type TypedLog = { char: string; color: string };
-
 // ■ ゲーム全体の進行状態
 export type GameState =
   | "loading"
@@ -136,23 +75,7 @@ export type GameState =
   | "result"
   | "hiscore_review";
 
-// ■ プレイ中のフェーズ
-export type PlayPhase = "ready" | "go" | "game";
-
-// ローマ字入力の状態管理
-export type RomaState = {
-  typedLog: TypedLog[];
-  current: string;
-  remaining: string;
-};
-
-// 文字の分解セグメント（"ち" -> "ti" or "chi" の管理用）
-export type Segment = {
-  display: string;
-  inputBuffer: string;
-};
-
-// ポップアップ系
+// TODO: 未使用の可能性あり、削除前に要確認 (BonusPopup / Popup)
 export type BonusPopup = {
   id: number;
   text: string;
@@ -161,21 +84,12 @@ export type BonusPopup = {
 
 export type Popup = BonusPopup;
 
-export type ScorePopup = {
-  id: number;
-  text: string;
-  type: "popup-normal" | "popup-gold" | "popup-rainbow" | "popup-miss";
-};
-
-export type TimePopup = {
-  id: number;
-  text: string;
-  isLarge: boolean;
-};
-
-export type PerfectPopup = { id: number };
-
 export type Word = { readonly jp: string; readonly roma: string }; // 基本の型
 export type WordList = ReadonlyArray<Word>; // ArrayPrototypeしようするために分けてある
 export type WordDataMap = Readonly<Record<DifficultyLevel, WordList>>; // 公開用、変更不可にする
-export type MutableWordDataMap = Record<DifficultyLevel, Word[]> // データ整形用
+export type MutableWordDataMap = Record<DifficultyLevel, Word[]>; // データ整形用
+
+// typing-game feature 内で完結する型は features/typing-game/types/ に移動済み
+// (PlayPhase, MissedWord, WeakWord, GameStats, GameResultStats, GameControlProps,
+//  TypedLog, RomaState, ScorePopup/ScorePopupType, TimePopup, PerfectPopup)
+// Segment は logic/segment.ts のクラスが本物。型重複を解消し削除。

@@ -1204,13 +1204,7 @@ background-clip: text;
   - 他にも設計を見直す箇所(onClickScreenの箇所)、ラッパーコンポーネントに切り出せる等があるが優先度は低いと判断
 ---
 
-### P1 — 中期対応
-
-#### ② useGameKeyHandler — resultSkipCoolDown タイマーの追跡化
- ### 2026.4.2 完了
- - clearTimerが増えたらReact.RefObjectを検討します
-
-#### ③ E2Eテスト導入（Playwright）
+#### E2Eテスト導入（Playwright）
 
 現状はゲームロジックの単体テストのみです。主要導線をカバーするE2Eテストを整備し、リグレッションを自動で検知できる体制を構築します。
 
@@ -1223,36 +1217,19 @@ background-clip: text;
 
 - フォルダとファイル分けを行うので優先度を下げます(useTypingGame.ts等)
 
-#### ④ CI整備（GitHub Actions）
-### 2026.4.3 完了
-
-#### ⑤ A11y 基礎改善
-
-モーダルの `role` 属性・`aria-*` 属性・フォーカストラップを整備する。
-モーダル共通化で対応(フォーカストラップ)
-- TitleScreen.tsx(2026.4.3)
-- Difficulty.tsx(2026.4.15)
-- GameScreen.tsx(2026.4.3)
-- Setting.tsx(2026.4.4)
-- HowToPlay.tsx(2026.4.4)
-- Ranking.tsx(2026.4.4)
-- ResultScreen.tsx(2026.4.4)
-- inert対応(2026.4.15)
-
 #### ⑥ リファクタリング（dead code 削除・共通化）
 
 App.tsx 分割と並行して、使われていないコードの削除と重複処理の共通化を進めます。
 分割の過程でコードの全体像が見えやすくなるため、そのタイミングで整理するのが効率的と判断しています。
 
 useTypinggameのロジックフォルダ作成しさらに分割
+- 現時点で及第点まで分割は完了(2026.5.2)
 
 #### ⑦ CSS の id → class への統一
 
 現状、CSS のスタイル適用が `id` セレクタと `class` セレクタに混在しています。
 `id` はページ内に1つしか存在できない前提のため、再利用性がなく保守性が低下します。
 `class` に統一することで、スタイルの再利用性と保守性を高めていきます。
-
----
 
 ### P2 — 長期対応
 
@@ -1326,3 +1303,4 @@ const createInitialState = (): ConfigState => {
 - interfaceの責務を分離
   - 次に検討箇所を修正
   - バリデーション追加がいいですね
+- segmentを直接いじれないようにクラス設計の見直し

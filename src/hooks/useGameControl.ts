@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { calculateFinalStats } from "../features/typing-game/logic/gameState";
-import { type GameControlProps, type GameResultStats } from "../types";
+import {
+  type GameControlProps,
+  type GameResultStats,
+} from "../features/typing-game/types";
 import { playSE, stopBGM } from "../utils/audio";
 import { UI_TIMINGS } from "../utils/constants";
 
