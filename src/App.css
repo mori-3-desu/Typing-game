@@ -1190,19 +1190,19 @@ body {
   left: 15.5px;
   width: 305px;
   height: 320px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  display: grid;
+  place-items: center;
 
-.tmr-img {
-  position: absolute;
-  width: 100%;
-  height: auto;
+  & .tmr-img {
+    position: absolute;
+    width: 100%;
+    height: auto;
+  }
 }
 
 .tmr-text {
   --shadow-color: var(--color-aquablue);
+  --theme-color: rgba(95, 234, 255, 1);
   position: relative;
   right: -2.5px;
   bottom: -8px;
@@ -1210,7 +1210,7 @@ body {
   font-size: 75px;
   font-weight: bold;
   letter-spacing: 5px;
-  color: rgba(95, 234, 255, 1);
+  color: var(--theme-color);
   text-shadow:
     -2px -2px 0 var(--color-white),
     2px 2px 0 var(--color-white),
@@ -1222,35 +1222,31 @@ body {
     transform 0.2s,
     color 0.2s,
     text-shadow 0.2s;
-}
 
-/* 演出アニメーション */
-.tmr-text.time-plus {
-  /* ③ 上書きしたい時だけ、変の中身を入れ替える */
-  --shadow-color: var(--color-green);
+  &.time-plus {
+    /* ③ 上書きしたい時だけ、変の中身を入れ替える */
+    --shadow-color: var(--color-green);
 
-  /* テキスト自体の色も変えるなら */
-  color: var(--color-green);
-  transform: scale(1.3);
-}
+    /* テキスト自体の色も変えるなら */
+    --theme-color: var(--color-green);
+    transform: scale(1.3);
+  }
 
-/* ピンチ（残り時間わずか） */
-.tmr-text.timer-pinch {
-  /* ① 影の色変数を「ピンク」に上書き */
-  /* これだけで、親で定義した text-shadow の 3番目の色が入れ替わる */
-  --shadow-color: #ff9eb5;
-
-  /* ② 文字色を「赤」に変更 */
-  color: rgba(255, 36, 113, 1);
-
-  /* ③ アニメーション */
-  animation: blink 0.8s infinite alternate;
-}
-
-/* 終了時 (0秒) */
-.tmr-text.timer-zero {
-  color: rgba(255, 36, 113, 1);
-  --shadow-color: #ff9eb5; /* 影も赤系に */
+  /**
+   * @description ピンチ/終了時の共通テーマ設定
+   * @note こちらは色分けのメリットが薄いので共通化。分離時は各クラスへ切り出し
+   */
+  &.timer-pinch,
+  &.timer-zero {
+    /* ① 影の色変数を「ピンク」に上書き */
+    /* これだけで、親で定義した text-shadow の 3番目の色が入れ替わる */
+    --shadow-color: #ff9eb5;
+    --theme-color: rgba(255, 36, 113, 1);
+  }
+  
+  &.timer-pinch {
+    animation: blink 0.8s infinite alternate;
+  }
 }
 
 .bonus-pop {
@@ -1261,34 +1257,34 @@ body {
   pointer-events: none;
   white-space: nowrap;
   animation: popUpFade 1s ease-out forwards;
-}
+  
+  &.normal {
+    font-size: 25px;
+    color: var(--color-green);
+    text-shadow:
+      1px 1px 0 var(--color-gold),
+      0 0 5px var(--color-orange),
+      2px 2px 5px rgba(237, 146, 255, 0.5);
+  }
 
-.bonus-pop.normal {
-  font-size: 25px;
-  color: var(--color-green);
-  text-shadow:
-    1px 1px 0 var(--color-gold),
-    0 0 5px var(--color-orange),
-    2px 2px 5px rgba(237, 146, 255, 0.5);
-}
-
-.bonus-pop.large {
-  font-size: 45px;
-  top: 200px;
-  background: linear-gradient(180deg, #ffea00 0%, #ff0099 50%, #00e5ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-stroke: 2px var(--color-white);
-  filter: drop-shadow(4px 4px 0px var(--color-black));
+  &.large {
+    font-size: 45px;
+    top: 200px;
+    background: linear-gradient(180deg, #ffea00 0%, #ff0099 50%, #00e5ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--color-white);
+    filter: drop-shadow(4px 4px 0px var(--color-black));
+  }
 }
 
 @keyframes blink {
-  0% {
+  from {
     opacity: 1;
     transform: scale(1);
   }
-  100% {
+  to {
     opacity: 1;
     transform: scale(1.1);
   }
@@ -1313,14 +1309,11 @@ body {
 /* お題ノーミス時PEAFECT演出 */
 .perfect-item {
   position: absolute;
-  overflow: visible;
-  pointer-events: none;
   top: 160px;
   left: 172px;
   white-space: nowrap;
-  font-family: "Mochiy Pop P One", sans-serif;
-  font-size: 35px;
-  font-weight: 900;
+  font-size: 45px;
+  font-weight: 600;
   background: linear-gradient(180deg, #fff700 0%, #ff8800 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1334,10 +1327,7 @@ body {
     opacity: 0;
     transform: translate(-50%, 30px);
   }
-  20% {
-    opacity: 1;
-  }
-  50% {
+  20%, 50% {
     opacity: 1;
   }
   100% {
