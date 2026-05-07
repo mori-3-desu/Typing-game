@@ -45,7 +45,6 @@ export const Setting = ({
   onSaveName,
   onClose,
 }: Props) => {
-
   useEscapekey(onClose);
   return (
     <div className="config-overlay" onClick={onClose}>
@@ -139,17 +138,16 @@ export const Setting = ({
               step="0.05"
               value={seVol}
               onValueChange={setSeVol}
-              onPointerUp={() => {playSE("decision");
+              onPointerUp={() => {
+                playSE("decision");
               }}
               disabled={isMuted}
             />
           </div>
 
-          <div className="config-buttons" style={{ marginTop: "30px" }}>
-            <SoundBtn className="pop-btn primary" onClick={onClose}>
-              閉じる
-            </SoundBtn>
-          </div>
+          <SoundBtn className="setting-btn" onClick={onClose}>
+            閉じる
+          </SoundBtn>
         </div>
       </div>
     </div>

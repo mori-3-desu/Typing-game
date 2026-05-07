@@ -20,6 +20,7 @@ import {
 } from "./features/typing-game/logic/gameState";
 import type { GameResultStats, PlayPhase } from "./features/typing-game/types";
 import { getShareUrl } from "./features/typing-game/utils/shareLink";
+import { useHandoffModal } from "./features/handoff/hooks/useHandoffModal";
 import { useAppInit } from "./hooks/useAppInit";
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";
@@ -31,17 +32,15 @@ import { useSaveName } from "./hooks/useSaveName";
 import { useScreenRouter } from "./hooks/useScreenRouter";
 import { useTitleFlow } from "./hooks/useTitleFlow";
 import { ScoreService } from "./services/scoreService";
-import type {
-  DifficultyLevel,
-  GameState,
-  TitlePhase,
-} from "./types";
+import type { DifficultyLevel, GameState, TitlePhase } from "./types";
 import { playSE } from "./utils/audio";
 import {
   ALL_BACKGROUNDSDATA,
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
+import { HandoffModalButton } from "./features/handoff/components/HandoffModalButton";
+import { HandoffModal } from "./features/handoff/components/HandoffModal";
 
 function App() {
   const {
@@ -81,6 +80,7 @@ function App() {
 
   const { ngWordsList, dbWordData } = useAppInit();
   const { userId, isLoading, error } = useAuth();
+  const handoffModal = useHandoffModal();
 
   const {
     score,
@@ -378,7 +378,9 @@ function App() {
                     handleNameSubmit={handleNameSubmit}
                     handleBackToInput={handleBackToInput}
                     handleFinalConfirm={handleFinalConfirm}
-                  />
+                  >
+                    <HandoffModalButton onClick={handoffModal.open} />
+                  </TitleScreen>
                 )}
 
                 {gameState === "difficulty" && (
@@ -477,6 +479,7 @@ function App() {
             onClose={handleCloseConfig}
           />
         )}
+        {handoffModal.isOpen && <HandoffModal onClose={handoffModal.close} />}
       </ScalerWrapper>
       <BrightnessOverlay brightness={brightness} />
     </div>

@@ -159,9 +159,11 @@ export const LIMIT_DATA = {
 // localStorage保存データ
 export const STORAGE_KEYS = {
   PLAYER_NAME: "typing_player_name",
+  USER_ID: "typing_user_id",
   HISCORE_REGISTER: "typing_hiscore_",
   HISCORE_DATA_REGISTER: "typing_hiscore_data_",
   SETTINGS: "typing_settings",
+  REFRESH_TOKEN: "typing_refresh_token"
 } as const;
 
 // 判定の色

@@ -1,11 +1,8 @@
 import type { Dispatch, SetStateAction } from "react";
 
-import type { GameState,TitlePhase } from "../types";
+import type { GameState, TitlePhase } from "../types";
 import { startSelectBgm } from "../utils/audio";
-import {
-  PLAYER_NAME_CHARS,
-  UI_TIMINGS,
-} from "../utils/constants";
+import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../utils/constants";
 
 type UseTitleParams = {
   isInputLocked: boolean;
@@ -106,25 +103,11 @@ export const useTitleFlow = ({
     setTitlePhase("normal");
   };
 
-  const handleBackToInput = () => {
-    setTitlePhase("input");
-  };
-
-  const handleOpenConfig = () => {
-    setShowConfig(true);
-  };
-
-  const handleCloseConfig = () => {
-    setShowConfig(false);
-  };
-
-  const handleOpenHowToPlay = () => {
-    setShowHowToPlay(true);
-  };
-
-  const handleCloseHowToPlay = () => {
-    setShowHowToPlay(false);
-  };
+  const handleBackToInput = () => setTitlePhase("input");
+  const handleOpenConfig = () => setShowConfig(true);
+  const handleCloseConfig = () => setShowConfig(false);
+  const handleOpenHowToPlay = () => setShowHowToPlay(true);
+  const handleCloseHowToPlay = () => setShowHowToPlay(false);
 
   return {
     handleStartSequence,
