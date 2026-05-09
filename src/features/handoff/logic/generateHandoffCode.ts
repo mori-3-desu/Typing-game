@@ -1,6 +1,6 @@
 const HANDOFF_VERSION = 1;
 
-type HandoffData = {
+export type HandoffData = {
   uuid: string | null;
   refreshToken: string | null;
   name: string | null;
