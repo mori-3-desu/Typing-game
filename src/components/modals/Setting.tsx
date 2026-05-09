@@ -1,5 +1,6 @@
 import { Slider } from "../../common/Slider";
 import { SoundBtn } from "../../common/SoundBtn";
+import { useEscapekey } from "../../hooks/useEscapeKey";
 import { playSE } from "../../utils/audio";
 import { PlayerNameEditor } from "./PlayerNameEditor";
 
@@ -44,6 +45,7 @@ export const Setting = ({
   onSaveName,
   onClose,
 }: Props) => {
+  useEscapekey(onClose);
   return (
     <div className="config-overlay" onClick={onClose}>
       <div
@@ -137,17 +139,15 @@ export const Setting = ({
               value={seVol}
               onValueChange={setSeVol}
               onPointerUp={() => {
-                if (!isMuted) playSE("decision");
+                playSE("decision");
               }}
               disabled={isMuted}
             />
           </div>
 
-          <div className="config-buttons" style={{ marginTop: "30px" }}>
-            <SoundBtn className="pop-btn primary" onClick={onClose}>
-              閉じる
-            </SoundBtn>
-          </div>
+          <SoundBtn className="setting-btn" onClick={onClose}>
+            閉じる
+          </SoundBtn>
         </div>
       </div>
     </div>

@@ -37,7 +37,7 @@ export const DIFFICULTY_SETTINGS: Record<DifficultyLevel, DifficultyConfig> = {
   },
   EXTRA: {
     bg: "/images/extra.webp",
-    time: 15,
+    time: 150,
     chars: "特殊",
     text: "プログラミング用語や英語等なんでも出てきます\n※␣は空文字です!\n※CAPS LOCK等のボタンも反応します",
     bgm: "/bgm/ぽかぽか日和.mp3",
@@ -159,9 +159,11 @@ export const LIMIT_DATA = {
 // localStorage保存データ
 export const STORAGE_KEYS = {
   PLAYER_NAME: "typing_player_name",
+  USER_ID: "typing_user_id",
   HISCORE_REGISTER: "typing_hiscore_",
   HISCORE_DATA_REGISTER: "typing_hiscore_data_",
   SETTINGS: "typing_settings",
+  REFRESH_TOKEN: "typing_refresh_token"
 } as const;
 
 // 判定の色
@@ -178,7 +180,7 @@ export const UI_ANIMATION_CONFIG = {
   MISS_DURATION_MS: 200, // ミスタイプ時の揺らす演出
   NO_ALLGREEN_DURATION_MS: 400, // ミスが含まれている状態で最後まで入力された時の揺らす演出
   SCORE_FLUCTUATION_MS: 16, // スコア増減の演出(ダイヤル式、60FPS基準)
-  SCORE_EASING: 5, // スコア増減の速さ(ダイヤルの速さ)
+  SCORE_DECAY_MS: 100, // スコア増減の速さ(ダイヤルの速さ)
 } as const;
 
 // 連打メーターの設定値
@@ -199,19 +201,6 @@ export const SCORE_CONFIG = {
   BACKSPACE_PENALTY: 1000, // バックスペース時の減点ポイント
 } as const;
 
-// スコア増加量によって変わる演出
-export const SCORE_DIRECTION = {
-  PENALTY: 0, // 0点以下(useTypingGame.tsで条件をPENALTY > または < PENALTYと書く)
-  GOLD: 1000,
-  RAINBOW: 10000,
-} as const;
-
-// コンボに応じたクラス
-export const COMBO_THRESHOLDS = {
-  GOLD: 100,
-  RAINBOW: 200,
-} as const;
-
 // コンボ数によるスコア倍率
 export const SCORE_COMBO_MULTIPLIER = {
   // ここまで到達したらの閾値(コンボ)
@@ -226,31 +215,5 @@ export const SCORE_COMBO_MULTIPLIER = {
   MULTIPLIER_MAX: 10,
 } as const;
 
-// コンボ継続タイムボーナス
-export const COMBO_TIME_BONUS = {
-  // 初期ボーナス値
-  INIT_BONUS_SEC: 0,
 
-  // ボーナスが発生する間隔
-  INTERVAL_LEVEL_1: 20, // 20コンボごと
-  INTERVAL_LEVEL_2: 25, // 25コンボごと
-  INTERVAL_LEVEL_3: 30, // 30コンボごと
 
-  // ここまで到達したらの閾値
-  THRESHOLDS_LEVEL_1: 100, // 100コンボ
-  THRESHOLDS_LEVEL_2: 200, // 200コンボ
-
-  // タイムボーナス加算量
-  BONUS_BASE_SEC: 1,
-  BONUS_MID_SEC: 3,
-  BONUS_MAX_SEC: 5,
-} as const;
-
-// ランク基準
-export const RANK_THRESHOLDS = {
-  // ミスなく継続すれば比較的簡単に到達するのでランク追加したりで調整予定
-  EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
-  NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
-  HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
-  EXTRA: { S: 1500000, A: 1000000, B: 750000, C: 400000},
-} as const;

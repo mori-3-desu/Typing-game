@@ -1,7 +1,8 @@
 // 規模が多くなったらファイル分けを検討
 import { useEffect, useRef } from "react"; // useCallbackは削除
 
-import { type GameState, type PlayPhase } from "../../types";
+import { type PlayPhase } from "../../features/typing-game/types";
+import { type GameState } from "../../types";
 import { drawGoAnimation, drawReadyAnimation } from "../../utils/canvas";
 import { DISPLAY_SCALE, READY_GO_ANIMATION } from "../../utils/constants";
 
@@ -138,10 +139,7 @@ export const GameCanvas = ({ gameState, playPhase }: Props) => {
   return (
     <canvas
       ref={canvasRef}
-      id="myCanvas"
-      className={
-        gameState === "playing" || gameState === "finishing" ? "" : "hidden"
-      }
+      className={`my-canvas ${gameState === "playing" || gameState === "finishing" ? "" : "hidden"}`}
       style={{ zIndex: 15, position: "relative", pointerEvents: "none" }}
     />
   );

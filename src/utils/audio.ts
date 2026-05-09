@@ -78,10 +78,6 @@ const loadAudio = async (path: string): Promise<AudioBuffer> => {
   return await audioCtx.decodeAudioData(arrayBuffer);
 };
 
-// -----------------------------------------------------------------------------
-// Exported Functions (外部から使う関数)
-// -----------------------------------------------------------------------------
-
 /**
  * 音量の変更
  */

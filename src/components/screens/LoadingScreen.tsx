@@ -2,7 +2,7 @@ import React from "react";
 
 export const LoadingScreen = () => {
   return (
-    <div id="loading-screen">
+    <div className="loading-screen">
       <div className="keyboard-loader">
         {["L", "O", "A", "D", "I", "N", "G"].map((char, i) => (
           <span

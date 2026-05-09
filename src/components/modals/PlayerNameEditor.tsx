@@ -1,4 +1,4 @@
-import { useId, useRef,useState } from "react";
+import { useId, useRef, useState } from "react";
 
 import { SoundBtn } from "../../common/SoundBtn";
 import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/constants";

@@ -507,6 +507,7 @@ erDiagram
 プロジェクト初期は DOM 操作の基礎理解のため `HTML/CSS/JavaScript` で構築していましたが、DOM 操作が複雑化し、将来機能追加等を行うと管理が大変になるため、**保守性**と**拡張性**を意識して移行しました。
 
 - **保守性:** 生の JS で構築していたが DOM 操作が複雑化し管理が限界になったため `React` へ移行。
+  変更差分を纏めて管理できる(差分計算のステップが増える)
   仮想 DOM による計算ステップが増えるトレードオフはあるが、**宣言的 UI とコンポーネント分割による保守性・拡張性を優先した。**
 
 - **型安全性:** `TypeScript` の型チェックはコンパイル時のみで実行時には効かないが、
@@ -938,7 +939,9 @@ if (isComposingRef.current || e.isComposing || e.keyCode === 229) return;
 
 ### ④ useRanking（`useRanking.ts`）
 
-**requestId パターン（競合状態の防止）**
+<details>
+<summary><strong>旧実装：**requestId パターン（競合状態の防止）**<strong></summary>
+
 
 ```ts
 const isLatest = (id: number) => id === rankingRequestIdRef.current;
@@ -949,8 +952,12 @@ if (!isLatest(requestId)) return;
 
 ランキング取得中に別の難易度に切り替えると、古いリクエストが後から返ってきて画面を上書きする「レース状態」が起きます。
 リクエスト開始時に `ref` をインクリメントして「整理券番号」を発行し、レスポンス受信時に番号が一致するか確認することで**古いレスポンスを無視**します。
+</details>
 
-`AbortController` で通信自体をキャンセルする方法もありますが、今回は古い値を参照して画面を上書きするのを防ぎたいといった問題だったため、実装がシンプルで同等の安全性を得られる`ref`管理を採用しました。
+フロントでSQL書いて更新していた問題をバックエンド経由で行うことで解消したため、通信量削減のために`AbortController` を採用する方針に変更しました。
+リクエストは完走するので通信量は減らせない
+この瞬間まではメモリ上に存在するので非同期のタイミングやバグで一瞬使われてしまう。
+後ほど追記いたします。
 
 ---
 
@@ -1088,6 +1095,8 @@ document.addEventListener("visibilitychange", () => {
 タブが非表示のとき `AudioContext` をサスペンドすることで、**BGM の音声処理による CPU 消費を抑制**しています。
 ブラウザが自動でやる場合もありますが、明示的に制御することで挙動を確実にしています。
 
+requestAnimationFrameも検討
+
 ---
 
 ### ⑧ index.html — 初期描画の最適化
@@ -1195,13 +1204,7 @@ background-clip: text;
   - 他にも設計を見直す箇所(onClickScreenの箇所)、ラッパーコンポーネントに切り出せる等があるが優先度は低いと判断
 ---
 
-### P1 — 中期対応
-
-#### ② useGameKeyHandler — resultSkipCoolDown タイマーの追跡化
- ### 2026.4.2 完了
- - clearTimerが増えたらReact.RefObjectを検討します
-
-#### ③ E2Eテスト導入（Playwright）
+#### E2Eテスト導入（Playwright）
 
 現状はゲームロジックの単体テストのみです。主要導線をカバーするE2Eテストを整備し、リグレッションを自動で検知できる体制を構築します。
 
@@ -1214,32 +1217,19 @@ background-clip: text;
 
 - フォルダとファイル分けを行うので優先度を下げます(useTypingGame.ts等)
 
-#### ④ CI整備（GitHub Actions）
-### 2026.4.3 完了
-
-#### ⑤ A11y 基礎改善
-
-モーダルの `role` 属性・`aria-*` 属性・フォーカストラップを整備する。
-モーダル共通化で対応(フォーカストラップ)
-- TitleScreen.tsx(2026.4.3)
-- GameScreen.tsx(2026.4.3)
-- Setting.tsx(2026.4.4)
-- HowToPlay.tsx(2026.4.4)
-- Ranking.tsx(2026.4.4)
-- ResultScreen.tsx(2026.4.4)
-
 #### ⑥ リファクタリング（dead code 削除・共通化）
 
 App.tsx 分割と並行して、使われていないコードの削除と重複処理の共通化を進めます。
 分割の過程でコードの全体像が見えやすくなるため、そのタイミングで整理するのが効率的と判断しています。
+
+useTypinggameのロジックフォルダ作成しさらに分割
+- 現時点で及第点まで分割は完了(2026.5.2)
 
 #### ⑦ CSS の id → class への統一
 
 現状、CSS のスタイル適用が `id` セレクタと `class` セレクタに混在しています。
 `id` はページ内に1つしか存在できない前提のため、再利用性がなく保守性が低下します。
 `class` に統一することで、スタイルの再利用性と保守性を高めていきます。
-
----
 
 ### P2 — 長期対応
 
@@ -1310,3 +1300,7 @@ const createInitialState = (): ConfigState => {
   }, []);
 ```
 - Ranting.tsx、ResultScreen.tsx設計を見直す。
+- interfaceの責務を分離
+  - 次に検討箇所を修正
+  - バリデーション追加がいいですね
+- segmentを直接いじれないようにクラス設計の見直し

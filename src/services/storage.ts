@@ -4,6 +4,7 @@ export const storage = {
   get<T>(key: string, parse: (raw: string) => T): T | null {
     const raw = localStorage.getItem(key);
     if (raw === null) return null;
+
     try {
       return parse(raw);
     } catch {
@@ -11,6 +12,10 @@ export const storage = {
       localStorage.removeItem(key);
       return null;
     }
+  },
+
+  getString(key: string): string | null {
+    return localStorage.getItem(key);
   },
 
   set(key: string, value: string): void {

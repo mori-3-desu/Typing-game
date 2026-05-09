@@ -1,9 +1,9 @@
 import { SoundBtn } from "../../common/SoundBtn";
-import {
-  type DifficultyLevel,
-  type GameResultStats,
-  type WeakWord,
-} from "../../types";
+import type {
+  GameResultStats,
+  WeakWord,
+} from "../../features/typing-game/types";
+import { type DifficultyLevel } from "../../types";
 import { LIMIT_DATA } from "../../utils/constants";
 
 type Props = {

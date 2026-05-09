@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { type GameControlProps, type GameResultStats } from "../types";
+import { calculateFinalStats } from "../features/typing-game/logic/gameState";
+import {
+  type GameControlProps,
+  type GameResultStats,
+} from "../features/typing-game/types";
 import { playSE, stopBGM } from "../utils/audio";
 import { UI_TIMINGS } from "../utils/constants";
-import { calculateFinalStats } from "../utils/gameUtils";
 
 const {
   TIMER_DECREMENT,
@@ -72,7 +75,6 @@ export const useGameControl = (props: GameControlProps) => {
     setLastGameStats(finalStats);
     proc(finalStats);
     setGameState("finishing");
-
   }, [setGameState, setLastGameStats]);
 
   // timeLeftを参照していたが、再実行するたびにintervalを作るためにintervalを消し続けるという無駄が発生していた
@@ -127,7 +129,6 @@ export const useGameControl = (props: GameControlProps) => {
       }
       return;
     }
-
   }, [gameState, playPhase, timeLeft, tick, handleGameFinish]);
 
   useEffect(() => {

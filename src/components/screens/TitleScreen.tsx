@@ -1,4 +1,4 @@
-import React from "react";
+import React, { type ReactNode } from "react";
 
 import { SoundBtn } from "../../common/SoundBtn";
 import { type TitlePhase } from "../../types";
@@ -17,6 +17,7 @@ type TitleScreenProps = {
   setNameError: (error: string) => void;
 
   // アクション系（関数）
+  children?: ReactNode;
   handleStartSequence: () => void;
   handleOpenHowToPlay: () => void;
   handleOpenConfig: () => void;
@@ -36,6 +37,7 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   setPlayerName,
   nameError,
   setNameError,
+  children,
   handleStartSequence,
   handleOpenHowToPlay,
   handleOpenConfig,
@@ -46,6 +48,15 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
 }) => {
   return (
     <div className={"title-screen"}>
+      <div
+        className={`handoff-position fade-element ${
+          showTitle ? "visible" : ""
+        } ${titlePhase !== "normal" || isTitleExiting ? "exit-fade" : ""}
+            ${!enableBounce ? "no-click" : ""}`}
+      >
+        {children}
+      </div>
+
       <div
         className={`title-content-wrapper ${
           titlePhase !== "normal" ? "exit" : "enter"
@@ -185,9 +196,9 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             <br />
             よろしいですか？
           </p>
-          
+
           <div className="confirm-name-disp">{playerName}</div>
-          
+
           <div>
             <SoundBtn className="pop-btn primary" onClick={handleFinalConfirm}>
               はい

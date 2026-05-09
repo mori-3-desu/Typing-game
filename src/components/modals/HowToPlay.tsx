@@ -1,6 +1,7 @@
-import type { FC } from "react";
+import { type FC } from "react";
 
 import { SoundBtn } from "../../common/SoundBtn";
+import { useEscapekey } from "../../hooks/useEscapeKey";
 
 type Props = {
   onClose: () => void;
@@ -14,8 +15,10 @@ const KEY_GUIDE_DATA = [
 ];
 
 export const HowToPlay: FC<Props> = ({ onClose }) => {
+  useEscapekey(onClose);
+
   return (
-    <div className="config-overlay" onClick={onClose}>
+    <div className="config-overlay">
       <div
         className="config-modal how-to-modal"
         role="dialog"

@@ -1,9 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+import { useTypingGame } from "../../features/typing-game/hooks/useTypingGame";
 import { type WordDataMap } from "../../types";
 import { GAUGE_CONFIG } from "../../utils/constants";
-import { useTypingGame } from "../useTypingGame";
 
 vi.mock("../../utils/audio", () => ({
   initAudio: vi.fn(),
@@ -24,6 +24,7 @@ describe("ゲージのレベルアップ仕様のテスト", () => {
     ],
     NORMAL: [],
     HARD: [],
+    EXTRA: [],
   };
 
   // ヘルパー関数: 指定回数だけキー入力をシミュレートする

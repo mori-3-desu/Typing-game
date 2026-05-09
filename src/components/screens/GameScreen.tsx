@@ -1,11 +1,10 @@
-import {
-  type DifficultyLevel,
-  type Popup,
-  type RomaState,
-  type ScorePopup,
-  type Segment,
-  type TimePopup,
-} from "../../types";
+import type { Segment } from "../../features/typing-game/logic/segment";
+import type {
+  RomaState,
+  ScorePopup,
+  TimePopup,
+} from "../../features/typing-game/types";
+import { type DifficultyLevel } from "../../types";
 
 type Props = {
   gameState: "playing" | "finishing";
@@ -25,7 +24,6 @@ type Props = {
   allSegments: Segment[];
   shakeStatus: string;
   rank: string;
-  bonusPopups: Popup[];
   perfectPopups: { id: number }[];
   scorePopups: ScorePopup[];
   timePopups: TimePopup[];
@@ -76,7 +74,6 @@ export const GameScreen = ({
   allSegments,
   shakeStatus,
   rank,
-  bonusPopups,
   perfectPopups,
   scorePopups,
   timePopups,
@@ -86,7 +83,7 @@ export const GameScreen = ({
   if (playPhase === "ready") return null;
 
   return (
-    <div id="game-hud" style={{ zIndex: 10 }}>
+    <div className="game-hud" style={{ zIndex: 10 }}>
       {playPhase === "game" && gameState !== "finishing" && (
         <div
           className="blink-guide"
@@ -190,11 +187,6 @@ export const GameScreen = ({
           </div>
         </div>
 
-        {bonusPopups.map((p) => (
-          <div key={p.id} className={`bonus-pop ${p.type}`}>
-            {p.text}
-          </div>
-        ))}
         <div className={`rank-monitor rank-${rank.toLowerCase()}`}>
           RANK <span className="rank-value">{rank}</span>
         </div>
@@ -212,11 +204,10 @@ export const GameScreen = ({
         </div>
       </div>
 
-      <div id="tmr-box">
-        <img src="/images/cloud.webp" id="tmr-img" alt="雲" />
+      <div className="tmr-box">
+        <img src="/images/cloud.webp" className="tmr-img" alt="雲" />
         <span
-          id="tmr-text"
-          className={gameTimerClass(timeLeft, timePopups.length > 0)}
+          className={`tmr-text ${gameTimerClass(timeLeft, timePopups.length > 0)}`}
         >
           {Math.ceil(timeLeft)}
         </span>
