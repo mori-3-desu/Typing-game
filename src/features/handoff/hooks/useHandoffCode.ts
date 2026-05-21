@@ -1,7 +1,8 @@
 import { useCallback, useState } from "react";
-import { buildHandoffCode } from "../logic/generateHandoffCode";
+
 import { storage } from "../../../services/storage";
 import { STORAGE_KEYS } from "../../../utils/constants";
+import { buildHandoffCode } from "../logic/generateHandoffCode";
 
 // 優先度は低いがメッセージがタイムアウトで消えるように設計する。
 export const useHandoffCode = () => {

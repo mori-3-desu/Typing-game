@@ -1,15 +1,15 @@
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { SoundBtn } from "../../common/SoundBtn";
 import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../../utils/constants";
 
 type Props = {
   playerName: string;
-  ngWordsList: string[];
-  onSaveName: (newName: string) => void;
+  onSaveName: (newName: string) => Promise<void>;
 };
 
-const validateName = (name: string, ngWordsList: string[]): string | null => {
+// 長さ・空文字のみクライアントで即時チェック。NGワード判定はサーバー(PATCH)に任せる。
+const validateName = (name: string): string | null => {
   if (!name) {
     return "名前を入力してください";
   }
@@ -18,28 +18,26 @@ const validateName = (name: string, ngWordsList: string[]): string | null => {
     return `名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`;
   }
 
-  const isNg = ngWordsList.some((word) =>
-    name.toLowerCase().includes(word.toLowerCase()),
-  );
-
-  if (isNg) {
-    return "不適切な文字が含まれています";
-  }
-
   return null;
 };
 
-export const PlayerNameEditor = ({
-  playerName,
-  ngWordsList,
-  onSaveName,
-}: Props) => {
+export const PlayerNameEditor = ({ playerName, onSaveName }: Props) => {
   const [tempPlayerName, setTempPlayerName] = useState(playerName);
   const [nameError, setNameError] = useState("");
   const [savedMessage, setSavedMessage] = useState("");
   const coolDownTimerRef = useRef<number | null>(null);
   const isNameChangeRef = useRef(false);
+  const isMountedRef = useRef(true);
   const nameInputId = useId();
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (coolDownTimerRef.current) {
+        clearTimeout(coolDownTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleTempNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTempPlayerName(e.currentTarget.value);
@@ -63,23 +61,35 @@ export const PlayerNameEditor = ({
     }, UI_TIMINGS.MESSAGE_AUTO_CLOSE);
   };
 
-  const handleNameChange = () => {
+  // 検証付き mutation は onSaveName(PATCH /api/scores/name)に集約。
+  // NG ワード等で失敗したら throw されるので、その message を表示する。
+  const handleNameChange = async () => {
     if (isNameChangeRef.current) return;
     isNameChangeRef.current = true;
 
     const trimmedName = tempPlayerName.trim();
-    const errorMessage = validateName(trimmedName, ngWordsList);
-
+    const errorMessage = validateName(trimmedName);
     if (errorMessage) {
-      // エラーですぐに変更すると名前を保存しましたが出なくなるためfalseにしておく
+      // エラー時はすぐ再操作できるようフラグを戻す
       isNameChangeRef.current = false;
       nameChangeError(errorMessage);
       return;
     }
 
-    onSaveName(trimmedName);
-    setSavedMessage("名前を保存しました！");
+    try {
+      await onSaveName(trimmedName);
+    } catch (error: unknown) {
+      // モーダルが閉じられていたら以降の state 更新はしない
+      if (!isMountedRef.current) return;
+      isNameChangeRef.current = false;
+      nameChangeError(
+        error instanceof Error ? error.message : "名前を変更できませんでした",
+      );
+      return;
+    }
 
+    if (!isMountedRef.current) return;
+    setSavedMessage("名前を保存しました！");
     coolDownTimerRef.current = window.setTimeout(() => {
       setSavedMessage("");
       clearTimer();

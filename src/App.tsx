@@ -13,6 +13,9 @@ import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 import { ScalerWrapper } from "./components/screens/ScalerWrapper";
 import { TitleScreen } from "./components/screens/TitleScreen";
+import { HandoffModal } from "./features/handoff/components/HandoffModal";
+import { HandoffModalButton } from "./features/handoff/components/HandoffModalButton";
+import { useHandoffModal } from "./features/handoff/hooks/useHandoffModal";
 import { useTypingGame } from "./features/typing-game/hooks/useTypingGame";
 import {
   buildDisplayData,
@@ -20,7 +23,6 @@ import {
 } from "./features/typing-game/logic/gameState";
 import type { GameResultStats, PlayPhase } from "./features/typing-game/types";
 import { getShareUrl } from "./features/typing-game/utils/shareLink";
-import { useHandoffModal } from "./features/handoff/hooks/useHandoffModal";
 import { useAppInit } from "./hooks/useAppInit";
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";
@@ -39,8 +41,6 @@ import {
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
-import { HandoffModalButton } from "./features/handoff/components/HandoffModalButton";
-import { HandoffModal } from "./features/handoff/components/HandoffModal";
 
 function App() {
   const {
@@ -78,7 +78,7 @@ function App() {
   const [isTitleExiting, setIsTitleExiting] = useState(false);
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
 
-  const { ngWordsList, dbWordData } = useAppInit();
+  const { dbWordData } = useAppInit();
   const { userId, isLoading, error } = useAuth();
   const handoffModal = useHandoffModal();
 
@@ -190,7 +190,6 @@ function App() {
     isNameConfirmed,
     isTitleExiting,
     playerName,
-    ngWordsList,
     saveName,
     goToDifficulty,
     setIsInputLocked,
@@ -469,7 +468,6 @@ function App() {
             seVol={seVol}
             brightness={brightness}
             showRomaji={showRomaji}
-            ngWordsList={ngWordsList}
             setIsMuted={setIsMuted}
             setBgmVol={setBgmVol}
             setSeVol={setSeVol}

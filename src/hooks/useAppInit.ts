@@ -21,7 +21,6 @@ const preloadImages = () => {
 };
 
 export const useAppInit = () => {
-  const [ngWordsList, setNgWordsList] = useState<string[]>([]);
   const [dbWordData, setDbWordData] = useState<WordDataMap | null>(null);
 
   useEffect(() => {
@@ -30,10 +29,9 @@ export const useAppInit = () => {
     
     const fetchInitialData = async () => {
       try {
-        const { formattedData, ngList } =
+        const { formattedData } =
           await DatabaseService.fetchAllGameData();
         setDbWordData(formattedData);
-        setNgWordsList(ngList);
       } catch (err) {
         console.error("Data fetch error", err);
       }
@@ -43,7 +41,6 @@ export const useAppInit = () => {
   }, []);
 
   return {
-    ngWordsList,
     dbWordData,
   };
 };

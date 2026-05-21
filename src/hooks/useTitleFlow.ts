@@ -1,5 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 
+import { DatabaseService } from "../services/database";
 import type { GameState, TitlePhase } from "../types";
 import { startSelectBgm } from "../utils/audio";
 import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../utils/constants";
@@ -9,9 +10,8 @@ type UseTitleParams = {
   isNameConfirmed: boolean;
   isTitleExiting: boolean;
   playerName: string;
-  ngWordsList: string[];
 
-  saveName: (name: string) => void;
+  saveName: (name: string) => Promise<void>;
   goToDifficulty: () => void;
 
   setIsInputLocked: Dispatch<SetStateAction<boolean>>;
@@ -25,28 +25,11 @@ type UseTitleParams = {
   setShowHowToPlay: Dispatch<SetStateAction<boolean>>;
 };
 
-// 入力された名前のバリデーションチェック
-const validateName = (name: string, ngWordsList: string[]): string | null => {
-  if (name.length > PLAYER_NAME_CHARS.MAX) {
-    return `名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`;
-  }
-
-  const isNg = ngWordsList.some((word) =>
-    name.toLowerCase().includes(word.toLowerCase()),
-  );
-  if (isNg) {
-    return "不適切な文字が含まれています";
-  }
-
-  return null;
-};
-
 export const useTitleFlow = ({
   isInputLocked,
   isNameConfirmed,
   isTitleExiting,
   playerName,
-  ngWordsList,
   saveName,
   goToDifficulty,
   setIsInputLocked,
@@ -80,23 +63,48 @@ export const useTitleFlow = ({
   };
 
   // 実行用(未入力はGuestで始めるようにしている)
-  const handleNameSubmit = () => {
+  const handleNameSubmit = async () => {
     const trimmedName = playerName.trim();
     setNameError("");
 
-    const errorMessage = validateName(trimmedName, ngWordsList);
-
-    if (errorMessage) {
-      setNameError(errorMessage);
+    // 長さはクライアントで即時チェック(サーバーも @Size で担保)
+    if (trimmedName.length > PLAYER_NAME_CHARS.MAX) {
+      setNameError(`名前は${PLAYER_NAME_CHARS.MAX}文字以内で入力してください`);
       return;
     }
 
-    setPlayerName(trimmedName || "Guest");
+    // 未入力は Guest で開始。検証 API は空名を弾く(@NotBlank)ため呼ばない
+    if (trimmedName === "") {
+      setPlayerName("Guest");
+      setTitlePhase("confirm");
+      return;
+    }
+
+    try {
+      const isValid = await DatabaseService.validateUserName(trimmedName);
+      if (!isValid) {
+        setNameError("不適切な文字が含まれています");
+        return;
+      }
+    } catch (error: unknown) {
+      // 検証 API が落ちた場合は安全側に倒して Guest で進める。
+      // 未検証の名前を通すと後続のスコア登録(NG検証あり)で弾かれるため、
+      // 既知の安全値にフォールバックして経路全体を壊さない。
+      console.error("名前検証に失敗しました:", error);
+      setPlayerName("Guest");
+      setTitlePhase("confirm");
+      return;
+    }
+
+    setPlayerName(trimmedName);
     setTitlePhase("confirm");
   };
 
   const handleFinalConfirm = () => {
-    saveName(playerName);
+    // 名前保存は best-effort。失敗してもゲーム進行は止めない
+    saveName(playerName).catch((error: unknown) => {
+      console.error("名前の保存に失敗しました:", error);
+    });
     startSelectBgm();
     setIsNameConfirmed(true);
     setGameState("difficulty");

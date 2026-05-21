@@ -11,7 +11,6 @@ type Props = {
   seVol: number;
   brightness: number;
   showRomaji: boolean;
-  ngWordsList: string[];
 
   setIsMuted: (val: boolean) => void;
   setBgmVol: (val: number) => void;
@@ -19,7 +18,7 @@ type Props = {
   setBrightness: (val: number) => void;
   setShowRomaji: (val: boolean) => void;
 
-  onSaveName: (newName: string) => void;
+  onSaveName: (newName: string) => Promise<void>;
   onClose: () => void;
 };
 
@@ -36,7 +35,6 @@ export const Setting = ({
   seVol,
   brightness,
   showRomaji,
-  ngWordsList,
   setIsMuted,
   setBgmVol,
   setSeVol,
@@ -63,7 +61,6 @@ export const Setting = ({
           {/* 名前変更エリア */}
           <PlayerNameEditor
             playerName={playerName}
-            ngWordsList={ngWordsList}
             onSaveName={onSaveName}
           />
 

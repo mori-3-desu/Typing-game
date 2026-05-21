@@ -21,8 +21,9 @@ function isDifficultyLevel(value: unknown): value is DifficultyLevel {
 
 export const DatabaseService = {
   /**
-   * ゲーム開始時に必要なデータ（単語・NGワード）を一括取得
+   * ゲーム開始時に必要な単語データを取得
    * 取得したデータが正しい形式かチェックしながら格納します
+   * （NGワードはサーバー側に集約。/api/user/name/validate で検証する）
    */
   async fetchAllGameData() {
     // 1. 単語データの取得
@@ -35,12 +36,6 @@ export const DatabaseService = {
     if (!wordsData || wordsData.length === 0) {
       throw new Error("DBから単語データを取得できませんでした。");
     }
-
-    // 2. NGワードの取得
-    const { data: ngData, error: ngError } = await supabase
-      .from("ng_words")
-      .select("word");
-    if (ngError) throw ngError;
 
     // 3. データの整形とバリデーション
     const formattedData: MutableWordDataMap = {
@@ -63,21 +58,16 @@ export const DatabaseService = {
       // ※ ここで 'as DifficultyLevel' は書かないのが作法です
       const cleanLevel = row.difficulty.trim().toUpperCase();
 
-      if (isDifficultyLevel(cleanLevel)) {
-        //  ここに入った瞬間、TypeScriptは
-        // 「cleanLevel はただの string ではなく DifficultyLevel だ」と認識します。
-
-        if (formattedData[cleanLevel]) {
-          formattedData[cleanLevel].push({ jp: cleanJp, roma: cleanRoma });
-        }
-      } else {
+      if (!isDifficultyLevel(cleanLevel)) {
         console.warn(`[Data Skip] 未知のデータ: ${row.difficulty}`);
+        return;
       }
+
+      formattedData[cleanLevel].push({ jp: cleanJp, roma: cleanRoma });
     });
 
     return {
       formattedData,
-      ngList: ngData?.map((item) => item.word) || [],
     };
   },
 
@@ -131,7 +121,7 @@ export const DatabaseService = {
 
     return (await response.json()) as RankingScore[];
   },
-
+  
   /**
    * 全国ランキングを取得
    * 共通ロジック(getScores)を呼び出すだけ
@@ -154,17 +144,47 @@ export const DatabaseService = {
     return this.getScores(difficulty, true, signal);
   },
 
-  /**
-   * ユーザー名の更新
-   * 名前だけを変更したい場合に使用
-   */
-  async updateUserName(newName: string) {
+  async requireSession() {
     const {
       data: { session },
     } = await supabase.auth.getSession();
     if (!session) {
       throw new Error("未ログイン状態では名前を更新出来ません");
     }
+    return session;
+  },
+
+  /**
+   * ユーザー名の登録
+   * DBの登録ではないため、ここでは検証が成功したら200を返す
+   */
+  async validateUserName(initialName: string): Promise<boolean> {
+    const session = await this.requireSession();
+    
+    const response = await fetch(`${API_BASE}/api/user/name/validate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      // バックエンドの NameValidationRequest は name フィールドを期待する
+      body: JSON.stringify({ name: initialName }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`name validate failed: ${response.status}`);
+    }
+
+    const result = (await response.json()) as { valid: boolean };
+    return result.valid;
+  },
+
+  /**
+   * ユーザー名の更新
+   * 名前だけを変更したい場合に使用
+   */
+  async updateUserName(newName: string): Promise<void> {
+    const session = await this.requireSession();
 
     const response = await fetch(`${API_BASE}/api/scores/name`, {
       method: "PATCH",
@@ -176,7 +196,10 @@ export const DatabaseService = {
     });
 
     if (!response.ok) {
-      throw new Error(`newName PATCH failed: ${response.status}`);
+      // サーバーの ApiErrorResponse.message を拾う(NG時は「この名前は使用できません」)。
+      // 呼び出し側はこの message を画面表示にそのまま使う。
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.message ?? "名前の変更に失敗しました");
     }
   },
 };

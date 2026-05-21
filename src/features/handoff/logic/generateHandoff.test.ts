@@ -1,4 +1,5 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect,it } from "vitest";
+
 import { buildHandoffCode, type HandoffData } from "./generateHandoffCode";
 
 // 名前はゲームを開始すれば空文字が入らない設計

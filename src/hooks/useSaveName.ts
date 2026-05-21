@@ -9,27 +9,31 @@ type UseSaveNameParams = {
   setPlayerName: Dispatch<SetStateAction<string>>;
 };
 
-// 未入力時はGuestで始めるようにしている
-// また未入力時はそのままストレージにセットし、通信をカットしている
-// 無駄なリクエストを防ぐためにuserIdチェックは残してある
+// 名前の保存口。タイトル確定と設定画面のリネームで共用する。
+// リモート更新(PATCH)が成功してからローカル(state / localStorage)へ反映する。
+// 失敗時は throw し、名前は一切変更しない（呼び出し側が結果をハンドリングする）。
 export const useSaveName = ({ userId, setPlayerName }: UseSaveNameParams) => {
-  const saveName = (name: string) => {
+  const applyLocally = (name: string) => {
+    setPlayerName(name);
+    storage.set(STORAGE_KEYS.PLAYER_NAME, name);
+  };
+
+  const saveName = async (name: string): Promise<void> => {
+    // 未入力は Guest としてローカルのみ保存(通信カット)
     if (!name) {
-      setPlayerName("Guest");
-      storage.set(STORAGE_KEYS.PLAYER_NAME, "Guest");
+      applyLocally("Guest");
       return;
     }
 
-    setPlayerName(name);
-    storage.set(STORAGE_KEYS.PLAYER_NAME, name);
+    // 認証前はリモート保存できないためローカルのみ
+    if (!userId) {
+      applyLocally(name);
+      return;
+    }
 
-    // userId がない（認証が終わっていない）場合は処理を中断
-    if (!userId) return;
-
-    DatabaseService.updateUserName(name).catch(() => {
-      setPlayerName("Guest");
-      storage.set(STORAGE_KEYS.PLAYER_NAME, "Guest");
-    });
+    // PATCH 成功後にローカル反映。失敗時は throw され、ここから先は通らない
+    await DatabaseService.updateUserName(name);
+    applyLocally(name);
   };
 
   return { saveName };

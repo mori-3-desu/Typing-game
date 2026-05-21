@@ -1,5 +1,4 @@
 const HANDOFF_VERSION = 1;
-
 export type HandoffData = {
   uuid: string | null;
   refreshToken: string | null;
