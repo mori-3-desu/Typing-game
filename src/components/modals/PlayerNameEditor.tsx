@@ -27,12 +27,10 @@ export const PlayerNameEditor = ({ playerName, onSaveName }: Props) => {
   const [savedMessage, setSavedMessage] = useState("");
   const coolDownTimerRef = useRef<number | null>(null);
   const isNameChangeRef = useRef(false);
-  const isMountedRef = useRef(true);
   const nameInputId = useId();
 
   useEffect(() => {
     return () => {
-      isMountedRef.current = false;
       if (coolDownTimerRef.current) {
         clearTimeout(coolDownTimerRef.current);
       }
@@ -79,8 +77,6 @@ export const PlayerNameEditor = ({ playerName, onSaveName }: Props) => {
     try {
       await onSaveName(trimmedName);
     } catch (error: unknown) {
-      // モーダルが閉じられていたら以降の state 更新はしない
-      if (!isMountedRef.current) return;
       isNameChangeRef.current = false;
       nameChangeError(
         error instanceof Error ? error.message : "名前を変更できませんでした",
@@ -88,7 +84,6 @@ export const PlayerNameEditor = ({ playerName, onSaveName }: Props) => {
       return;
     }
 
-    if (!isMountedRef.current) return;
     setSavedMessage("名前を保存しました！");
     coolDownTimerRef.current = window.setTimeout(() => {
       setSavedMessage("");
