@@ -205,10 +205,9 @@ function App() {
 
   const {
     showRanking,
-    rankingData,
+    rankingView,
+    mode,
     isRankingLoading,
-    isDevRankingMode,
-    rankingDataMode,
     fetchRanking,
     handleShowDevScore,
     closeRanking,
@@ -448,10 +447,9 @@ function App() {
         {showRanking && (
           <Ranking
             difficulty={difficulty}
-            rankingData={rankingData}
-            userId={userId}
-            isDevRankingMode={isDevRankingMode}
-            rankingDataMode={rankingDataMode}
+            rankingView={rankingView}
+            mode={mode}
+            myCreatedAt={ScoreService.getCreatedAt(difficulty)}
             isLoading={isRankingLoading}
             onClose={closeRanking}
             onShowDevScore={handleShowDevScore}

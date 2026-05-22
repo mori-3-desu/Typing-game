@@ -1,0 +1,6 @@
+[
+  { "name": "たいよう", "score": 62700, "correct": 358, "miss": 6, "backspace": 2, "combo": 240, "speed": 6.10, "created_at": "2026-05-17T08:41:19.226000Z" },
+  { "name": "ゆうき", "score": 55300, "correct": 321, "miss": 11, "backspace": 4, "combo": 176, "speed": 5.55, "created_at": "2026-05-19T17:25:44.901000Z" },
+  { "name": "あおい", "score": 44800, "correct": 279, "miss": 16, "backspace": 6, "combo": 128, "speed": 4.93, "created_at": "2026-05-20T22:09:03.558000Z" },
+  { "name": "はやて", "score": 31200, "correct": 214, "miss": 22, "backspace": 9, "combo": 84, "speed": 4.07, "created_at": "2026-05-21T13:58:37.412000Z" }
+]

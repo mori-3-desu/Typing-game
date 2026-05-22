@@ -1,31 +1,23 @@
 import { useRef, useState } from "react";
 
 import { DatabaseService } from "../services/database";
-import { type DifficultyLevel, type RankingScore } from "../types";
+import type { DifficultyLevel,RankingView,  } from "../types";
 
 type UseRankingProps = {
   difficulty: DifficultyLevel;
   setDifficulty: (diff: DifficultyLevel) => void;
 };
 
-// abortに変更、バックエンドで受け取る形にしたので
-// 無駄なリクエストを防ぐ。
+type RankingMode = "global" | "dev";
+
+// 全国ランキング(S3)開発者ランキング(API)の取得を束ねるオーケストレーター
+// 取得結果は判別ユニオン RankingView に集約し、表示状態を一つの state で持つ。
 export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
   const [showRanking, setShowRanking] = useState(false);
-  const [rankingData, setRankingData] = useState<RankingScore[]>([]);
   const [isRankingLoading, setIsRankingLoading] = useState(false);
-  const [isDevRankingMode, setIsDevRankingMode] = useState(false);
-  const [rankingDataMode, setRankingDataMode] = useState<
-    "global" | "dev" | null
-  >(null);
+  const [mode, setMode] = useState<RankingMode>("global");
+  const [rankingView, setRankingView] = useState<RankingView | null>(null);
   const abortRef = useRef<AbortController | null>(null);
-
-  // 画面を共通リセットする
-  const beginFetch = () => {
-    setIsRankingLoading(true);
-    setRankingDataMode(null);
-    setRankingData([]);
-  };
 
   const createSignal = () => {
     abortRef.current?.abort();
@@ -37,21 +29,21 @@ export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
     if (isRankingLoading) return;
     const searchDiff = targetDiff ?? difficulty;
     if (targetDiff) setDifficulty(targetDiff);
-    setShowRanking(true);
-    setIsDevRankingMode(false);
-    beginFetch();
 
+    setShowRanking(true);
+    setMode("global");
+    setRankingView(null);
+    setIsRankingLoading(true);
     const signal = createSignal();
 
     try {
-      const data = await DatabaseService.getRanking(searchDiff, signal);
-      setRankingData(data);
-      setRankingDataMode("global");
+      const entries = await DatabaseService.getRanking(searchDiff, signal);
+      setRankingView({mode: "global", entries});
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
       console.error("Ranking fetch error:", error);
     } finally {
-      // 古い処理がstateを参照して更新させないようにする。
+      // 古い処理が後勝ちで state を参照して更新させないようにする。
       if (!signal?.aborted) setIsRankingLoading(false);
     }
   };
@@ -59,19 +51,19 @@ export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
   const handleShowDevScore = async () => {
     if (isRankingLoading) return;
 
-    beginFetch();
+    setMode("dev");
+    setRankingView(null);
+    setIsRankingLoading(true);
     const signal = createSignal();
 
     try {
-      const data = await DatabaseService.getDevScore(difficulty, signal);
-      setRankingData(data);
-      setRankingDataMode("dev");
-      setIsDevRankingMode(true);
+      const entries = await DatabaseService.getDevScore(difficulty, signal);
+      setRankingView({mode: "dev", entries});
     } catch (error) {
       if (error instanceof Error && error.name === "AbortError") return;
       console.error("DevScore fetch error:", error);
     } finally {
-      if (!signal?.aborted) setIsRankingLoading(false);
+      if (!signal.aborted) setIsRankingLoading(false);
     }
   };
 
@@ -79,16 +71,14 @@ export const useRanking = ({ difficulty, setDifficulty }: UseRankingProps) => {
     abortRef.current?.abort();
     setShowRanking(false);
     setIsRankingLoading(false);
-    setIsDevRankingMode(false);
-    setRankingDataMode(null);
-    setRankingData([]);
+    setMode("global");
+    setRankingView(null);
   };
 
   return {
     showRanking,
-    rankingData,
-    rankingDataMode,
-    isDevRankingMode,
+    mode,
+    rankingView,
     isRankingLoading,
     fetchRanking,
     handleShowDevScore,

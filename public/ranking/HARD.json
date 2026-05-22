@@ -1,0 +1,5 @@
+[
+  { "name": "しっぷう", "score": 78400, "correct": 402, "miss": 8, "backspace": 3, "combo": 305, "speed": 6.74, "created_at": "2026-05-16T19:33:50.711000Z" },
+  { "name": "らいむ", "score": 66100, "correct": 351, "miss": 14, "backspace": 5, "combo": 213, "speed": 5.88, "created_at": "2026-05-18T12:07:26.034000Z" },
+  { "name": "こはく", "score": 50900, "correct": 298, "miss": 20, "backspace": 8, "combo": 147, "speed": 5.02, "created_at": "2026-05-21T06:44:11.689000Z" }
+]

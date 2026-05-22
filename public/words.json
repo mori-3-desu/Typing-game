@@ -1,0 +1,42 @@
+{
+  "EASY": [
+    { "jp": "いぬ", "roma": "inu" },
+    { "jp": "ねこ", "roma": "neko" },
+    { "jp": "そら", "roma": "sora" },
+    { "jp": "やま", "roma": "yama" },
+    { "jp": "うみ", "roma": "umi" },
+    { "jp": "はな", "roma": "hana" },
+    { "jp": "つき", "roma": "tsuki" },
+    { "jp": "ほし", "roma": "hoshi" }
+  ],
+  "NORMAL": [
+    { "jp": "りんご", "roma": "ringo" },
+    { "jp": "でんしゃ", "roma": "densha" },
+    { "jp": "がっこう", "roma": "gakkou" },
+    { "jp": "ともだち", "roma": "tomodachi" },
+    { "jp": "たべもの", "roma": "tabemono" },
+    { "jp": "てんき", "roma": "tenki" },
+    { "jp": "おんがく", "roma": "ongaku" },
+    { "jp": "じてんしゃ", "roma": "jitensha" }
+  ],
+  "HARD": [
+    { "jp": "こうえん", "roma": "kouen" },
+    { "jp": "としょかん", "roma": "toshokan" },
+    { "jp": "しんかんせん", "roma": "shinkansen" },
+    { "jp": "たいいくかん", "roma": "taiikukan" },
+    { "jp": "びじゅつかん", "roma": "bijutsukan" },
+    { "jp": "じょうほう", "roma": "jouhou" },
+    { "jp": "せんもんか", "roma": "senmonka" },
+    { "jp": "けんきゅう", "roma": "kenkyuu" }
+  ],
+  "EXTRA": [
+    { "jp": "apple", "roma": "apple" },
+    { "jp": "keyboard", "roma": "keyboard" },
+    { "jp": "computer", "roma": "computer" },
+    { "jp": "language", "roma": "language" },
+    { "jp": "function", "roma": "function" },
+    { "jp": "variable", "roma": "variable" },
+    { "jp": "developer", "roma": "developer" },
+    { "jp": "algorithm", "roma": "algorithm" }
+  ]
+}

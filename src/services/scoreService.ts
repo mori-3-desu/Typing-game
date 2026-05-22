@@ -15,6 +15,10 @@ const scoreKey = (level: DifficultyLevel) =>
 const dataKey = (level: DifficultyLevel) =>
   `${STORAGE_KEYS.HISCORE_DATA_REGISTER}${level.toLowerCase()}`;
 
+// 全国ランキングで自分のエントリを特定するための created_at の保存キー。
+const createdAtKey = (level: DifficultyLevel) =>
+  `${STORAGE_KEYS.HISCORE_CREATED_AT}${level.toLowerCase()}`;
+
 export const ScoreService = {
   getHighScore(level: DifficultyLevel): number {
     return storage.get(scoreKey(level), parseNonNegativeInt) ?? 0;
@@ -26,6 +30,12 @@ export const ScoreService = {
       if (typeof data?.score !== "number") throw new Error("invalid");
       return data as GameResultStats;
     });
+  },
+
+  // 全国ランキングで YOU を照合する為に実装
+  // postScore のたびに保存される。未送信や localStorage をクリアした際は null となる
+  getCreatedAt(level: DifficultyLevel): string | null {
+    return storage.getString(createdAtKey(level));
   },
 
   // ローカル保存とリモート保存を切り分けている
@@ -60,6 +70,11 @@ export const ScoreService = {
       combo: stats.combo,
       speed: stats.speed,
     };
-    await DatabaseService.postScore(rpcParams);
+    const result = await DatabaseService.postScore(rpcParams);
+
+    // result.created_at は「DB の行を読み戻した現在値」。DB の created_at と
+    // S3 ランキング JSON は updated=true のときだけ揃って変わるため、
+    // 読み戻した値をそのまま毎回保存すれば常に S3 側と一致する。
+    storage.set(createdAtKey(difficulty), result.created_at);
   },
 } as const;

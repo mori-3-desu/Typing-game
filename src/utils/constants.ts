@@ -162,6 +162,7 @@ export const STORAGE_KEYS = {
   USER_ID: "typing_user_id",
   HISCORE_REGISTER: "typing_hiscore_",
   HISCORE_DATA_REGISTER: "typing_hiscore_data_",
+  HISCORE_CREATED_AT: "typing_hiscore_created_at_",
   SETTINGS: "typing_settings",
   REFRESH_TOKEN: "typing_refresh_token"
 } as const;
