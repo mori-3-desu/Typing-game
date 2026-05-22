@@ -129,7 +129,11 @@ export const DatabaseService = {
       throw new Error(`ranking fetch failed: ${response.status}`);
     }
 
-    return (await response.json()) as RankingEntry[];
+    // 配列でなければ（HTML フォールバック等）未生成とみなしランキングを返す
+    // contains 等の Content-Type 判定に頼らず、受けとった値の形で判断する。
+    const data: unknown = await response.json().catch(() => null);
+    
+    return Array.isArray(data) ? (data as RankingEntry[]) : [];
   },
 
   /**

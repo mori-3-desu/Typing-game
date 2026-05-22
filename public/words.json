@@ -1,42 +1,1818 @@
 {
   "EASY": [
-    { "jp": "いぬ", "roma": "inu" },
-    { "jp": "ねこ", "roma": "neko" },
-    { "jp": "そら", "roma": "sora" },
-    { "jp": "やま", "roma": "yama" },
-    { "jp": "うみ", "roma": "umi" },
-    { "jp": "はな", "roma": "hana" },
-    { "jp": "つき", "roma": "tsuki" },
-    { "jp": "ほし", "roma": "hoshi" }
+    {
+      "jp": "長文が来ないと油断したな？",
+      "roma": "tyoubungakonaitoyudansitana?"
+    },
+    {
+      "jp": "なぜですか？",
+      "roma": "nazedesuka?"
+    },
+    {
+      "jp": "バレーボール",
+      "roma": "bare-bo-ru"
+    },
+    {
+      "jp": "エンジニア",
+      "roma": "enjinia"
+    },
+    {
+      "jp": "キャンディ",
+      "roma": "kyandhi"
+    },
+    {
+      "jp": "サングラス",
+      "roma": "sangurasu"
+    },
+    {
+      "jp": "スイカ割り",
+      "roma": "suikawari"
+    },
+    {
+      "jp": "ハムスター",
+      "roma": "hamusuta-"
+    },
+    {
+      "jp": "リアライズ",
+      "roma": "riaraizu"
+    },
+    {
+      "jp": "音ゲーマー",
+      "roma": "otoge-ma-"
+    },
+    {
+      "jp": "アメリカ",
+      "roma": "amerika"
+    },
+    {
+      "jp": "イヤホン",
+      "roma": "iyahonn"
+    },
+    {
+      "jp": "おっさん",
+      "roma": "ossann"
+    },
+    {
+      "jp": "サービス",
+      "roma": "sa-bisu"
+    },
+    {
+      "jp": "サーモン",
+      "roma": "sa-monn"
+    },
+    {
+      "jp": "ししゃも",
+      "roma": "shisyamo"
+    },
+    {
+      "jp": "ジョウロ",
+      "roma": "jouro"
+    },
+    {
+      "jp": "ジョッキ",
+      "roma": "jokki"
+    },
+    {
+      "jp": "チェリー",
+      "roma": "tyeri-"
+    },
+    {
+      "jp": "バカンス",
+      "roma": "bakansu"
+    },
+    {
+      "jp": "プッシュ",
+      "roma": "pussyu"
+    },
+    {
+      "jp": "ラーメン",
+      "roma": "ra-menn"
+    },
+    {
+      "jp": "リトライ",
+      "roma": "ritorai"
+    },
+    {
+      "jp": "ロッカー",
+      "roma": "rokka-"
+    },
+    {
+      "jp": "嫌です。",
+      "roma": "iyadesu。"
+    },
+    {
+      "jp": "目玉焼き",
+      "roma": "medamayaki"
+    },
+    {
+      "jp": "オタク",
+      "roma": "otaku"
+    },
+    {
+      "jp": "お菓子",
+      "roma": "okasi"
+    },
+    {
+      "jp": "お寿司",
+      "roma": "osusi"
+    },
+    {
+      "jp": "かんな",
+      "roma": "kannna"
+    },
+    {
+      "jp": "キウイ",
+      "roma": "kiui"
+    },
+    {
+      "jp": "コイン",
+      "roma": "koinn"
+    },
+    {
+      "jp": "コーラ",
+      "roma": "ko-ra"
+    },
+    {
+      "jp": "こたつ",
+      "roma": "kotatu"
+    },
+    {
+      "jp": "ゴリラ",
+      "roma": "gorira"
+    },
+    {
+      "jp": "サラダ",
+      "roma": "sarada"
+    },
+    {
+      "jp": "スパイ",
+      "roma": "supai"
+    },
+    {
+      "jp": "たらこ",
+      "roma": "tarako"
+    },
+    {
+      "jp": "データ",
+      "roma": "de-ta"
+    },
+    {
+      "jp": "テレビ",
+      "roma": "terebi"
+    },
+    {
+      "jp": "ピーチ",
+      "roma": "pi-ti"
+    },
+    {
+      "jp": "ベンチ",
+      "roma": "benti"
+    },
+    {
+      "jp": "ペンチ",
+      "roma": "penti"
+    },
+    {
+      "jp": "ホタテ",
+      "roma": "hotate"
+    },
+    {
+      "jp": "ポップ",
+      "roma": "poppu"
+    },
+    {
+      "jp": "ホテル",
+      "roma": "hoteru"
+    },
+    {
+      "jp": "まぐろ",
+      "roma": "maguro"
+    },
+    {
+      "jp": "みかん",
+      "roma": "mikann"
+    },
+    {
+      "jp": "モアイ",
+      "roma": "moai"
+    },
+    {
+      "jp": "ラジオ",
+      "roma": "rajio"
+    },
+    {
+      "jp": "りんご",
+      "roma": "ringo"
+    },
+    {
+      "jp": "改ざん",
+      "roma": "kaizann"
+    },
+    {
+      "jp": "筋トレ",
+      "roma": "kintore"
+    },
+    {
+      "jp": "歯医者",
+      "roma": "haisya"
+    },
+    {
+      "jp": "組体操",
+      "roma": "kumitaisou"
+    },
+    {
+      "jp": "宅飲み",
+      "roma": "takunomi"
+    },
+    {
+      "jp": "唐揚げ",
+      "roma": "karaage"
+    },
+    {
+      "jp": "日本語",
+      "roma": "nihongo"
+    },
+    {
+      "jp": "父さん",
+      "roma": "tousann"
+    },
+    {
+      "jp": "母さん",
+      "roma": "kaasann"
+    },
+    {
+      "jp": "明太子",
+      "roma": "mentaiko"
+    },
+    {
+      "jp": "エビ",
+      "roma": "ebi"
+    },
+    {
+      "jp": "お金",
+      "roma": "okane"
+    },
+    {
+      "jp": "ごま",
+      "roma": "goma"
+    },
+    {
+      "jp": "宇宙",
+      "roma": "utyuu"
+    },
+    {
+      "jp": "英語",
+      "roma": "eigo"
+    },
+    {
+      "jp": "化粧",
+      "roma": "kesyou"
+    },
+    {
+      "jp": "街灯",
+      "roma": "gaitou"
+    },
+    {
+      "jp": "学生",
+      "roma": "gakusei"
+    },
+    {
+      "jp": "韓国",
+      "roma": "kankoku"
+    },
+    {
+      "jp": "鏡餅",
+      "roma": "kagamimoti"
+    },
+    {
+      "jp": "検査",
+      "roma": "kensa"
+    },
+    {
+      "jp": "紅茶",
+      "roma": "koutya"
+    },
+    {
+      "jp": "合格",
+      "roma": "goukaku"
+    },
+    {
+      "jp": "資料",
+      "roma": "siryou"
+    },
+    {
+      "jp": "醤油",
+      "roma": "syouyu"
+    },
+    {
+      "jp": "植物",
+      "roma": "syokubutu"
+    },
+    {
+      "jp": "職員",
+      "roma": "syokuinn"
+    },
+    {
+      "jp": "新品",
+      "roma": "sinpinn"
+    },
+    {
+      "jp": "星空",
+      "roma": "hosizora"
+    },
+    {
+      "jp": "太陽",
+      "roma": "taiyou"
+    },
+    {
+      "jp": "体験",
+      "roma": "taikenn"
+    },
+    {
+      "jp": "電車",
+      "roma": "densya"
+    },
+    {
+      "jp": "電話",
+      "roma": "denwa"
+    },
+    {
+      "jp": "土管",
+      "roma": "dokann"
+    },
+    {
+      "jp": "捻挫",
+      "roma": "nenza"
+    },
+    {
+      "jp": "粘土",
+      "roma": "nendo"
+    },
+    {
+      "jp": "納豆",
+      "roma": "nattou"
+    },
+    {
+      "jp": "博士",
+      "roma": "hakase"
+    },
+    {
+      "jp": "罰金",
+      "roma": "bakkinn"
+    },
+    {
+      "jp": "変数",
+      "roma": "hensuu"
+    },
+    {
+      "jp": "弁当",
+      "roma": "bentou"
+    },
+    {
+      "jp": "保険",
+      "roma": "hokenn"
+    },
+    {
+      "jp": "宝石",
+      "roma": "houseki"
+    },
+    {
+      "jp": "歴史",
+      "roma": "rekisi"
+    },
+    {
+      "jp": "惑星",
+      "roma": "wakusei"
+    },
+    {
+      "jp": "花",
+      "roma": "hana"
+    },
+    {
+      "jp": "海",
+      "roma": "umi"
+    },
+    {
+      "jp": "栗",
+      "roma": "kuri"
+    },
+    {
+      "jp": "月",
+      "roma": "tuki"
+    },
+    {
+      "jp": "拳",
+      "roma": "kobusi"
+    },
+    {
+      "jp": "犬",
+      "roma": "inu"
+    },
+    {
+      "jp": "桜",
+      "roma": "sakura"
+    },
+    {
+      "jp": "雪",
+      "roma": "yuki"
+    },
+    {
+      "jp": "桃",
+      "roma": "momo"
+    },
+    {
+      "jp": "猫",
+      "roma": "neko"
+    },
+    {
+      "jp": "鼻",
+      "roma": "hana"
+    },
+    {
+      "jp": "霧",
+      "roma": "kiri"
+    },
+    {
+      "jp": "蜃気楼",
+      "roma": "sinkirou"
+    },
+    {
+      "jp": "難しい",
+      "roma": "muzukasii"
+    },
+    {
+      "jp": "はなまる",
+      "roma": "hanamaru"
+    },
+    {
+      "jp": "グッズ",
+      "roma": "guzzu"
+    },
+    {
+      "jp": "コミット",
+      "roma": "komitto"
+    },
+    {
+      "jp": "時計",
+      "roma": "tokei"
+    },
+    {
+      "jp": "爆弾",
+      "roma": "bakudann"
+    },
+    {
+      "jp": "対戦ゲーム",
+      "roma": "taisenge-mu"
+    },
+    {
+      "jp": "メモ帳",
+      "roma": "memotyou"
+    },
+    {
+      "jp": "パンケーキ",
+      "roma": "panke-ki"
+    },
+    {
+      "jp": "お茶",
+      "roma": "otya"
+    },
+    {
+      "jp": "挨拶",
+      "roma": "aisatu"
+    },
+    {
+      "jp": "かぼちゃ",
+      "roma": "kabotya"
+    },
+    {
+      "jp": "コップ",
+      "roma": "koppu"
+    },
+    {
+      "jp": "ジャンキー",
+      "roma": "janki-"
+    },
+    {
+      "jp": "うちわ",
+      "roma": "utiwa"
+    },
+    {
+      "jp": "ヨーグルト",
+      "roma": "yo-guruto"
+    },
+    {
+      "jp": "デジタル時計",
+      "roma": "dejitarudokei"
+    },
+    {
+      "jp": "アカウント",
+      "roma": "akaunto"
+    },
+    {
+      "jp": "モニター",
+      "roma": "monita-"
+    },
+    {
+      "jp": "数学",
+      "roma": "suugaku"
+    },
+    {
+      "jp": "温泉旅行",
+      "roma": "onsenryokou"
+    }
   ],
   "NORMAL": [
-    { "jp": "りんご", "roma": "ringo" },
-    { "jp": "でんしゃ", "roma": "densha" },
-    { "jp": "がっこう", "roma": "gakkou" },
-    { "jp": "ともだち", "roma": "tomodachi" },
-    { "jp": "たべもの", "roma": "tabemono" },
-    { "jp": "てんき", "roma": "tenki" },
-    { "jp": "おんがく", "roma": "ongaku" },
-    { "jp": "じてんしゃ", "roma": "jitensha" }
+    {
+      "jp": "アーモンドチョコレート",
+      "roma": "a-mondotyokore-to"
+    },
+    {
+      "jp": "サンドイッチを食べる。",
+      "roma": "sandoittiwotaberu。"
+    },
+    {
+      "jp": "ディスコードで通話する",
+      "roma": "dhisuko-dodetuuwasuru"
+    },
+    {
+      "jp": "いーあるふぁんくらぶ",
+      "roma": "i-arufankurabu"
+    },
+    {
+      "jp": "そうか、わかったぞ！",
+      "roma": "souka、wakattazo!"
+    },
+    {
+      "jp": "ドラマチックな出会い",
+      "roma": "doramatikkunadeai"
+    },
+    {
+      "jp": "ニートになりました。",
+      "roma": "ni-toninarimasita。"
+    },
+    {
+      "jp": "ハローワークに向かう",
+      "roma": "haro-wa-kunimukau"
+    },
+    {
+      "jp": "ファインチューニング",
+      "roma": "faintyu-ningu"
+    },
+    {
+      "jp": "睡眠時間が足りない。",
+      "roma": "suiminjikangatarinai。"
+    },
+    {
+      "jp": "え！いいんですか？",
+      "roma": "e!iindesuka?"
+    },
+    {
+      "jp": "スーパーマーケット",
+      "roma": "su-pa-ma-ketto"
+    },
+    {
+      "jp": "ドライブレコーダー",
+      "roma": "doraibureko-da-"
+    },
+    {
+      "jp": "パーフェクトを狙う",
+      "roma": "pa-fekutowonerau"
+    },
+    {
+      "jp": "フォントが合わない",
+      "roma": "fontogaawanai"
+    },
+    {
+      "jp": "プログラミング言語",
+      "roma": "puroguramingugengo"
+    },
+    {
+      "jp": "よ！また会ったな！",
+      "roma": "yo!mataattana!"
+    },
+    {
+      "jp": "ロジカルシンキング",
+      "roma": "rozikarushinkingu"
+    },
+    {
+      "jp": "仕様変更しました。",
+      "roma": "siyouhenkousimasita。"
+    },
+    {
+      "jp": "推しを手に入れた！",
+      "roma": "osiwoteniireta!"
+    },
+    {
+      "jp": "独りんぼエンヴィー",
+      "roma": "hitorinboenvi-"
+    },
+    {
+      "jp": "備えあれば憂いなし",
+      "roma": "sonaearebaureinasi"
+    },
+    {
+      "jp": "布団が吹っ飛んだ！",
+      "roma": "futongafuttonda!"
+    },
+    {
+      "jp": "部屋の掃除をする。",
+      "roma": "heyanosoujiwosuru。"
+    },
+    {
+      "jp": "クレジットカード",
+      "roma": "kurezittoka-do"
+    },
+    {
+      "jp": "ゲーミングマウス",
+      "roma": "ge-mingumausu"
+    },
+    {
+      "jp": "ご飯食べますか？",
+      "roma": "gohantabemasuka?"
+    },
+    {
+      "jp": "スーパーヒーロー",
+      "roma": "su-pa-hi-ro-"
+    },
+    {
+      "jp": "タイピングゲーム",
+      "roma": "taipinguge-mu"
+    },
+    {
+      "jp": "データマイニング",
+      "roma": "de-tamainingu"
+    },
+    {
+      "jp": "テキストエディタ",
+      "roma": "tekisutoedhita"
+    },
+    {
+      "jp": "パーキングエリア",
+      "roma": "pa-kingueria"
+    },
+    {
+      "jp": "バファリンを飲む",
+      "roma": "bafarinwonomu"
+    },
+    {
+      "jp": "フローチャート図",
+      "roma": "huro-tya-tozu"
+    },
+    {
+      "jp": "ラーメン大盛りで",
+      "roma": "ra-mennoomoride"
+    },
+    {
+      "jp": "リア充爆発しろ！",
+      "roma": "riajuubakuhatusiro!"
+    },
+    {
+      "jp": "海鮮丼を食べる。",
+      "roma": "kaisendonwotaberu。"
+    },
+    {
+      "jp": "教育係を務める。",
+      "roma": "kyouikugakariwotutomeru。"
+    },
+    {
+      "jp": "筋肉は裏切らない",
+      "roma": "kinnnikuhauragiranai"
+    },
+    {
+      "jp": "決定ボタンを押す",
+      "roma": "ketteibotanwoosu"
+    },
+    {
+      "jp": "資格試験を受ける",
+      "roma": "sikakusikenwoukeru"
+    },
+    {
+      "jp": "体育祭で優勝する",
+      "roma": "taiikusaideyuusyousuru"
+    },
+    {
+      "jp": "努力は裏切らない",
+      "roma": "doryokuwauragiranai"
+    },
+    {
+      "jp": "カッターナイフ",
+      "roma": "katta-naifu"
+    },
+    {
+      "jp": "コアラのマーチ",
+      "roma": "koaranoma-ti"
+    },
+    {
+      "jp": "これは残像だ！",
+      "roma": "korehazanzouda!"
+    },
+    {
+      "jp": "シジミ食べたい",
+      "roma": "shijimitabetai"
+    },
+    {
+      "jp": "ハローワールド",
+      "roma": "haro-wa-rudo"
+    },
+    {
+      "jp": "ヘブンズタイム",
+      "roma": "hebunzutaimu"
+    },
+    {
+      "jp": "感動的な出会い",
+      "roma": "kandoutekinadeai"
+    },
+    {
+      "jp": "後悔先に立たず",
+      "roma": "koukaisakinitatazu"
+    },
+    {
+      "jp": "電話に出んわ！",
+      "roma": "denwanidenwa!"
+    },
+    {
+      "jp": "料理が得意です",
+      "roma": "ryourigatokuidesu"
+    },
+    {
+      "jp": "ウェブサイト",
+      "roma": "webusaito"
+    },
+    {
+      "jp": "ゴッドハンド",
+      "roma": "goddohando"
+    },
+    {
+      "jp": "データベース",
+      "roma": "de-tabe-su"
+    },
+    {
+      "jp": "ドキュメント",
+      "roma": "dokyumento"
+    },
+    {
+      "jp": "ネットワーク",
+      "roma": "nettowa-ku"
+    },
+    {
+      "jp": "ボートレース",
+      "roma": "bo-tore-su"
+    },
+    {
+      "jp": "ホームページ",
+      "roma": "ho-mupe-ji"
+    },
+    {
+      "jp": "ホームルーム",
+      "roma": "ho-muru-mu"
+    },
+    {
+      "jp": "ポップな背景",
+      "roma": "poppunahaikei"
+    },
+    {
+      "jp": "火に油を注ぐ",
+      "roma": "hiniaburawososogu"
+    },
+    {
+      "jp": "公共交通機関",
+      "roma": "koukyoukoutuukikann"
+    },
+    {
+      "jp": "魂を受け継ぐ",
+      "roma": "tamasiiwouketugu"
+    },
+    {
+      "jp": "理解に苦しむ",
+      "roma": "rikainikurusimu"
+    },
+    {
+      "jp": "お笑い芸人",
+      "roma": "owaraigeininn"
+    },
+    {
+      "jp": "サイリウム",
+      "roma": "sairiumu"
+    },
+    {
+      "jp": "ペンライト",
+      "roma": "penraito"
+    },
+    {
+      "jp": "韓国ドラマ",
+      "roma": "kankokudorama"
+    },
+    {
+      "jp": "気合と根性",
+      "roma": "kiaitokonjyou"
+    },
+    {
+      "jp": "公認会計士",
+      "roma": "kouninkaikeisi"
+    },
+    {
+      "jp": "合格発表日",
+      "roma": "goukakuhappyoubi"
+    },
+    {
+      "jp": "車を買う。",
+      "roma": "kurumawokau。"
+    },
+    {
+      "jp": "就職する。",
+      "roma": "syuusyokusuru。"
+    },
+    {
+      "jp": "食器を洗う",
+      "roma": "syokkiwoarau"
+    },
+    {
+      "jp": "食器洗浄機",
+      "roma": "syokkisenjouki"
+    },
+    {
+      "jp": "退職する。",
+      "roma": "taisyokusuru。"
+    },
+    {
+      "jp": "大切な書類",
+      "roma": "taisetunasyorui"
+    },
+    {
+      "jp": "地球温暖化",
+      "roma": "tikyuuondanka"
+    },
+    {
+      "jp": "地道に練習",
+      "roma": "jimitinirensyuu"
+    },
+    {
+      "jp": "長時間労働",
+      "roma": "tyoujikanroudou"
+    },
+    {
+      "jp": "動画編集者",
+      "roma": "dougahensyuusya"
+    },
+    {
+      "jp": "読書感想文",
+      "roma": "dokusyokansoubunn"
+    },
+    {
+      "jp": "白銀の世界",
+      "roma": "hakuginnnosekai"
+    },
+    {
+      "jp": "風船を割る",
+      "roma": "huusenwowaru"
+    },
+    {
+      "jp": "留学する。",
+      "roma": "ryuugakusuru。"
+    },
+    {
+      "jp": "携帯電話",
+      "roma": "keitaidenwa"
+    },
+    {
+      "jp": "高校受験",
+      "roma": "koukoujukenn"
+    },
+    {
+      "jp": "豪華客船",
+      "roma": "goukakyakusenn"
+    },
+    {
+      "jp": "国内旅行",
+      "roma": "kokunairyokou"
+    },
+    {
+      "jp": "失業保険",
+      "roma": "situgyouhokenn"
+    },
+    {
+      "jp": "情熱大陸",
+      "roma": "jounetutairiku"
+    },
+    {
+      "jp": "職業訓練",
+      "roma": "syokugyoukunrenn"
+    },
+    {
+      "jp": "大学受験",
+      "roma": "daigakujukenn"
+    },
+    {
+      "jp": "南極大陸",
+      "roma": "nankyokutairiku"
+    },
+    {
+      "jp": "放心状態",
+      "roma": "housinjoutai"
+    },
+    {
+      "jp": "魔法少女",
+      "roma": "mahousyoujo"
+    },
+    {
+      "jp": "有給消化",
+      "roma": "yuukyuusyouka"
+    },
+    {
+      "jp": "銃撃戦",
+      "roma": "juugekisenn"
+    },
+    {
+      "jp": "卒業式",
+      "roma": "sotugyousiki"
+    },
+    {
+      "jp": "くもんにいくもん！",
+      "roma": "kumonnniikumonn!"
+    },
+    {
+      "jp": "考え事をする",
+      "roma": "kangaegotowosuru"
+    },
+    {
+      "jp": "独り言が多い",
+      "roma": "hitorigotogaooi"
+    },
+    {
+      "jp": "フィギュアをあつめる",
+      "roma": "figyuawoatumeru"
+    },
+    {
+      "jp": "デプロイする。",
+      "roma": "depuroisuru。"
+    },
+    {
+      "jp": "デバッグ作業大変だった。",
+      "roma": "debaggusagyoutaihendatta。"
+    },
+    {
+      "jp": "カフェで一服する",
+      "roma": "kafedeippukusuru"
+    },
+    {
+      "jp": "トレーニングベンチ",
+      "roma": "tore-ningubenti"
+    },
+    {
+      "jp": "ショートカットキー",
+      "roma": "syo-tokattoki-"
+    },
+    {
+      "jp": "ランディングページ",
+      "roma": "randhingupe-ji"
+    },
+    {
+      "jp": "ミスしたら修正する",
+      "roma": "misusitarasyuuseisuru"
+    },
+    {
+      "jp": "食べ残しはいけませんよ",
+      "roma": "tabenokosihaikemasennyo"
+    },
+    {
+      "jp": "ガソリンスタンド",
+      "roma": "gasorinsutando"
+    },
+    {
+      "jp": "セールの日に爆買い",
+      "roma": "se-runohinibakugai"
+    },
+    {
+      "jp": "アンチパターン",
+      "roma": "antipata-nn"
+    },
+    {
+      "jp": "デバイスドライバ",
+      "roma": "debaisudoraiba"
+    },
+    {
+      "jp": "試験に合格したぞ！",
+      "roma": "sikennnigoukakusitazo!"
+    },
+    {
+      "jp": "やることがいっぱい",
+      "roma": "yarukotogaippai"
+    }
   ],
   "HARD": [
-    { "jp": "こうえん", "roma": "kouen" },
-    { "jp": "としょかん", "roma": "toshokan" },
-    { "jp": "しんかんせん", "roma": "shinkansen" },
-    { "jp": "たいいくかん", "roma": "taiikukan" },
-    { "jp": "びじゅつかん", "roma": "bijutsukan" },
-    { "jp": "じょうほう", "roma": "jouhou" },
-    { "jp": "せんもんか", "roma": "senmonka" },
-    { "jp": "けんきゅう", "roma": "kenkyuu" }
+    {
+      "jp": "ゲームがやめられない",
+      "roma": "ge-mugayamerarenai"
+    },
+    {
+      "jp": "俺、お前のこと、す、す、寿司ざんまい！",
+      "roma": "ore、omaenokoto、su、su、susizanmai!"
+    },
+    {
+      "jp": "いいヅラ買ったけど、言いづらかった",
+      "roma": "iidurakattakedo、iidurakatta"
+    },
+    {
+      "jp": "セキュリティ対策はとても重要です。",
+      "roma": "sekyurithitaisakuhatotemojuuyoudesu。"
+    },
+    {
+      "jp": "パソコンのセッティングを終わらせる",
+      "roma": "pasokonnnosetthinguwoowaraseru"
+    },
+    {
+      "jp": "ヤキモチ妬いてる人が焼き餅焼いてる",
+      "roma": "yakimotiyaiteruhitogayakimotiyaiteru"
+    },
+    {
+      "jp": "私は、プログラミングを始めました。",
+      "roma": "watashiha、puroguraminguwohazimemashita。"
+    },
+    {
+      "jp": "ライブのネタバレはご遠慮ください",
+      "roma": "raibunonetabarehagoenryokudasai"
+    },
+    {
+      "jp": "明けましておめでとうございます。",
+      "roma": "akemasiteomedetougozaimasu。"
+    },
+    {
+      "jp": "面倒ごとに巻き込まれてしまった。",
+      "roma": "mendougotonimakikomaretesimatta。"
+    },
+    {
+      "jp": "おっと、そこは行き止まりだよ。",
+      "roma": "otto、sokohaikidomaridayo。"
+    },
+    {
+      "jp": "オブジェクト指向プログラミング",
+      "roma": "obujekutosikoupuroguramingu"
+    },
+    {
+      "jp": "オフ会を開いたけど誰も来ない。",
+      "roma": "ohukaiwohiraitakedodaremokonai。"
+    },
+    {
+      "jp": "お菓子食べ過ぎて太っちゃった！",
+      "roma": "okasitabesugitehutottyatta!"
+    },
+    {
+      "jp": "ドライブレコーダーを取り付ける",
+      "roma": "doraibureko-da-wotoritukeru"
+    },
+    {
+      "jp": "フライングをしてしまいました。",
+      "roma": "furainguwositesimaimasita。"
+    },
+    {
+      "jp": "何の成果も得られませんでした！",
+      "roma": "nannnoseikamoeraremasendesita!"
+    },
+    {
+      "jp": "課金して財布が空になりました。",
+      "roma": "kakinshitesaifugakaraninarimashita。"
+    },
+    {
+      "jp": "仕事辞めてから体重増加が激しい",
+      "roma": "sigotoyametekarataijuuzoukagahagesii"
+    },
+    {
+      "jp": "本日はありがとうございました。",
+      "roma": "honjituhaarigatougozaimasita。"
+    },
+    {
+      "jp": "クロスサイトスクリプティング",
+      "roma": "kurosusaitosukuriputhingu"
+    },
+    {
+      "jp": "どういったご用件でしょうか？",
+      "roma": "douittagoyoukendesyouka?"
+    },
+    {
+      "jp": "ポッピンキャンディフィーバー",
+      "roma": "poppinkyandhifi-ba-"
+    },
+    {
+      "jp": "ロジックを実装するのは難しい",
+      "roma": "rojikkuwojissousurunohamuzukasii"
+    },
+    {
+      "jp": "健康診断の結果は正常でした。",
+      "roma": "kenkousindannnokekkahaseijoudesita。"
+    },
+    {
+      "jp": "上司にエスカレーションする。",
+      "roma": "jousiniesukare-syonsuru。"
+    },
+    {
+      "jp": "大変お世話になっております。",
+      "roma": "taihennosewaninatteorimasu。"
+    },
+    {
+      "jp": "アウトレットで買い物する。",
+      "roma": "autorettodekaimonosuru。"
+    },
+    {
+      "jp": "アニメ見てたらこんな時間に",
+      "roma": "animemitetarakonnnajikannni"
+    },
+    {
+      "jp": "おすすめの趣味は何ですか？",
+      "roma": "osusumenosyumihanandesuka?"
+    },
+    {
+      "jp": "ガラスフィルムを貼り変える",
+      "roma": "garasufirumuwoharikaeru"
+    },
+    {
+      "jp": "クリスマスプレゼントを貰う",
+      "roma": "kurisumasupurezentowomorau"
+    },
+    {
+      "jp": "ソーシャルエンジニアリング",
+      "roma": "so-syaruenjiniaringu"
+    },
+    {
+      "jp": "タイピングゲームを作成する",
+      "roma": "taipinguge-muwosakuseisuru。"
+    },
+    {
+      "jp": "ハワイ旅行の計画を立てる。",
+      "roma": "hawairyokounokeikakuwotateru。"
+    },
+    {
+      "jp": "フォワードエンジニアリング",
+      "roma": "fowa-doenjiniaringu"
+    },
+    {
+      "jp": "ポートフォリオを作成する。",
+      "roma": "po-toforiowosakuseisuru。"
+    },
+    {
+      "jp": "ボーナス支給日に散財する。",
+      "roma": "bo-nasusikyuubinisanzaisuru。"
+    },
+    {
+      "jp": "よろしくお願いいたします。",
+      "roma": "yorosikuonegaiitasimasu。"
+    },
+    {
+      "jp": "自動化で業務効率を上げる。",
+      "roma": "jidoukadegyoumukourituwoageru。"
+    },
+    {
+      "jp": "終わり際に仕様変更するな！",
+      "roma": "owarigiwanisiyouhenkousuruna!"
+    },
+    {
+      "jp": "難易度選択を間違えました。",
+      "roma": "nannidosentakuwomatigaemasita。"
+    },
+    {
+      "jp": "有給がなくなってしまった。",
+      "roma": "yuukyuuganakunattesimatta。"
+    },
+    {
+      "jp": "アルゴリズムとデータ構造",
+      "roma": "arugorizumutode-takouzou"
+    },
+    {
+      "jp": "お金貸してくれませんか？",
+      "roma": "okanekashitekuremasenka?"
+    },
+    {
+      "jp": "カフェでのんびり過ごす。",
+      "roma": "kafedenonbirisugosu。"
+    },
+    {
+      "jp": "コミュニケーションは大事",
+      "roma": "komyunike-syonhadaiji"
+    },
+    {
+      "jp": "ジェットコースターに乗る",
+      "roma": "jettoko-suta-ninoru"
+    },
+    {
+      "jp": "すもももももももものうち",
+      "roma": "sumomomomomomomomonouti"
+    },
+    {
+      "jp": "プロジェクトマネージャー",
+      "roma": "purojecutomane-zya-"
+    },
+    {
+      "jp": "フロントエンドエンジニア",
+      "roma": "furontoendoenjinia"
+    },
+    {
+      "jp": "まだ諦めないでください！",
+      "roma": "madaakiramenaidekudasai!"
+    },
+    {
+      "jp": "リバースエンジニアリング",
+      "roma": "riba-suenjiniaringu"
+    },
+    {
+      "jp": "感染症対策はバッチリです",
+      "roma": "kansensyoutaisakuhabattiridesu。"
+    },
+    {
+      "jp": "高速周回にご協力ください",
+      "roma": "kousokusyuukainigokyouryokukudasai"
+    },
+    {
+      "jp": "誠に申し訳ございません。",
+      "roma": "makotonimousiwakegozaimasenn。"
+    },
+    {
+      "jp": "長時間労働で体が持たない",
+      "roma": "tyoujikanroudoudekaradagamotanai"
+    },
+    {
+      "jp": "僕、お金が欲しいんです。",
+      "roma": "boku、okanegahoshiindesu。"
+    },
+    {
+      "jp": "あ！椅子の上にアイス！",
+      "roma": "a!isunoueniaisu!"
+    },
+    {
+      "jp": "あと少しで大型連休だ！",
+      "roma": "atosukosideoogatarenkyuuda!"
+    },
+    {
+      "jp": "バックエンドエンジニア",
+      "roma": "bakkuendoenjinia"
+    },
+    {
+      "jp": "プッチンプリンを食べる",
+      "roma": "puttinpurinwotaberu"
+    },
+    {
+      "jp": "フルスタックエンジニア",
+      "roma": "furusutakkuenjinia"
+    },
+    {
+      "jp": "今日の晩御飯は焼肉だ！",
+      "roma": "kyounobangohanhayakinikuda!"
+    },
+    {
+      "jp": "参考書を開いて勉強だ！",
+      "roma": "sankousyowohiraitebenkyouda!"
+    },
+    {
+      "jp": "試験勉強しないとマズイ",
+      "roma": "shikenbenkyoushinaitomazui"
+    },
+    {
+      "jp": "隣の客はよく柿食う客だ",
+      "roma": "tonarinokyakuhayokukakikuukyakuda"
+    },
+    {
+      "jp": "あせらず落ち着いて！",
+      "roma": "aserazuotituite!"
+    },
+    {
+      "jp": "エターナルブリザード",
+      "roma": "eta-naruburiza-do"
+    },
+    {
+      "jp": "カーボンニュートラル",
+      "roma": "ka-bonnnyu-toraru"
+    },
+    {
+      "jp": "ゲーミングキーボード",
+      "roma": "ge-minguki-bo-do"
+    },
+    {
+      "jp": "仮天までガチャを回す",
+      "roma": "karitenmadegatyawomawasu"
+    },
+    {
+      "jp": "高難易度が得意です！",
+      "roma": "kounannidogatokuidesu!"
+    },
+    {
+      "jp": "今日中に完成させる。",
+      "roma": "kyoujuunikanseisaseru。"
+    },
+    {
+      "jp": "小樽市におったるし！",
+      "roma": "otarusiniottarusi!"
+    },
+    {
+      "jp": "野球観戦が趣味です。",
+      "roma": "yakyuukansengasyumidesu。"
+    },
+    {
+      "jp": "落花生はよ落下せい！",
+      "roma": "rakkaseihayorakkasei!"
+    },
+    {
+      "jp": "あ、今何時ですか？",
+      "roma": "a、imananjidesuka?"
+    },
+    {
+      "jp": "ヘリークルシミマス",
+      "roma": "heri-kurusimimasu"
+    },
+    {
+      "jp": "応用情報技術者試験",
+      "roma": "ouyoujouhougijutusyasikenn"
+    },
+    {
+      "jp": "基本情報技術者試験",
+      "roma": "kihonjouhougijutusyasikenn"
+    },
+    {
+      "jp": "埼玉県を裂いた魔剣",
+      "roma": "saitamakenwosaitamakenn"
+    },
+    {
+      "jp": "初見の問題は難しい",
+      "roma": "syokennnomondaihamuzukasii"
+    },
+    {
+      "jp": "書類選考が通らない",
+      "roma": "syoruisenkougatooranai"
+    },
+    {
+      "jp": "常識の範囲内である",
+      "roma": "jousikinohanninaidearu"
+    },
+    {
+      "jp": "精神を研ぎ澄ませる",
+      "roma": "seishinwotogisumaseru"
+    },
+    {
+      "jp": "注文が殺到している",
+      "roma": "tyuumongasattousiteiru"
+    },
+    {
+      "jp": "東京特許許可局局長",
+      "roma": "toukyoutokkyokyokakyokukyokutyou"
+    },
+    {
+      "jp": "副操縦士は服装重視",
+      "roma": "hukusoujuusihahukusoujuusi"
+    },
+    {
+      "jp": "無料ブラウザゲーム",
+      "roma": "muryouburauzage-mu"
+    },
+    {
+      "jp": "面接の練習をする。",
+      "roma": "mensetunorensyuuwosuru。"
+    },
+    {
+      "jp": "夜行バスで爆睡する",
+      "roma": "yakoubasudebakusuisuru"
+    },
+    {
+      "jp": "オラクルマスター",
+      "roma": "orakurumasuta-"
+    },
+    {
+      "jp": "学校で勉強する。",
+      "roma": "gakkoudebenkyousuru。"
+    },
+    {
+      "jp": "幻覚症状が現れた",
+      "roma": "genkakusyoujougaarawareta"
+    },
+    {
+      "jp": "情報セキュリティ",
+      "roma": "jouhousekyurithi"
+    },
+    {
+      "jp": "達人プログラマー",
+      "roma": "tatujinpurogurama-"
+    },
+    {
+      "jp": "転職活動しなきゃ",
+      "roma": "tensyokukatudousinakya"
+    },
+    {
+      "jp": "メンテナンス中",
+      "roma": "mentenansutyuu"
+    },
+    {
+      "jp": "願い事をする。",
+      "roma": "negaigotowosuru。"
+    },
+    {
+      "jp": "最高経営責任者",
+      "roma": "saikoukeieisekininsya"
+    },
+    {
+      "jp": "初音ミクの激唱",
+      "roma": "hatunemikunogekisyou"
+    },
+    {
+      "jp": "全自動卵割り機",
+      "roma": "zenjidoutamagowariki"
+    },
+    {
+      "jp": "最高速の歌姫",
+      "roma": "saikousokunoutahime"
+    },
+    {
+      "jp": "生麦生米生卵",
+      "roma": "namamuginamagomenamatamago"
+    },
+    {
+      "jp": "消費者金融",
+      "roma": "syouhisyakinnyuu"
+    },
+    {
+      "jp": "ポイフル",
+      "roma": "poihuru"
+    },
+    {
+      "jp": "短文",
+      "roma": "tanbunn"
+    },
+    {
+      "jp": "ようやくゲームが完成した",
+      "roma": "youyakuge-mugakanseisita"
+    },
+    {
+      "jp": "リリース直後にバグ修正",
+      "roma": "riri-sutyokugonibagusyuusei"
+    },
+    {
+      "jp": "技術書を読んで知識を身につける",
+      "roma": "gijutusyowoyondetisikiwominitukeru"
+    },
+    {
+      "jp": "二礼二拍手一礼",
+      "roma": "nireinihakusyuitirei"
+    },
+    {
+      "jp": "スマートフォンを落としました。",
+      "roma": "suma-tofonnwootosimasita。"
+    },
+    {
+      "jp": "眼鏡を買い換えました。",
+      "roma": "meganewokaikaemasita。"
+    },
+    {
+      "jp": "バックアップ取り忘れてデータが消えた",
+      "roma": "bakkuapputoriwasuretede-tagakieta"
+    },
+    {
+      "jp": "ゲームセンターに向かう",
+      "roma": "ge-musenta-nimukau"
+    },
+    {
+      "jp": "美容院の予約を忘れました",
+      "roma": "biyouinnnoyoyakuwowasuremasita"
+    },
+    {
+      "jp": "覚えることが多くてパンクしそうだ",
+      "roma": "oboerukotogaookutepankusisouda"
+    },
+    {
+      "jp": "タンスの角に小指をぶつけました",
+      "roma": "tansunokadonikoyubiwobutukemasita"
+    },
+    {
+      "jp": "まずいどうしよう、先ず移動しよう！",
+      "roma": "mazuidousiyou、mazuidousiyou!"
+    },
+    {
+      "jp": "花粉症でくしゃみが止まらない",
+      "roma": "kafunsyoudekusyamigatomaranai"
+    },
+    {
+      "jp": "就職活動を始めます",
+      "roma": "syuusyokukatudouwohajimemasu"
+    },
+    {
+      "jp": "テレビのリモコンが壊れた",
+      "roma": "terebinorimokongakowareta"
+    },
+    {
+      "jp": "パフォーマンス最適化",
+      "roma": "pafo-mansusaitekika"
+    },
+    {
+      "jp": "動作確認の結果、バグがありました",
+      "roma": "dousakakuninnnokekka、bagugaarimasita"
+    },
+    {
+      "jp": "開発止められないんだけど！",
+      "roma": "kaihatuyamerarenaindakedo!"
+    }
   ],
   "EXTRA": [
-    { "jp": "apple", "roma": "apple" },
-    { "jp": "keyboard", "roma": "keyboard" },
-    { "jp": "computer", "roma": "computer" },
-    { "jp": "language", "roma": "language" },
-    { "jp": "function", "roma": "function" },
-    { "jp": "variable", "roma": "variable" },
-    { "jp": "developer", "roma": "developer" },
-    { "jp": "algorithm", "roma": "algorithm" }
+    {
+      "jp": "JavaScript: イベントリスナの登録",
+      "roma": "window.addEventListener"
+    },
+    {
+      "jp": "JavaScript: IDによるDOM要素の取得",
+      "roma": "document.getElementById"
+    },
+    {
+      "jp": "JavaScript: コンソールへの出力",
+      "roma": "console.log()"
+    },
+    {
+      "jp": "JavaScript: アロー関数の定義",
+      "roma": "const func = () => {};"
+    },
+    {
+      "jp": "JavaScript: 非同期関数の宣言(function)",
+      "roma": "async function"
+    },
+    {
+      "jp": "JavaScript: 厳密等価演算子による比較",
+      "roma": "a === b"
+    },
+    {
+      "jp": "JavaScript: 配列のマップ処理",
+      "roma": "array.map(item => item.id);"
+    },
+    {
+      "jp": "JavaScript: オブジェクトの分割代入",
+      "roma": "const { id, name } = user;"
+    },
+    {
+      "jp": "JavaScript: 三項演算子",
+      "roma": "const a = isTrue ? 1 : 0;"
+    },
+    {
+      "jp": "JavaScript: テンプレートリテラル",
+      "roma": "`key: ${value}`;"
+    },
+    {
+      "jp": "React: Stateフック",
+      "roma": "const state = useState();"
+    },
+    {
+      "jp": "React: 副作用フック",
+      "roma": "useEffect(() =>"
+    },
+    {
+      "jp": "HTML: divとクラス",
+      "roma": "<div class=\"container\"></div>"
+    },
+    {
+      "jp": "CSS: フレックスボックス",
+      "roma": "display: flex;"
+    },
+    {
+      "jp": "Git: コミットメッセージ",
+      "roma": "git commit -m"
+    },
+    {
+      "jp": "JavaScript: 指定した時間に一度だけ実行",
+      "roma": "setTimeout"
+    },
+    {
+      "jp": "JavaScript: スプレッド構文",
+      "roma": "const array = [...args];"
+    },
+    {
+      "jp": "JavaScript: 例外処理",
+      "roma": "throw new Error(\"Not Found\");"
+    },
+    {
+      "jp": "JavaScript: モジュールのインポート",
+      "roma": "import { component } from 'react';"
+    },
+    {
+      "jp": "JavaScript: クラス名による要素取得",
+      "roma": "document.querySelector"
+    },
+    {
+      "jp": "JavaScript: JSONの文字列化",
+      "roma": "JSON.stringify"
+    },
+    {
+      "jp": "JavaScript: 配列のフィルタリング",
+      "roma": "data.filter(x => x !== null)"
+    },
+    {
+      "jp": "React: Refフック",
+      "roma": "useRef"
+    },
+    {
+      "jp": "React: JSXの基本構文",
+      "roma": "return <div className=\"app\">{children}</div>;"
+    },
+    {
+      "jp": "React: クリックイベントハンドラ",
+      "roma": "element.onclick = func1;"
+    },
+    {
+      "jp": "React: Stateの更新関数(コールバック)",
+      "roma": "setIsLoading(prev => !prev);"
+    },
+    {
+      "jp": "React: デフォルトエクスポート",
+      "roma": "export default function App() {}"
+    },
+    {
+      "jp": "React: 動的なクラス名付与",
+      "roma": "className={`btn ${isActive ? 'on' : 'off'}`}"
+    },
+    {
+      "jp": "HTML: 外部リンクと別タブで開く設定",
+      "roma": "<a href=\"url\" target=\"_blank\">"
+    },
+    {
+      "jp": "HTML: ビューポート設定",
+      "roma": "<meta name=\"viewport\" content=\"width=device-width\">"
+    },
+    {
+      "jp": "HTML: 画像タグと代替テキスト",
+      "roma": "<img src=\"url\" alt=\"\" />"
+    },
+    {
+      "jp": "CSS: グリッドレイアウト",
+      "roma": "grid-template-columns"
+    },
+    {
+      "jp": "CSS: 背景画像の指定",
+      "roma": "background-image"
+    },
+    {
+      "jp": "CSS: ボックスシャドウ",
+      "roma": "box-shadow"
+    },
+    {
+      "jp": "CSS: フレックス配置(主軸の中央寄せ)",
+      "roma": "justify-content: center;"
+    },
+    {
+      "jp": "CSS: 要素の絶対配置",
+      "roma": "position: absolute;"
+    },
+    {
+      "jp": "Git: ブランチのプッシュ",
+      "roma": "git push origin feature/new-branch"
+    },
+    {
+      "jp": "Git: ブランチ作成と移動",
+      "roma": "git checkout -b fix/branch"
+    },
+    {
+      "jp": "SQL: 全件検索",
+      "roma": "SELECT * FROM users;"
+    },
+    {
+      "jp": "SQL: データの挿入",
+      "roma": "INSERT INTO scores (score) VALUES (100);"
+    },
+    {
+      "jp": "SQL: データの更新",
+      "roma": "UPDATE users SET age = 100;"
+    },
+    {
+      "jp": "SQL: データの削除",
+      "roma": "DELETE FROM logs;"
+    },
+    {
+      "jp": "English: 画面を共有します",
+      "roma": "Let me share my screen."
+    },
+    {
+      "jp": "English: マイクがミュートになっていますよ",
+      "roma": "You are on mute."
+    },
+    {
+      "jp": "English: 見た目ヨシ！(LGTM)",
+      "roma": "Looks good to me!"
+    },
+    {
+      "jp": "English: できるだけ早く確認します",
+      "roma": "I will check it ASAP."
+    },
+    {
+      "jp": "English: 仕様書を添付しました",
+      "roma": "I have attached the specification."
+    },
+    {
+      "jp": "English: 全てのアルファベットを使う有名な文",
+      "roma": "The quick brown fox jumps over the lazy dog."
+    },
+    {
+      "jp": "English: 継続は力なり",
+      "roma": "Practice makes perfect."
+    },
+    {
+      "jp": "English: ローマは一日にして成らず",
+      "roma": "Rome was not built in a day."
+    },
+    {
+      "jp": "English: ご連絡ありがとうございます",
+      "roma": "Thank you for reaching out."
+    },
+    {
+      "jp": "English: お手すきの際にご確認ください",
+      "roma": "Please check it when you have time."
+    },
+    {
+      "jp": "English: 何か予期せぬ問題が発生しました",
+      "roma": "Something went wrong."
+    },
+    {
+      "jp": "ステータスコード: ページが見つからない",
+      "roma": "404 Not Found."
+    },
+    {
+      "jp": "English: 車輪の再発明をするな",
+      "roma": "Don't reinvent the wheel."
+    },
+    {
+      "jp": "English: シンプルにしておけ(KISS原則)",
+      "roma": "Keep it simple, stupid."
+    },
+    {
+      "jp": "English: 壊れていないなら直すな",
+      "roma": "If it ain't broke, don't fix it."
+    },
+    {
+      "jp": "English: やってみよう！",
+      "roma": "Let's give it a try!"
+    },
+    {
+      "jp": "English: 一石二鳥",
+      "roma": "Kill two birds with one stone."
+    },
+    {
+      "jp": "English: 素晴らしい仕事ぶりですね！",
+      "roma": "You did a great job!"
+    },
+    {
+      "jp": "English: それは理にかなっていますね",
+      "roma": "That makes sense."
+    },
+    {
+      "jp": "English: あなたの今後のご活躍をお祈りします",
+      "roma": "I wish you all the best."
+    },
+    {
+      "jp": "JavaScript: イベントリスナの解除",
+      "roma": "window.removeEventListener"
+    },
+    {
+      "jp": "JavaScript: 描画の更新を予約",
+      "roma": "requestAnimationFrame"
+    },
+    {
+      "jp": "JavaScript: 指定した感覚で実行",
+      "roma": "setInterval"
+    },
+    {
+      "jp": "ステータスコード: 不正なリクエスト",
+      "roma": "400 Bad Request"
+    },
+    {
+      "jp": "ステータスコード: 成功",
+      "roma": "200 OK"
+    },
+    {
+      "jp": "ステータスコード: 作成完了",
+      "roma": "201 Created"
+    },
+    {
+      "jp": "ステータスコード: リダイレクト",
+      "roma": "301 Moved Permanently"
+    },
+    {
+      "jp": "ステータスコード: 認証が必要",
+      "roma": "401 Unauthorized"
+    },
+    {
+      "jp": "ステータスコード: アクセス禁止",
+      "roma": "403 Forbidden"
+    },
+    {
+      "jp": "ステータスコード: メソッド不可",
+      "roma": "405 Method Not Allowed"
+    },
+    {
+      "jp": "ステータスコード: 競合が発生",
+      "roma": "409 Conflict"
+    },
+    {
+      "jp": "ステータスコード: サーバーエラー",
+      "roma": "500 Internal Server Error"
+    },
+    {
+      "jp": "ステータスコード: 未実装",
+      "roma": "501 Not Implemented"
+    },
+    {
+      "jp": "ステータスコード: サービス利用不可",
+      "roma": "503 Service Unavailable"
+    },
+    {
+      "jp": "JavaScript:  配列ループ(forEach)",
+      "roma": "array.forEach(item => {};"
+    }
   ]
 }
