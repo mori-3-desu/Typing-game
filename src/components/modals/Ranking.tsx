@@ -6,6 +6,7 @@ import {
   type RankingScore,
   type RankingView,
 } from "../../types";
+import { formatJpDate } from "../../utils/dateFormat";
 
 type Props = {
   difficulty: DifficultyLevel;
@@ -17,18 +18,6 @@ type Props = {
   onClose: () => void;
   onShowDevScore: () => void;
   onFetchRanking: (diff?: DifficultyLevel) => void;
-};
-
-const formatJpDate = (dataString: string): string => {
-  const d = new Date(dataString);
-  return d.toLocaleString("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 };
 
 // 開発者ランキング（API 経由）。RankingScore は id / user_id を持つ。

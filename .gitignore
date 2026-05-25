@@ -34,4 +34,6 @@ claude.local
 CLAUDE.md
 *.local
 .env
+.env.*
 .env.local
+.env.production

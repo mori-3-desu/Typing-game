@@ -1,4 +1,3 @@
-import { supabase } from "../supabase";
 import {
   type DifficultyLevel,
   type RankingEntry,
@@ -8,8 +7,8 @@ import {
   type Word,
   type WordDataMap,
 } from "../types";
-
-const API_BASE = import.meta.env.VITE_API_URL;
+import { API_BASE } from "./apiBase";
+import { requireSession } from "./sessionHelpers";
 
 const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
   "EASY",
@@ -70,16 +69,6 @@ export const DatabaseService = {
     return { formattedData: data };
   },
 
-  async requireSession() {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error("未ログイン状態では名前を更新出来ません");
-    }
-    return session;
-  },
-
   /**
    * スコア送信（POST /api/scores）
    * JWTをAuthorizationヘッダーに付けてSpring Boot APIに送信
@@ -89,7 +78,7 @@ export const DatabaseService = {
    * @returns 送信結果のステータス情報
    */
   async postScore(body: ScoreRequestBody): Promise<ScorePostResult> {
-    const session = await this.requireSession();
+    const session = await requireSession();
 
     const response = await fetch(`${API_BASE}/api/scores`, {
       method: "POST",
@@ -162,7 +151,7 @@ export const DatabaseService = {
    * DBの登録ではないため、ここでは検証が成功したら200を返す
    */
   async validateUserName(initialName: string): Promise<boolean> {
-    const session = await this.requireSession();
+    const session = await requireSession();
 
     const response = await fetch(`${API_BASE}/api/user/name/validate`, {
       method: "POST",
@@ -187,7 +176,7 @@ export const DatabaseService = {
    * 名前だけを変更したい場合に使用
    */
   async updateUserName(newName: string): Promise<void> {
-    const session = await this.requireSession();
+    const session = await requireSession();
 
     const response = await fetch(`${API_BASE}/api/scores/name`, {
       method: "PATCH",

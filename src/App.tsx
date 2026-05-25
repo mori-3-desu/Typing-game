@@ -13,9 +13,9 @@ import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 import { ScalerWrapper } from "./components/screens/ScalerWrapper";
 import { TitleScreen } from "./components/screens/TitleScreen";
-import { HandoffModal } from "./features/handoff/components/HandoffModal";
-import { HandoffModalButton } from "./features/handoff/components/HandoffModalButton";
-import { useHandoffModal } from "./features/handoff/hooks/useHandoffModal";
+import { MigrationModal } from "./features/migration/components/MigrationModal";
+import { MigrationModalButton } from "./features/migration/components/MigrationModalButton";
+import { useMigrationModal } from "./features/migration/hooks/useMigrationModal";
 import { useTypingGame } from "./features/typing-game/hooks/useTypingGame";
 import {
   buildDisplayData,
@@ -80,7 +80,7 @@ function App() {
 
   const { dbWordData } = useAppInit();
   const { userId, isLoading, error } = useAuth();
-  const handoffModal = useHandoffModal();
+  const migrationModal = useMigrationModal();
 
   const {
     score,
@@ -377,7 +377,7 @@ function App() {
                     handleBackToInput={handleBackToInput}
                     handleFinalConfirm={handleFinalConfirm}
                   >
-                    <HandoffModalButton onClick={handoffModal.open} />
+                    <MigrationModalButton onClick={migrationModal.open} />
                   </TitleScreen>
                 )}
 
@@ -475,7 +475,7 @@ function App() {
             onClose={handleCloseConfig}
           />
         )}
-        {handoffModal.isOpen && <HandoffModal onClose={handoffModal.close} />}
+        {migrationModal.isOpen && <MigrationModal onClose={migrationModal.close} />}
       </ScalerWrapper>
       <BrightnessOverlay brightness={brightness} />
     </div>

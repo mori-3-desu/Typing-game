@@ -4,7 +4,7 @@ type Props = {
   onClick: () => void;
 };
 
-export const HandoffModalButton = ({ onClick }: Props) => {
+export const MigrationModalButton = ({ onClick }: Props) => {
   return (
     <>
       {/* 引継ぎ機能 */}

@@ -1,18 +1,23 @@
 name: CI
 
-on: 
-  pull_request: 
+on:
+  pull_request:
     branches: [main]
   push:
     branches: [main]
 
-env:
-  VITE_SUPABASE_URL: ${{secrets.VITE_SUPABASE_URL }}
-  VITE_SUPABASE_ANON_KEY: ${{secrets.VITE_SUPABASE_ANON_KEY }}
-
 jobs:
   ci:
     runs-on: ubuntu-latest
+    # CI ジョブでは本番 secrets を一切使わない。
+    # apiBase.ts がモジュールロード時に throw する設計のため、
+    # vitest を通すためだけのダミー値を直書きで注入する。
+    # (PR からの悪意ある console.log で secrets が漏れることを防ぐ)
+    env:
+      VITE_API_URL: http://localhost:8080
+      VITE_SUPABASE_URL: http://localhost:54321
+      VITE_SUPABASE_ANON_KEY: dummy_anon_key_for_ci
+      VITE_SENTRY_DSN: ""
     steps:
       - name: リポジトリをチェックアウト
         uses: actions/checkout@v4
@@ -37,3 +42,64 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  deploy:
+    needs: ci
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    # OIDC で AWS のロールを assume するために id-token: write が必須。
+    # contents: read は checkout のため。
+    permissions:
+      id-token: write
+      contents: read
+    env:
+      AWS_REGION: ap-northeast-1
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js のセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+
+      - name: 依存パッケージのインストール
+        run: npm ci
+
+      - name: .env.production を生成
+        run: |
+          {
+            echo "VITE_API_URL=${{ secrets.VITE_API_URL }}"
+            echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}"
+            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}"
+            echo "VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}"
+          } > .env.production
+
+      - name: 本番ビルド
+        run: npm run build
+
+      - name: AWS 認証(OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: S3 へ同期
+        # ranking/*.json は Lambda の write-through が生成する本番データ。
+        # words.json も同様(将来更新時は Terraform 経由で配置)。
+        # dev 用ダミーが本番データを上書きしないよう除外する。
+        run: |
+          aws s3 sync ./dist s3://${{ secrets.S3_BUCKET }}/ \
+            --delete \
+            --exclude "ranking/*" \
+            --exclude "words.json"
+
+      - name: CloudFront キャッシュ無効化
+        # Vite のビルド成果物は assets/*.{hash}.{js,css} で命名されるため、
+        # ハッシュ違いは別ファイル扱いになる。index.html だけ invalidate すれば、
+        # 新しいハッシュの assets を参照する形で更新が伝わる。
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
+            --paths "/index.html"

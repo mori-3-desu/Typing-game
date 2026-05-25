@@ -22,7 +22,7 @@ Sentry.init({
 });
 
 // 本番にエラーログすら送らないことで意図しないセキュリティ漏れを防ぐ
-if (import.meta.env.VITE_SENTRY_DSN && import.meta.env.PROD) {
+if (import.meta.env.PROD) {
   console.error = () => {};
   console.warn = () => {};
 }
