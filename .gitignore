@@ -37,3 +37,4 @@ CLAUDE.md
 .env.*
 .env.local
 .env.production
+_legacy

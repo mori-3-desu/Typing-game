@@ -97,31 +97,24 @@ export const DatabaseService = {
   },
 
   /**
-   * 全国ランキングを取得(S3 直接配信)
-   * 
-   * @description
-   * write-through で生成された /ranking/{difficulty}.json を読む。
-   * 対象難易度にまだスコアが無いと JSON 自体が存在しない
-   * 404 はエラーではなく空のランキングとして扱う
+   * 全国ランキングを取得
+   * 2026-05-25 撤退対応で一時的に Railway API 経由に戻している。
+   * 新環境(Lambda+S3 配信)復旧時は src/services/_legacy/database.ts を戻す。
    */
   async getRanking(
     difficulty: DifficultyLevel,
     signal?: AbortSignal,
   ): Promise<RankingEntry[]> {
-    const response = await fetch(`/ranking/${difficulty}.json`, { signal });
+    const response = await fetch(`${API_BASE}/api/scores/ranking/${difficulty}`, { signal });
 
-    // まだスコアが無い難易度は JSON 自体が存在しない。これは異常ではなく
-    // 「空ランキング」という正常な状態なので、エラーにせず空配列を返す。
     if (response.status === 404) return [];
 
     if (!response.ok) {
       throw new Error(`ranking fetch failed: ${response.status}`);
     }
 
-    // 配列でなければ（HTML フォールバック等）未生成とみなしランキングを返す
-    // contains 等の Content-Type 判定に頼らず、受けとった値の形で判断する。
     const data: unknown = await response.json().catch(() => null);
-    
+
     return Array.isArray(data) ? (data as RankingEntry[]) : [];
   },
 
