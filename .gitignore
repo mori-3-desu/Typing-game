@@ -18,6 +18,7 @@ aws_setting
 infra
 node_modules
 supabase/.temp/
+migration_data/
 .vscode/*
 !.vscode/extensions.json
 .idea
@@ -27,9 +28,12 @@ supabase/.temp/
 *.njsproj
 *.sln
 *.sw?
+*.csv
 .claude/
 claude.local
 CLAUDE.md
 *.local
 .env
+.env.*
 .env.local
+.env.production

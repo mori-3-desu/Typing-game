@@ -1,56 +1,171 @@
 import { SoundBtn } from "../../common/SoundBtn";
 import { useEscapekey } from "../../hooks/useEscapeKey";
-import { type DifficultyLevel, type RankingScore } from "../../types";
+import {
+  type DifficultyLevel,
+  type RankingEntry,
+  type RankingScore,
+  type RankingView,
+} from "../../types";
+import { formatJpDate } from "../../utils/dateFormat";
 
 type Props = {
   difficulty: DifficultyLevel;
-  rankingData: RankingScore[];
-  userId: string;
-  isDevRankingMode: boolean;
-  rankingDataMode: "global" | "dev" | null;
+  rankingView: RankingView | null;
+  mode: "global" | "dev";
+  // 全国ランキングで自分のエントリを照合するための created_at（未送信時は null）。
+  myCreatedAt: string | null;
   isLoading: boolean;
   onClose: () => void;
   onShowDevScore: () => void;
   onFetchRanking: (diff?: DifficultyLevel) => void;
 };
 
-const formatJpDate = (dataString: string): string => {
-  const d = new Date(dataString);
-  return d.toLocaleString("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "numeric",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+// 開発者ランキング（API 経由）。RankingScore は id / user_id を持つ。
+const DevRankingList = ({ entries }: { entries: RankingScore[] }) => {
+  if (entries.length === 0) {
+    return (
+      <div className="dev-score-pop-container">
+        <p>Dev data not found...</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {entries.map((item) => (
+        <div key={item.id} className="dev-score-pop-container">
+          <div className="dev-score-card" style={{ color: "inherit" }}>
+            <div className="dev-label">CREATOR'S RECORD</div>
+            <div
+              className="rank-name-row"
+              style={{
+                justifyContent: "center",
+                gap: "10px",
+                marginTop: "5px",
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>👑 {item.name}</span>
+              <span style={{ fontSize: "0.8rem" }}>
+                {formatJpDate(item.created_at)}
+              </span>
+            </div>
+            <div className="dev-main-score">{item.score.toLocaleString()}</div>
+            <div className="dev-stats-grid">
+              <div className="dev-stat-item stat-correct">
+                <span>Correct</span>
+                <span className="dev-stat-val">{item.correct}</span>
+              </div>
+              <div className="dev-stat-item stat-miss">
+                <span>Miss</span>
+                <span className="dev-stat-val">{item.miss}</span>
+              </div>
+              <div className="dev-stat-item stat-backspace">
+                <span>BackSpace</span>
+                <span className="dev-stat-val">{item.backspace}</span>
+              </div>
+              <div className="dev-stat-item stat-speed">
+                <span>Speed</span>
+                <span className="dev-stat-val">
+                  {item.speed.toFixed(2)} <span>key/s</span>
+                </span>
+              </div>
+              <div className="dev-stat-item stat-combo">
+                <span>MaxCombo</span>
+                <span className="dev-stat-val">{item.combo}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+};
+
+type GlobalRankingListProps = {
+  entries: RankingEntry[];
+  myCreatedAt: string | null;
+};
+
+// 全国ランキング（S3 配信）。RankingEntry は個人識別子を持たないため、
+// 自分のエントリは created_at の一致で判別する（key も created_at を使う）。
+const GlobalRankingList = ({ entries, myCreatedAt }: GlobalRankingListProps) => {
+  if (entries.length === 0) {
+    return (
+      <div
+        style={{
+          fontSize: "2.5em",
+          textAlign: "center",
+          padding: "150px",
+          color: "gray",
+        }}
+      >
+        No scores registered yet.
+      </div>
+    );
+  }
+
+  return (
+    <>
+      {entries.map((item, index) => {
+        const rank = index + 1;
+        const isMe = myCreatedAt !== null && item.created_at === myCreatedAt;
+
+        return (
+          <div
+            key={item.created_at}
+            className={`ranking-card rank-${rank} ${isMe ? "my-rank" : ""}`}
+            style={{ position: "relative" }}
+          >
+            {isMe && <div className="you-badge">YOU</div>}
+            <div className="rank-badge">
+              <span className="rank-num">{rank}</span>
+            </div>
+            <div className="rank-info">
+              <div className="rank-name-row">
+                <span className="rank-name">{item.name}</span>
+                <span className="rank-date">
+                  {formatJpDate(item.created_at)}
+                </span>
+              </div>
+              <div className="rank-score">{item.score.toLocaleString()}</div>
+              <div className="rank-stats-grid">
+                <div className="stat-box c-green">Correct: {item.correct}</div>
+                <div className="stat-box c-red">Miss: {item.miss}</div>
+                <div className="stat-box c-blue">BS: {item.backspace}</div>
+                <div className="stat-box c-cyan">
+                  Speed: {item.speed.toFixed(2)}
+                </div>
+                <div className="stat-box c-orange">Combo: {item.combo}</div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </>
+  );
 };
 
 export const Ranking = ({
   difficulty,
-  rankingData,
-  userId,
-  isDevRankingMode,
-  rankingDataMode,
+  rankingView,
+  mode,
+  myCreatedAt,
   isLoading,
   onClose,
   onShowDevScore,
   onFetchRanking,
 }: Props) => {
-  const expectedMode = isDevRankingMode ? "dev" : "global";
-  const btnIcon = isDevRankingMode ? "🌏" : "👑";
-  const devText = isDevRankingMode ? "- 作成者のスコア -" : "";
-  const btnLabel = isDevRankingMode
+  const isDev = mode === "dev";
+  const btnIcon = isDev ? "🌏" : "👑";
+  const devText = isDev ? "- 作成者のスコア -" : "";
+  const btnLabel = isDev
     ? "全国ランキングに戻る"
     : "開発者のスコアを表示する";
-  const canShowRankingData = !isLoading && rankingDataMode === expectedMode;
+  // canShow が true のとき rankingView は非 null（TS の別名条件ナローイング）。
+  const canShow = !isLoading && rankingView !== null;
 
-  const RankingMode = (
-    difficulty: DifficultyLevel,
-  ): React.MouseEventHandler<HTMLButtonElement> => {
-    return () =>
-      isDevRankingMode ? onFetchRanking(difficulty) : onShowDevScore();
-  };
+  const handleToggle: React.MouseEventHandler<HTMLButtonElement> = () =>
+    isDev ? onFetchRanking(difficulty) : onShowDevScore();
 
   useEscapekey(onClose);
   return (
@@ -70,7 +185,7 @@ export const Ranking = ({
           <div className="ranking-header-buttons">
             <SoundBtn
               className="close-btn dev-btn"
-              onClick={RankingMode(difficulty)}
+              onClick={handleToggle}
               title={btnLabel}
               aria-label={btnLabel}
             >
@@ -82,127 +197,20 @@ export const Ranking = ({
           </div>
         </div>
 
-        {/* --- リスト部分 --- */}
-        {/* ここは全体的に見づらいので設計を見直す */}
         <div className="ranking-list">
-          {!canShowRankingData ? (
+          {!canShow && (
             <div className="loading-container">
               <div className="loading-spinner" role="status"></div>
             </div>
-          ) : isDevRankingMode ? (
-            rankingData.length > 0 ? (
-              rankingData.map((item) => (
-                <div key={item.id} className="dev-score-pop-container">
-                  <div className="dev-score-card" style={{ color: "inherit" }}>
-                    <div className="dev-label">CREATOR'S RECORD</div>
-                    <div
-                      className="rank-name-row"
-                      style={{
-                        justifyContent: "center",
-                        gap: "10px",
-                        marginTop: "5px",
-                      }}
-                    >
-                      <span style={{ fontSize: "1.2rem" }}>👑 {item.name}</span>
-                      <span style={{ fontSize: "0.8rem" }}>
-                        {formatJpDate(item.created_at)}
-                      </span>
-                    </div>
-                    <div className="dev-main-score">
-                      {item.score.toLocaleString()}
-                    </div>
-                    {/* 統計グリッド */}
-                    <div className="dev-stats-grid">
-                      <div className="dev-stat-item stat-correct">
-                        <span>Correct</span>
-                        <span className="dev-stat-val">{item.correct}</span>
-                      </div>
-                      <div className="dev-stat-item stat-miss">
-                        <span>Miss</span>
-                        <span className="dev-stat-val">{item.miss}</span>
-                      </div>
-                      <div className="dev-stat-item stat-backspace">
-                        <span>BackSpace</span>
-                        <span className="dev-stat-val">{item.backspace}</span>
-                      </div>
-                      <div className="dev-stat-item stat-speed">
-                        <span>Speed</span>
-                        <span className="dev-stat-val">
-                          {item.speed.toFixed(2)} <span>key/s</span>
-                        </span>
-                      </div>
-                      <div className="dev-stat-item stat-combo">
-                        <span>MaxCombo</span>
-                        <span className="dev-stat-val">{item.combo}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="dev-score-pop-container">
-                <p>Dev data not found...</p>
-              </div>
-            )
-          ) : (
-            <>
-              {rankingData.map((item, index) => {
-                const rank = index + 1;
-                const isMe = item.user_id === userId;
-
-                return (
-                  <div
-                    key={item.id}
-                    className={`ranking-card rank-${rank} ${
-                      isMe ? "my-rank" : ""
-                    }`}
-                    style={{ position: "relative" }}
-                  >
-                    {isMe && <div className="you-badge">YOU</div>}
-                    <div className="rank-badge">
-                      <span className="rank-num">{rank}</span>
-                    </div>
-                    <div className="rank-info">
-                      <div className="rank-name-row">
-                        <span className="rank-name">{item.name}</span>
-                        <span className="rank-date">{formatJpDate(item.created_at)}</span>
-                      </div>
-                      <div className="rank-score">
-                        {item.score.toLocaleString()}
-                      </div>
-                      <div className="rank-stats-grid">
-                        {/* 統計ボックス (省略せず記述) */}
-                        <div className="stat-box c-green">
-                          Correct: {item.correct}
-                        </div>
-                        <div className="stat-box c-red">Miss: {item.miss}</div>
-                        <div className="stat-box c-blue">
-                          BS: {item.backspace}
-                        </div>
-                        <div className="stat-box c-cyan">
-                          Speed: {item.speed.toFixed(2)}
-                        </div>
-                        <div className="stat-box c-orange">
-                          Combo: {item.combo}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-              {rankingData.length === 0 && (
-                <div
-                  style={{
-                    fontSize: "2.5em",
-                    textAlign: "center",
-                    padding: "150px",
-                    color: "gray",
-                  }}
-                >
-                  No scores registered yet.
-                </div>
-              )}
-            </>
+          )}
+          {canShow && rankingView.mode === "dev" && (
+            <DevRankingList entries={rankingView.entries} />
+          )}
+          {canShow && rankingView.mode === "global" && (
+            <GlobalRankingList
+              entries={rankingView.entries}
+              myCreatedAt={myCreatedAt}
+            />
           )}
         </div>
       </div>

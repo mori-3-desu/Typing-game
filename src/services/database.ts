@@ -1,98 +1,84 @@
-import { supabase } from "../supabase";
 import {
   type DifficultyLevel,
-  type MutableWordDataMap,
+  type RankingEntry,
   type RankingScore,
+  type ScorePostResult,
   type ScoreRequestBody,
-  type WordRow,
+  type Word,
+  type WordDataMap,
 } from "../types";
+import { API_BASE } from "./apiBase";
+import { requireSession } from "./sessionHelpers";
 
-const API_BASE = import.meta.env.VITE_API_URL;
+const DIFFICULTY_LEVELS: readonly DifficultyLevel[] = [
+  "EASY",
+  "NORMAL",
+  "HARD",
+  "EXTRA",
+] as const;
 
-// 🛡️ 型ガード関数（Type Guard）
-// 文字列が本当に "EASY" | "NORMAL" | "HARD" | "EXTRA"のいずれかかチェックする守衛さん
-// これを通れば、TypeScriptは安心して DifficultyLevel 型として扱ってくれます
-function isDifficultyLevel(value: unknown): value is DifficultyLevel {
+// fetch で受け取った unknown を WordDataMap として安全に扱う
+// words.json は Terraform が RDS から生成する整形済み JSON。自前生成物だが
+// 「ネットワーク境界を越えた値は信用せず unknown 起点で検証する」原則に従う。
+const isWord = (value: unknown): value is Word => {
+  if (typeof value !== "object" || value === null) return false;
+
   return (
-    typeof value === "string" &&
-    ["EASY", "NORMAL", "HARD", "EXTRA"].includes(value)
+    "jp" in value &&
+    typeof value.jp === "string" &&
+    "roma" in value &&
+    typeof value.roma === "string"
   );
-}
+};
+
+const isWordDataMap = (value: unknown): value is WordDataMap => {
+  if (typeof value !== "object" || value === null) return false;
+  const map = value as Record<string, unknown>;
+  return DIFFICULTY_LEVELS.every((level) => {
+    const list = map[level];
+    return Array.isArray(list) && list.every(isWord);
+  });
+};
 
 export const DatabaseService = {
   /**
-   * ゲーム開始時に必要なデータ（単語・NGワード）を一括取得
-   * 取得したデータが正しい形式かチェックしながら格納します
+   * ゲーム開始時に必要な単語データを取得
+   * Terraform が RDS から生成し S3 に配信する整形済み JSON（/words.json）を読む。
+   * 読み取り系は Lambda→RDS を経由しない（aws.md「読み書き非対称化」方針）。
+   * NG ワード検証はサーバー側に集約（/api/user/name/validate）。
    */
-  async fetchAllGameData() {
-    // 1. 単語データの取得
-    const { data: wordsData, error: wordsError } = await supabase
-      .from("words")
-      .select("jp, roma, difficulty");
-    if (wordsError) throw wordsError;
-
-    // データが空っぽだとゲームがクラッシュするので防衛
-    if (!wordsData || wordsData.length === 0) {
-      throw new Error("DBから単語データを取得できませんでした。");
+  async fetchAllGameData(): Promise<{ formattedData: WordDataMap }> {
+    const response = await fetch("/words.json");
+    if (!response.ok) {
+      throw new Error(
+        `単語データの取得に失敗しました（HTTP ${response.status}）`,
+      );
     }
 
-    // 2. NGワードの取得
-    const { data: ngData, error: ngError } = await supabase
-      .from("ng_words")
-      .select("word");
-    if (ngError) throw ngError;
+    const data: unknown = await response.json();
+    if (!isWordDataMap(data)) {
+      throw new Error("単語データの形式が不正です。");
+    }
 
-    // 3. データの整形とバリデーション
-    const formattedData: MutableWordDataMap = {
-      EASY: [],
-      NORMAL: [],
-      HARD: [],
-      EXTRA: [],
-    };
+    // 全難易度が空だとゲームが成立しないので防衛（整形は配信側の責務）
+    const hasWords = DIFFICULTY_LEVELS.some((level) => data[level].length > 0);
+    if (!hasWords) {
+      throw new Error("単語データが空です。");
+    }
 
-    wordsData?.forEach((row: WordRow) => {
-      if (!row.difficulty) return;
-
-      const cleanJp = row.jp?.trim();
-      const cleanRoma = row.roma?.trim();
-      if (!cleanJp || !cleanRoma) {
-        console.warn("空のJP、または空のROMAを検出しました", row);
-        return;
-      }
-      // 1. まず掃除だけする（まだ型は string のまま！）
-      // ※ ここで 'as DifficultyLevel' は書かないのが作法です
-      const cleanLevel = row.difficulty.trim().toUpperCase();
-
-      if (isDifficultyLevel(cleanLevel)) {
-        //  ここに入った瞬間、TypeScriptは
-        // 「cleanLevel はただの string ではなく DifficultyLevel だ」と認識します。
-
-        if (formattedData[cleanLevel]) {
-          formattedData[cleanLevel].push({ jp: cleanJp, roma: cleanRoma });
-        }
-      } else {
-        console.warn(`[Data Skip] 未知のデータ: ${row.difficulty}`);
-      }
-    });
-
-    return {
-      formattedData,
-      ngList: ngData?.map((item) => item.word) || [],
-    };
+    return { formattedData: data };
   },
 
   /**
    * スコア送信（POST /api/scores）
    * JWTをAuthorizationヘッダーに付けてSpring Boot APIに送信
-   * サーバー側でハイスコア判定・upsertを行う
+   * サーバー側でハイスコア判定・upsertを行い、自分の行の create_at をかえす
+   *
+   * @param body 送信するスコアのリクエストボディ
+   * @returns 送信結果のステータス情報
    */
-  async postScore(body: ScoreRequestBody): Promise<void> {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error("未ログイン状態ではスコアを送信できません");
-    }
+  async postScore(body: ScoreRequestBody): Promise<ScorePostResult> {
+    const session = await requireSession();
 
     const response = await fetch(`${API_BASE}/api/scores`, {
       method: "POST",
@@ -106,65 +92,91 @@ export const DatabaseService = {
     if (!response.ok) {
       throw new Error(`Score POST failed: ${response.status}`);
     }
+
+    return (await response.json()) as ScorePostResult;
   },
 
   /**
-   * 内部用：スコア取得の共通ロジック
-   * ランキング取得と開発者スコア取得でコードを重複させないための共通化
-   * @param difficulty 取得したい難易度
-   * @param isCreator 開発者フラグ（trueなら開発者のみ、falseなら一般ユーザーのみ）
-   * @param limit 取得件数
-   */
-  async getScores(
-    difficulty: DifficultyLevel,
-    isCreator: boolean,
-    signal?: AbortSignal,
-  ): Promise<RankingScore[]> {
-    const response = await fetch(
-      `${API_BASE}/api/scores/ranking/${difficulty}?creator=${isCreator}`,
-      { signal },
-    );
-
-    if (!response.ok) {
-      throw new Error(`HTTP error status: ${response.status}`);
-    }
-
-    return (await response.json()) as RankingScore[];
-  },
-
-  /**
-   * 全国ランキングを取得
-   * 共通ロジック(getScores)を呼び出すだけ
+   * 全国ランキングを取得(S3 直接配信)
+   * 
+   * @description
+   * write-through で生成された /ranking/{difficulty}.json を読む。
+   * 対象難易度にまだスコアが無いと JSON 自体が存在しない
+   * 404 はエラーではなく空のランキングとして扱う
    */
   async getRanking(
     difficulty: DifficultyLevel,
     signal?: AbortSignal,
-  ): Promise<RankingScore[]> {
-    return this.getScores(difficulty, false, signal);
+  ): Promise<RankingEntry[]> {
+    const response = await fetch(`/ranking/${difficulty}.json`, { signal });
+
+    // まだスコアが無い難易度は JSON 自体が存在しない。これは異常ではなく
+    // 「空ランキング」という正常な状態なので、エラーにせず空配列を返す。
+    if (response.status === 404) return [];
+
+    if (!response.ok) {
+      throw new Error(`ranking fetch failed: ${response.status}`);
+    }
+
+    // 配列でなければ（HTML フォールバック等）未生成とみなしランキングを返す
+    // contains 等の Content-Type 判定に頼らず、受けとった値の形で判断する。
+    const data: unknown = await response.json().catch(() => null);
+    
+    return Array.isArray(data) ? (data as RankingEntry[]) : [];
   },
 
   /**
    * 開発者スコアを取得
-   * 共通ロジック(getScores)を呼び出すだけ
+   * 開発者ランキング（?creator=true）は全国ランキングとは別物なので、
+   * 当面 Lambda -> RDS 経路を維持する
+   * こちらは別タスクで S3 統一に変更する
    */
   async getDevScore(
     difficulty: DifficultyLevel,
     signal?: AbortSignal,
   ): Promise<RankingScore[]> {
-    return this.getScores(difficulty, true, signal);
+    const response = await fetch(`${API_BASE}/api/scores/ranking/${difficulty}?creator=true`, {
+      signal
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error status: ${response.status}`)
+    }
+
+    return (await response.json()) as RankingScore[];
+  },
+  
+  /**
+   * ユーザー名の登録
+   * DBの登録ではないため、ここでは検証が成功したら200を返す
+   */
+  async validateUserName(initialName: string): Promise<boolean> {
+    const session = await requireSession();
+
+    const response = await fetch(`${API_BASE}/api/user/name/validate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      // バックエンドの NameValidationRequest は name フィールドを期待する
+      body: JSON.stringify({ name: initialName }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`name validate failed: ${response.status}`);
+    }
+
+    const result = (await response.json()) as { valid: boolean };
+    return result.valid;
   },
 
   /**
    * ユーザー名の更新
    * 名前だけを変更したい場合に使用
    */
-  async updateUserName(newName: string) {
-    const {
-      data: { session },
-    } = await supabase.auth.getSession();
-    if (!session) {
-      throw new Error("未ログイン状態では名前を更新出来ません");
-    }
+  async updateUserName(newName: string): Promise<void> {
+    const session = await requireSession();
 
     const response = await fetch(`${API_BASE}/api/scores/name`, {
       method: "PATCH",
@@ -176,7 +188,10 @@ export const DatabaseService = {
     });
 
     if (!response.ok) {
-      throw new Error(`newName PATCH failed: ${response.status}`);
+      // サーバーの ApiErrorResponse.message を拾う(NG時は「この名前は使用できません」)。
+      // 呼び出し側はこの message を画面表示にそのまま使う。
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.message ?? "名前の変更に失敗しました");
     }
   },
 };

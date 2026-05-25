@@ -59,6 +59,32 @@ export type RankingScore = {
   is_creator: boolean;
 };
 
+// S3 配信の全国ランキング 1 エントリ（backend の RankingEntry record と対応）。
+// 個人識別子（id / user_id）は公開配信物に載せないため含まない。
+export type RankingEntry = {
+  name: string;
+  score: number;
+  correct: number;
+  miss: number;
+  backspace: number;
+  combo: number;
+  speed: number;
+  created_at: string;
+};
+
+// useRanking が保持するランキング表示状態。
+// 判別子 mode で entries の型が一意に確定する判別ユニオン。
+export type RankingView =
+  | { mode: "global"; entries: RankingEntry[] }
+  | { mode: "dev"; entries: RankingScore[] };
+
+// POST /api/scores のレスポンス（backend ScoreCreateResponse と対応）。
+export type ScorePostResult = {
+  user_id: string;
+  updated: boolean;
+  created_at: string;
+};
+
 export type WordRow = {
   difficulty: string;
   jp: string;

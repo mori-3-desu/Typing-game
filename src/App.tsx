@@ -13,6 +13,9 @@ import { LoadingScreen } from "./components/screens/LoadingScreen";
 import { ResultScreen } from "./components/screens/ResultScreen";
 import { ScalerWrapper } from "./components/screens/ScalerWrapper";
 import { TitleScreen } from "./components/screens/TitleScreen";
+import { MigrationModal } from "./features/migration/components/MigrationModal";
+import { MigrationModalButton } from "./features/migration/components/MigrationModalButton";
+import { useMigrationModal } from "./features/migration/hooks/useMigrationModal";
 import { useTypingGame } from "./features/typing-game/hooks/useTypingGame";
 import {
   buildDisplayData,
@@ -20,7 +23,6 @@ import {
 } from "./features/typing-game/logic/gameState";
 import type { GameResultStats, PlayPhase } from "./features/typing-game/types";
 import { getShareUrl } from "./features/typing-game/utils/shareLink";
-import { useHandoffModal } from "./features/handoff/hooks/useHandoffModal";
 import { useAppInit } from "./hooks/useAppInit";
 import { useAuth } from "./hooks/useAuth";
 import { useConfig } from "./hooks/useConfig";
@@ -39,8 +41,6 @@ import {
   STORAGE_KEYS,
   UI_TIMINGS,
 } from "./utils/constants";
-import { HandoffModalButton } from "./features/handoff/components/HandoffModalButton";
-import { HandoffModal } from "./features/handoff/components/HandoffModal";
 
 function App() {
   const {
@@ -78,9 +78,9 @@ function App() {
   const [isTitleExiting, setIsTitleExiting] = useState(false);
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
 
-  const { ngWordsList, dbWordData } = useAppInit();
+  const { dbWordData } = useAppInit();
   const { userId, isLoading, error } = useAuth();
-  const handoffModal = useHandoffModal();
+  const migrationModal = useMigrationModal();
 
   const {
     score,
@@ -190,7 +190,6 @@ function App() {
     isNameConfirmed,
     isTitleExiting,
     playerName,
-    ngWordsList,
     saveName,
     goToDifficulty,
     setIsInputLocked,
@@ -206,10 +205,9 @@ function App() {
 
   const {
     showRanking,
-    rankingData,
+    rankingView,
+    mode,
     isRankingLoading,
-    isDevRankingMode,
-    rankingDataMode,
     fetchRanking,
     handleShowDevScore,
     closeRanking,
@@ -379,7 +377,7 @@ function App() {
                     handleBackToInput={handleBackToInput}
                     handleFinalConfirm={handleFinalConfirm}
                   >
-                    <HandoffModalButton onClick={handoffModal.open} />
+                    <MigrationModalButton onClick={migrationModal.open} />
                   </TitleScreen>
                 )}
 
@@ -449,10 +447,9 @@ function App() {
         {showRanking && (
           <Ranking
             difficulty={difficulty}
-            rankingData={rankingData}
-            userId={userId}
-            isDevRankingMode={isDevRankingMode}
-            rankingDataMode={rankingDataMode}
+            rankingView={rankingView}
+            mode={mode}
+            myCreatedAt={ScoreService.getCreatedAt(difficulty)}
             isLoading={isRankingLoading}
             onClose={closeRanking}
             onShowDevScore={handleShowDevScore}
@@ -469,7 +466,6 @@ function App() {
             seVol={seVol}
             brightness={brightness}
             showRomaji={showRomaji}
-            ngWordsList={ngWordsList}
             setIsMuted={setIsMuted}
             setBgmVol={setBgmVol}
             setSeVol={setSeVol}
@@ -479,7 +475,7 @@ function App() {
             onClose={handleCloseConfig}
           />
         )}
-        {handoffModal.isOpen && <HandoffModal onClose={handoffModal.close} />}
+        {migrationModal.isOpen && <MigrationModal onClose={migrationModal.close} />}
       </ScalerWrapper>
       <BrightnessOverlay brightness={brightness} />
     </div>

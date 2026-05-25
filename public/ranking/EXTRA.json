@@ -1,0 +1,4 @@
+[
+  { "name": "neo", "score": 91500, "correct": 455, "miss": 5, "backspace": 2, "combo": 388, "speed": 7.41, "created_at": "2026-05-15T22:18:04.952000Z" },
+  { "name": "kana", "score": 73200, "correct": 388, "miss": 13, "backspace": 6, "combo": 251, "speed": 6.30, "created_at": "2026-05-19T10:52:39.477000Z" }
+]

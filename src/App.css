@@ -2952,7 +2952,7 @@ body {
         0.5cqh 0.5cqh 0px rgba(0, 0, 0, 0.2);
 
       border-bottom: 0.4cqh dashed rgba(255, 255, 255, 0.5);
-      
+
       letter-spacing: 0.1em;
     }
 
@@ -3896,7 +3896,7 @@ body {
 
 .handoff-modal {
   /* ===== コンポーネント内チューニング用変数 ===== */
-  --modal-radius: 30px;
+  --modal-radius: 10px;
   --btn-radius: 50px;
   --action-shadow-color: #cda36b;
   --action-grad: linear-gradient(
@@ -3942,7 +3942,7 @@ body {
   }
 
   .handoff-dialog {
-    overflow: hidden;
+    overflow-y: auto;
 
     inline-size: 90%;
     block-size: 90%;
@@ -3961,30 +3961,6 @@ body {
     text-align: center;
   }
 
-  .handoff-code {
-    display: block;
-    inline-size: 90%;
-    block-size: 200px;
-    margin-block-start: 16px;
-    margin-inline: auto;
-    padding-block: 12px;
-    padding-inline: 14px;
-    resize: none;
-
-    font-family: ui-monospace, "SF Mono", Consolas, monospace;
-    font-size: 14px;
-    line-height: 1.5;
-
-    word-break: break-all;
-    overflow-y: auto;
-
-    color: var(--color-darkblue);
-    background: #fafafa;
-    border: 2px solid var(--color-offwhite);
-    border-radius: 12px;
-    box-sizing: border-box;
-  }
-
   .handoff-actions {
     display: flex;
     gap: 16px;
@@ -3995,15 +3971,15 @@ body {
   .handoff-action {
     /* 各疑似クラスでこの 2 つを書き換えるだけで状態演出が完成する */
     --lift: 0;
-    --shadow-depth: 4px;
+    --shadow-depth: 3px;
 
     border: none;
     border-radius: var(--btn-radius);
-    padding-block: 8px;
-    padding-inline: 28px;
+    padding-block: 5px;
+    padding-inline: 2px;
+    box-sizing: border-box;
 
     font-size: 18px;
-    font-family: inherit;
     font-weight: 600;
     color: var(--color-darkblue);
 
@@ -4015,14 +3991,28 @@ body {
       transform 0.2s,
       box-shadow 0.2s;
 
-    &:not(:disabled):hover {
-      --lift: -2px;
-      --shadow-depth: 6px;
+    /* 破壊的アクション(取り込み確定等)用の赤系。
+       Bootstrap btn-danger 相当。将来 warning/success 等を増やしやすいよう
+       色系列のモディファイアとして命名。 */
+    &.danger {
+      --action-grad: linear-gradient(
+        140deg,
+        #ff4340 0%,
+        #ffc3c3 51%,
+        #e90a0a 100%
+      );
+      box-shadow: 0 3px 0 rgb(156, 70, 70);
     }
-    &:not(:disabled):active {
-      --lift: 2px;
+
+    &:hover {
+      --lift: -2px;
+      --shadow-depth: 3px;
+    }
+    &:active {
+      --lift: 1px;
       --shadow-depth: 1px;
     }
+
     &:disabled {
       --lift: 2px;
       --shadow-depth: 1px;
@@ -4074,8 +4064,96 @@ body {
       }
     }
   }
+
+  /* ============= migration セクション共通 =============
+     IssueSection / ImportSection で使う統一スタイル。
+     handoff-* (旧) は中央寄せ・textarea 前提だったため、
+     新 UI(右寄せ・input/値表示の統一感)用に分離。 */
+
+  .migration-section {
+    /* 発行 / 取り込みの視覚的区切り */
+    inline-size: 85%;
+    padding-block: 16px;
+    margin-inline: auto;
+    border-block-end: 1px solid rgba(0, 0, 0, 0.15);
+  }
+  .migration-section:last-of-type {
+    border-block-end: none;
+  }
+
+  .migration-field {
+    /* 7:3 flex 行: 左=値表示/入力, 右=対応するアクションボタン
+       font 系は子要素に持たせる(ボタンへの monospace 継承を防ぐため)。 */
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    inline-size: 100%;
+    margin-block: 12px;
+    padding-block: 8px;
+    padding-inline: 10px;
+
+    background: #fafafa;
+    border: 2px solid var(--color-offwhite);
+    border-radius: 10px;
+    box-sizing: border-box;
+  }
+
+  /* 確認ダイアログのボタン行。
+     migration-field の modifier ではなく独立クラスにした理由:
+     枠付き field の本質(背景/枠)を打ち消すため、別役割と整理。 */
+  .migration-confirm-actions {
+    display: grid;
+    grid-template-columns: repeat(2, 120px);
+    justify-content: center;
+    gap: 40px;
+  }
+
+  /* 左カラム: 値表示(p) / 入力(input) */
+  .migration-field > p,
+  .migration-field > input {
+    flex: 7;
+    min-inline-size: 0; /* flex item の overflow 抑制 */
+    margin: 0;
+    padding: 0;
+
+    font-family: ui-monospace, "SF Mono", Consolas, monospace;
+    font-size: 16px;
+    line-height: 1.5;
+    text-align: left;
+    color: var(--color-darkblue);
+  }
+
+  /* input は親の枠を活かすため見た目を透過 */
+  .migration-field > input {
+    border: none;
+    background: transparent;
+    outline: none;
+  }
+
+  /* 右カラム: ボタン。flex:3 で幅を確保(font は親が指定してないので body 継承) */
+  .migration-field > .handoff-action {
+    flex: 2;
+  }
+
+  /* 取り込み確認ビュー: section と同サイズで中身が center から scale-in
+     prefers-reduced-motion の設定により後段で動きは抑制される。 */
+  .migration-confirm {
+    animation: migrationConfirmScaleIn 0.2s ease-out;
+    transform-origin: center;
+  }
 }
 
+@keyframes migrationConfirmScaleIn {
+  from {
+    transform: scale(0.5);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
 /* =========================================
    アクセシビリティ：視差効果を減らす設定
    ========================================= */
