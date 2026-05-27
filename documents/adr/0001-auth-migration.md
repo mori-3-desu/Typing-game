@@ -391,9 +391,9 @@ Phase 4: 旧環境停止
 
 | 項目 | 内容 |
 |---|---|
-| 依存追加 | `spring-boot-starter-security` のみ（AWS SDK は不要、環境変数注入のため） |
-| `JwtKeyProvider` 改修 | JWKS HTTP fetch ロジックを撤去、**Lambda 環境変数（Base64 文字列）から PKCS#8 DER をデコードしてロード**に変更。クラス名を `LocalKeyProvider` 等に変更 |
-| 鍵生成・配置スクリプト | `infra/scripts/` 等にローカル実行用の ES256 鍵ペア生成スクリプトを配置（**生成物は Git 管理しない**）。`.tfvars` または `terraform apply -var` 経由で Base64 文字列を Lambda env vars に渡す |
+| 依存追加 | `spring-boot-starter-security` のみ（AWS SDK は不要、環境変数注入のため）⭐|
+| `JwtKeyProvider` 改修 | JWKS HTTP fetch ロジックを撤去、**Lambda 環境変数（Base64 文字列）から PKCS#8 DER をデコードしてロード**に変更。クラス名を `LocalKeyProvider` 等に変更(JwtKeySetに変更、(Jwt Web Key Setから複数鍵取得という由来))⭐|
+| 鍵生成・配置スクリプト | `infra/scripts/` 等にローカル実行用の ES256 鍵ペア生成スクリプトを配置（**生成物は Git 管理しない**）。`.tfvars` または `terraform apply -var` 経由で Base64 文字列を Lambda env vars に渡す ⭐|
 | `JwtAuthenticationFilter` 改修 | HS256 フォールバック撤去、Cookie 読み取りに対応、Spring Security の `OncePerRequestFilter` として `SecurityFilterChain` に登録 |
 | 新規: `SecurityConfig` | `SecurityFilterChain` Bean、エンドポイントごとの認可ルール宣言、CSRF 設定 |
 | 新規: `AuthController` | `POST /auth/guest`（冪等な Cookie 確認/発行） |

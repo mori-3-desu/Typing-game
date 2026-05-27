@@ -16,6 +16,8 @@ dist-ssr
 learnings
 aws_setting
 infra
+*.tfvars
+terraform.tfvars
 node_modules
 supabase/.temp/
 migration_data/
