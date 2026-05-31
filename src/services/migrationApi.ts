@@ -2,7 +2,6 @@ import { API_BASE } from "./apiBase";
 
 export type MigrationResponse = {
   readonly code: string;
-  readonly expires_at: string;
 };
 
 export type ImportNameResponse = {
@@ -18,12 +17,7 @@ const isImportNameResponse = (value: unknown): value is ImportNameResponse => {
 const isMigrationResponse = (value: unknown): value is MigrationResponse => {
   if (typeof value !== "object" || value === null) return false;
 
-  return (
-    "code" in value &&
-    typeof value.code === "string" &&
-    "expires_at" in value &&
-    typeof value.expires_at === "string"
-  );
+  return "code" in value && typeof value.code === "string";
 };
 
 /**

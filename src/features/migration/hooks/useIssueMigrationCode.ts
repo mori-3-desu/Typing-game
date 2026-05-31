@@ -23,7 +23,6 @@ export const useIssueMigrationCode = () => {
       setState({
         status: "success",
         code: res.code,
-        expires_at: res.expires_at,
       });
     } catch (e: unknown) {
       setState({

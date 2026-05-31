@@ -19,12 +19,11 @@ afterEach(() => {
 describe("issueMigrationCode", () => {
   const SERVER_MESSAGE = "認証に失敗しました";
 
-  it("200を受け取ったら code と expiredAt を返すこと", async () => {
+  it("200を受け取ったら code を返すこと", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         JSON.stringify({
           code: REQUEST_CODE,
-          expires_at: "2026-05-23T12:00:00Z",
         }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       ),
@@ -34,7 +33,6 @@ describe("issueMigrationCode", () => {
 
     expect(result).toEqual({
       code: REQUEST_CODE,
-      expires_at: "2026-05-23T12:00:00Z",
     });
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -44,11 +42,11 @@ describe("issueMigrationCode", () => {
     expect(init?.headers).toMatchObject({ Authorization: `Bearer ${DUMMY_JWT}` });
   });
 
-  it("code と expires_at 片方が欠落していたらthrowすること", async () => {
+  it("code が欠落していたらthrowすること", async () => {
     vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
         JSON.stringify({
-          expires_at: "2026-05-23T12:00:00Z",
+          ng: "no code field",
         }),
         { status: 200, headers: { "Content-Type": "application/json" } },
       ),

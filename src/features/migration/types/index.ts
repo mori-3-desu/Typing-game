@@ -1,7 +1,7 @@
 export type IssueState =
   | { status: "idle" }
   | { status: "loading" }
-  | { status: "success"; code: string; expires_at: string }
+  | { status: "success"; code: string }
   | { status: "error"; message: string };
 
 export type ImportState =

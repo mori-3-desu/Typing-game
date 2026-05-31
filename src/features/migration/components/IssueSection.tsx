@@ -1,5 +1,4 @@
 import { SoundBtn } from "../../../common/SoundBtn";
-import { formatJpDate } from "../../../utils/dateFormat";
 import type { CopyFeedback, IssueState } from "../types";
 
 type Props = {
@@ -21,9 +20,11 @@ export const IssueSection = ({
   return (
     <section className="migration-section">
       <p style={{ color: "red", fontSize: "1rem" }}>
-        ※引き継ぎコードを発行し、移行先に入力して頂くことで
+        ※引き継ぎコードを発行していただくとゲームデータの引継ぎが出来ます。
         <br />
-        ゲームデータの引継ぎが出来ます。コード漏れなき用大切に保管してください。
+        長期間未ログイン状態が続くとデータは消去されます。
+        <br />
+        別端末や長期離脱の際は発行して頂くことをおすすめします。
       </p>
 
       <div className="migration-field">
@@ -42,13 +43,6 @@ export const IssueSection = ({
         >
           コピー
         </SoundBtn>
-      </div>
-
-      <div className="migration-field">
-        <p>
-          有効期限<span style={{ marginInlineStart: "32px" }}>：</span>
-          {hasCode ? formatJpDate(state.expires_at) : "—"}
-        </p>
       </div>
 
       <div className="message-container" style={{ minHeight: "1.5rem" }}>
