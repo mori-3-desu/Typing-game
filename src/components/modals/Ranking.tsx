@@ -88,7 +88,10 @@ type GlobalRankingListProps = {
 
 // 全国ランキング（S3 配信）。RankingEntry は個人識別子を持たないため、
 // 自分のエントリは created_at の一致で判別する（key も created_at を使う）。
-const GlobalRankingList = ({ entries, myCreatedAt }: GlobalRankingListProps) => {
+const GlobalRankingList = ({
+  entries,
+  myCreatedAt,
+}: GlobalRankingListProps) => {
   if (entries.length === 0) {
     return (
       <div
@@ -157,10 +160,10 @@ export const Ranking = ({
 }: Props) => {
   const isDev = mode === "dev";
   const btnIcon = isDev ? "🌏" : "👑";
-  const devText = isDev ? "- 作成者のスコア -" : "";
-  const btnLabel = isDev
-    ? "全国ランキングに戻る"
-    : "開発者のスコアを表示する";
+  const devText = isDev
+    ? "- 作成者のスコア -"
+    : "ランキングは15分ごとに反映されます。";
+  const btnLabel = isDev ? "全国ランキングに戻る" : "開発者のスコアを表示する";
   // canShow が true のとき rankingView は非 null（TS の別名条件ナローイング）。
   const canShow = !isLoading && rankingView !== null;
 
@@ -179,7 +182,7 @@ export const Ranking = ({
       >
         <div className="ranking-header">
           <h2 id="modal-title" className="ranking-title">
-            {difficulty} <span style={{ fontSize: "0.4em" }}>{devText}</span>
+            {difficulty} <span style={{ fontSize: "0.23em" }}>{devText}</span>
           </h2>
 
           <div className="ranking-header-buttons">
