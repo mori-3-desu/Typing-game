@@ -15,8 +15,6 @@ jobs:
     # (PR からの悪意ある console.log で secrets が漏れることを防ぐ)
     env:
       VITE_API_URL: http://localhost:8080
-      VITE_SUPABASE_URL: http://localhost:54321
-      VITE_SUPABASE_ANON_KEY: dummy_anon_key_for_ci
       VITE_SENTRY_DSN: ""
     steps:
       - name: リポジトリをチェックアウト
@@ -71,8 +69,6 @@ jobs:
         run: |
           {
             echo "VITE_API_URL=${{ secrets.VITE_API_URL }}"
-            echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}"
-            echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}"
             echo "VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }}"
           } > .env.production
 
