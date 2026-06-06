@@ -44,7 +44,7 @@ export type ScoreRequestBody = {
   speed: number;
 };
 
-// ■ ランキングのデータ
+// ランキングのデータ
 export type RankingScore = {
   id: number;
   user_id: string;
@@ -111,7 +111,7 @@ export type BonusPopup = {
 export type Popup = BonusPopup;
 
 export type Word = { readonly jp: string; readonly roma: string }; // 基本の型
-export type WordList = ReadonlyArray<Word>; // ArrayPrototypeしようするために分けてある
+export type WordList = ReadonlyArray<Word>; // ArrayPrototype使用するために分けてある
 export type WordDataMap = Readonly<Record<DifficultyLevel, WordList>>; // 公開用、変更不可にする
 export type MutableWordDataMap = Record<DifficultyLevel, Word[]>; // データ整形用
 
