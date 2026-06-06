@@ -79,7 +79,7 @@ function App() {
   const [reviewData, setReviewData] = useState<GameResultStats | null>(null);
 
   const { dbWordData } = useAppInit();
-  const { userId, isLoading, error } = useAuth();
+  useAuth();
   const migrationModal = useMigrationModal();
 
   const {
@@ -116,7 +116,6 @@ function App() {
   } = useTypingGame(difficulty, dbWordData);
 
   const { saveName } = useSaveName({
-    userId,
     setPlayerName,
   });
 
@@ -190,7 +189,6 @@ function App() {
     isNameConfirmed,
     isTitleExiting,
     playerName,
-    saveName,
     goToDifficulty,
     setIsInputLocked,
     setIsTitleExiting,
@@ -316,13 +314,7 @@ function App() {
   return (
     <div className="App">
       <ScalerWrapper>
-        {isLoading ? (
-          <LoadingScreen />
-        ) : error ? (
-          <div className="error-fallback">
-            Error: {error instanceof Error ? error.message : "Unknown error"}
-          </div>
-        ) : (
+
           <div className="game-wrapper">
             {ALL_BACKGROUNDSDATA.map((bg) => (
               <div
@@ -356,7 +348,7 @@ function App() {
 
             {gameState === "loading" && <LoadingScreen />}
 
-            <div inert={isAnyModalOpen || undefined}>
+            <div inert={isAnyModalOpen}>
               <main>
                 {gameState === "title" && (
                   <TitleScreen
@@ -442,7 +434,6 @@ function App() {
               </main>
             </div>
           </div>
-        )}
 
         {showRanking && (
           <Ranking

@@ -1,9 +1,10 @@
 import type { Dispatch, SetStateAction } from "react";
 
 import { DatabaseService } from "../services/database";
+import { storage } from "../services/storage";
 import type { GameState, TitlePhase } from "../types";
 import { startSelectBgm } from "../utils/audio";
-import { PLAYER_NAME_CHARS, UI_TIMINGS } from "../utils/constants";
+import { PLAYER_NAME_CHARS, STORAGE_KEYS, UI_TIMINGS } from "../utils/constants";
 
 type UseTitleParams = {
   isInputLocked: boolean;
@@ -11,7 +12,6 @@ type UseTitleParams = {
   isTitleExiting: boolean;
   playerName: string;
 
-  saveName: (name: string) => Promise<void>;
   goToDifficulty: () => void;
 
   setIsInputLocked: Dispatch<SetStateAction<boolean>>;
@@ -30,7 +30,6 @@ export const useTitleFlow = ({
   isNameConfirmed,
   isTitleExiting,
   playerName,
-  saveName,
   goToDifficulty,
   setIsInputLocked,
   setIsTitleExiting,
@@ -90,6 +89,8 @@ export const useTitleFlow = ({
       // 検証 API が落ちた場合は安全側に倒して Guest で進める。
       // 未検証の名前を通すと後続のスコア登録(NG検証あり)で弾かれるため、
       // 既知の安全値にフォールバックして経路全体を壊さない。
+      // 空白チェックと似たロジックではあるが現状は二か所、
+      // 空文字時とエラー時の対応でセットの役割が違うのでまだ共通化の判断は保留にしている
       console.error("名前検証に失敗しました:", error);
       setPlayerName("Guest");
       setTitlePhase("confirm");
@@ -101,10 +102,7 @@ export const useTitleFlow = ({
   };
 
   const handleFinalConfirm = () => {
-    // 名前保存は best-effort。失敗してもゲーム進行は止めない
-    saveName(playerName).catch((error: unknown) => {
-      console.error("名前の保存に失敗しました:", error);
-    });
+    storage.set(STORAGE_KEYS.PLAYER_NAME, playerName);
     startSelectBgm();
     setIsNameConfirmed(true);
     setGameState("difficulty");
