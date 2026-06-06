@@ -69,6 +69,7 @@ export const useScreenRouter = ({
     isTransitioning,
     setIsTransitioning,
     resetGame,
+    resetResultState,
     setPlayPhase,
     setGameState,
     setIsInputLocked,
