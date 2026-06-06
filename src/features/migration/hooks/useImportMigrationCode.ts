@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 
 import { importByCode } from "../../../services/migrationApi";
-import { requireSession } from "../../../services/sessionHelpers";
 import type { ImportState } from "../types";
 
 export const useImportMigrationCode = () => {
@@ -15,8 +14,7 @@ export const useImportMigrationCode = () => {
     setState({ status: "loading" });
 
     try {
-      const session = await requireSession();
-      const res = await importByCode(session.access_token, code);
+      const res = await importByCode(code);
       setState({ status: "success", name: res.name });
     } catch (e: unknown) {
       setState({
@@ -36,6 +34,6 @@ export const useImportMigrationCode = () => {
   return {
     state,
     importCode,
-    reset
+    reset,
   };
 };

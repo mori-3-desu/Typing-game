@@ -1,4 +1,5 @@
 import { API_BASE } from "./apiBase";
+import { apiFetch } from "./apiFetch";
 
 export type MigrationResponse = {
   readonly code: string;
@@ -49,14 +50,9 @@ const parseAndValidate = async <T>(
   return data;
 };
 
-export const issueMigrationCode = async (
-  accessToken: string,
-): Promise<MigrationResponse> => {
-  const response = await fetch(`${API_BASE}/api/migration/code`, {
+export const issueMigrationCode = async (): Promise<MigrationResponse> => {
+  const response = await apiFetch(`${API_BASE}/api/migration/code`, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
   });
 
   await assertOkOrThrow(response, "引継ぎコードの発行に失敗しました");
@@ -69,14 +65,12 @@ export const issueMigrationCode = async (
 };
 
 export const importByCode = async (
-  accessToken: string,
   code: string,
 ): Promise<ImportNameResponse> => {
-  const response = await fetch(`${API_BASE}/api/migration/import`, {
+  const response = await apiFetch(`${API_BASE}/api/migration/import`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${accessToken}`,
     },
     body: JSON.stringify({ code }),
   });

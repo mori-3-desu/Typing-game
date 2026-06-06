@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 
 import { issueMigrationCode } from "../../../services/migrationApi";
-import { requireSession } from "../../../services/sessionHelpers";
 import type { CopyFeedback, IssueState } from "../types";
 
 export const useIssueMigrationCode = () => {
@@ -16,10 +15,9 @@ export const useIssueMigrationCode = () => {
     setState((prev) =>
       prev.status === "success" ? prev : { status: "loading" },
     );
-    
+
     try {
-      const session = await requireSession();
-      const res = await issueMigrationCode(session.access_token);
+      const res = await issueMigrationCode();
       setState({
         status: "success",
         code: res.code,

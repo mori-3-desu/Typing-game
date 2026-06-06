@@ -1,10 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { importByCode, issueMigrationCode } from "./migrationApi";
+import { importByCode, issueMigrationCode } from "../migrationApi";
 
 const NETWORK_ERROR_MESSAGE = "ネットワーク到達不能: ENETUNREACH";
 const REQUEST_CODE = "ABCDEF2345";
-const DUMMY_JWT = "dummy_jwt";
 
 const mockNetworkError = () => {
   vi.spyOn(globalThis, "fetch").mockRejectedValue(
@@ -17,8 +16,6 @@ afterEach(() => {
 });
 
 describe("issueMigrationCode", () => {
-  const SERVER_MESSAGE = "認証に失敗しました";
-
   it("200を受け取ったら code を返すこと", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
       new Response(
@@ -29,7 +26,7 @@ describe("issueMigrationCode", () => {
       ),
     );
 
-    const result = await issueMigrationCode(DUMMY_JWT);
+    const result = await issueMigrationCode();
 
     expect(result).toEqual({
       code: REQUEST_CODE,
@@ -39,7 +36,7 @@ describe("issueMigrationCode", () => {
     const [url, init] = fetchSpy.mock.calls[0];
     expect(url).toMatch("/api/migration/code");
     expect(init?.method).toBe("POST");
-    expect(init?.headers).toMatchObject({ Authorization: `Bearer ${DUMMY_JWT}` });
+    expect(init?.credentials).toBe("include");
   });
 
   it("code が欠落していたらthrowすること", async () => {
@@ -52,27 +49,12 @@ describe("issueMigrationCode", () => {
       ),
     );
 
-    await expect(issueMigrationCode(DUMMY_JWT)).rejects.toThrow();
-  });
-
-  it("認証が失敗したらエラーレスポンスが返る事", async () => {
-    vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response(JSON.stringify({ message: SERVER_MESSAGE }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" },
-      }),
-    );
-
-    await expect(issueMigrationCode(DUMMY_JWT)).rejects.toThrow(
-      SERVER_MESSAGE,
-    );
+    await expect(issueMigrationCode()).rejects.toThrow();
   });
 
   it("fetchがrejectしてネットワークエラーを返すこと", async () => {
     mockNetworkError();
-    await expect(issueMigrationCode(DUMMY_JWT)).rejects.toThrow(
-      NETWORK_ERROR_MESSAGE,
-    );
+    await expect(issueMigrationCode()).rejects.toThrow(NETWORK_ERROR_MESSAGE);
   });
 });
 
@@ -89,7 +71,7 @@ describe("importByCode", () => {
         { status: 200, headers: { "Content-Type": "application/json" } },
       ),
     );
-    const result = await importByCode(DUMMY_JWT, REQUEST_CODE);
+    const result = await importByCode(REQUEST_CODE);
 
     expect(result).toEqual({
       name: INHERITED_NAME,
@@ -97,9 +79,11 @@ describe("importByCode", () => {
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0];
+    const sentHeaders = new Headers(init?.headers);
     expect(url).toMatch("api/migration/import");
     expect(init?.method).toBe("POST");
-    expect(init?.headers).toMatchObject({ Authorization: `Bearer ${DUMMY_JWT}` });
+    expect(init?.credentials).toBe("include");
+    expect(sentHeaders.get("Content-Type")).toBe("application/json");
     expect(JSON.parse(init?.body as string)).toEqual({ code: REQUEST_CODE });
   });
 
@@ -113,7 +97,7 @@ describe("importByCode", () => {
       ),
     );
 
-    await expect(importByCode(DUMMY_JWT, REQUEST_CODE)).rejects.toThrow();
+    await expect(importByCode(REQUEST_CODE)).rejects.toThrow();
   });
 
   it("コードの検証が失敗した時、エラーを返すこと", async () => {
@@ -126,15 +110,13 @@ describe("importByCode", () => {
       ),
     );
 
-    await expect(importByCode(DUMMY_JWT, REQUEST_CODE)).rejects.toThrow(
-      SERVER_MESSAGE,
-    );
+    await expect(importByCode(REQUEST_CODE)).rejects.toThrow(SERVER_MESSAGE);
   });
 
   it("fetchがrejectしてネットワークエラーを返すこと", async () => {
     mockNetworkError();
 
-    await expect(importByCode(DUMMY_JWT, REQUEST_CODE)).rejects.toThrow(
+    await expect(importByCode(REQUEST_CODE)).rejects.toThrow(
       NETWORK_ERROR_MESSAGE,
     );
   });
