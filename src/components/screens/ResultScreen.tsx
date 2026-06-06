@@ -21,7 +21,7 @@ type Props = {
   onBackToDifficulty: () => void;
   onBackToTitle: () => void;
   onShowRanking: () => void;
-  onTweet: (score: number, rank:string) => string;
+  onTweet: (score: number, rank: string) => string;
   onClickScreen: () => void;
 };
 
@@ -40,7 +40,6 @@ export const ResultScreen = ({
   onTweet,
   onClickScreen,
 }: Props) => {
-
   // 苦手単語リスト (既に整形済みだが念のため型定義通りに使用)
   const displayWeakWords = resultData.weakWords;
 
@@ -50,8 +49,7 @@ export const ResultScreen = ({
     .slice(0, LIMIT_DATA.WEAK_DATA_LIMIT);
 
   let diffClass = "diff-zero";
-  if (scoreDiff > 0) diffClass = "diff-plus";
-  if (scoreDiff < 0) diffClass = "diff-minus";
+  scoreDiff > 0 ? (diffClass = "diff-plus") : (diffClass = "diff-minus");
 
   return (
     <div

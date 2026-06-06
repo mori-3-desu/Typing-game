@@ -57,6 +57,7 @@ export const useScreenRouter = ({
     if (isTransitioning) return;
     setIsTransitioning(true);
     resetGame();
+    resetResultState();
     stopBGM();
     setTimeout(() => {
       setPlayPhase("ready");
