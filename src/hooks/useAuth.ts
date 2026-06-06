@@ -1,56 +1,40 @@
-import { useEffect, useRef,useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { supabase } from "../supabase";
+import { ensureGuestSession } from "../services/ensureGuestSession";
 
-export const useAuth = () => {
-  const [userId, setUserId] = useState<string>("");
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+type GuestSessionState = {
+  error: Error | null;
+};
+
+/**
+ * アプリ起動時にゲストセッション（HttpOnly Cookie）を確立する。
+ * sliding 方式なので「訪問のたびに叩く＝バックエンドが発行 or 延長を reconcile」。
+ * Cookie は HttpOnly で JS から読めないため、フロントは userId を持たず
+ * 「確立できたか（isReady）」だけを判定材料にする。
+ */
+export const useAuth = (): GuestSessionState => {
   const [error, setError] = useState<Error | null>(null);
 
-  // 処理重複防止のガード
+  // StrictMode の二重実行・再レンダーでの多重 POST を防ぐ
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    // 監視役: 状態の反映のみ（ログイン実行は絶対にしない）
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUserId(session?.user?.id ?? "");
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
-      // 登録直後に一度発火して状態を教えてくれるので
-      // ここで isLoading を false にする
-      setIsLoading(false);
-    });
-
-    const ensureAnonymousUser = async () => {
-      if (initializedRef.current) return;
-      initializedRef.current = true;
-
+    const establish = async () => {
       try {
-        const {
-          data: { session },
-          // ここで getSession を使う理由は「能動的に今の状態を確認したいから」
-          // onAuthStateChangeの初回発火を待つより、ここで明示的にチェックする方が
-          // ロジックの実行順序として確実
-        } = await supabase.auth.getSession();
-        if (!session) {
-          const { error: signInError } =
-            await supabase.auth.signInAnonymously();
-          if (signInError) throw signInError;
-        }
-      } catch (e) {
-        setError(e as Error);
-      } finally {
-        setIsLoading(false);
+        await ensureGuestSession();
+      } catch (e: unknown) {
+        // 握りつぶさず error に載せ、呼び出し側で出し分ける（リモート保存を止める等）
+        setError(
+          e instanceof Error ? e : new Error("セッションの確立に失敗しました"),
+        );
       }
     };
 
-    ensureAnonymousUser();
-
-    return () => {
-      subscription.unsubscribe();
-    };
+    establish();
   }, []);
 
-  return { userId, isLoading, error };
+  return { error };
 };
