@@ -21,9 +21,11 @@ type Props = {
   onBackToDifficulty: () => void;
   onBackToTitle: () => void;
   onShowRanking: () => void;
-  onTweet: (score: number, rank:string) => string;
+  onTweet: (score: number, rank: string) => string;
   onClickScreen: () => void;
 };
+
+type DiffHighScoreClass = "diff-zero" | "diff-plus" | "diff-minus";
 
 export const ResultScreen = ({
   gameState,
@@ -40,7 +42,6 @@ export const ResultScreen = ({
   onTweet,
   onClickScreen,
 }: Props) => {
-
   // 苦手単語リスト (既に整形済みだが念のため型定義通りに使用)
   const displayWeakWords = resultData.weakWords;
 
@@ -49,9 +50,11 @@ export const ResultScreen = ({
     .sort((a, b) => b[1] - a[1])
     .slice(0, LIMIT_DATA.WEAK_DATA_LIMIT);
 
-  let diffClass = "diff-zero";
-  if (scoreDiff > 0) diffClass = "diff-plus";
-  if (scoreDiff < 0) diffClass = "diff-minus";
+  const diffClass = (scoreDiff: number): DiffHighScoreClass => {
+    if (scoreDiff === 0) return "diff-zero";
+
+    return scoreDiff > 0 ? "diff-plus" : "diff-minus";
+  };
 
   return (
     <div
@@ -74,7 +77,7 @@ export const ResultScreen = ({
             <div className="score-header-row">
               <div className="score-label-main">SCORE</div>
 
-              {/* ▼ 修正: highScore がある時（通常リザルト）だけ、このブロックごと表示する */}
+              {/* highScore がある時（通常リザルト）だけ、このブロックごと表示する */}
               {highScore !== undefined && (
                 <div className="hiscore-block">
                   {/* NEW RECORDバッジ */}
@@ -97,7 +100,7 @@ export const ResultScreen = ({
 
                   {/* スコア差分 */}
                   {gameState === "result" && (
-                    <div className={`score-diff ${diffClass}`} id="score-diff">
+                    <div className={`score-diff ${diffClass(scoreDiff)}`} id="score-diff">
                       {scoreDiff > 0 ? "+" : scoreDiff === 0 ? "±" : ""}
                       {scoreDiff.toLocaleString()}
                     </div>

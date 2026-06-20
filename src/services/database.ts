@@ -6,7 +6,6 @@
 import {
   type DifficultyLevel,
   type RankingEntry,
-  type RankingScore,
   type ScorePostResult,
   type ScoreRequestBody,
   type Word,
@@ -129,26 +128,29 @@ export const DatabaseService = {
 
   /**
    * 開発者スコアを取得
-   * 開発者ランキング（?creator=true）は全国ランキングとは別物なので、
-   * 当面 Lambda -> RDS 経路を維持する
-   * こちらは別タスクで S3 統一に変更する
    */
   async getDevScore(
     difficulty: DifficultyLevel,
     signal?: AbortSignal,
-  ): Promise<RankingScore[]> {
+  ): Promise<RankingEntry[]> {
     const response = await fetch(
-      `${API_BASE}/api/scores/ranking/${difficulty}?creator=true`,
+      `/ranking/dev/${difficulty}.json`,
       {
         signal,
       },
     );
 
+    if (response.status === 404) return [];
+
     if (!response.ok) {
-      throw new Error(`HTTP error status: ${response.status}`);
+      throw new Error(`dev ranking fetch failed: ${response.status}`);
     }
 
-    return (await response.json()) as RankingScore[];
+    // 配列でなければ（HTML フォールバック等）未生成とみなしランキングを返す
+    // contains 等の Content-Type 判定に頼らず、受けとった値の形で判断する。
+    const data: unknown = await response.json().catch(() => null);
+
+    return Array.isArray(data) ? (data as RankingEntry[]) : [];
   },
 
   /**

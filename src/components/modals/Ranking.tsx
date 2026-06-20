@@ -162,7 +162,7 @@ export const Ranking = ({
   const btnIcon = isDev ? "🌏" : "👑";
   const devText = isDev
     ? "- 作成者のスコア -"
-    : "ランキングは15分ごとに反映されます。";
+    : "";
   const btnLabel = isDev ? "全国ランキングに戻る" : "開発者のスコアを表示する";
   // canShow が true のとき rankingView は非 null（TS の別名条件ナローイング）。
   const canShow = !isLoading && rankingView !== null;
