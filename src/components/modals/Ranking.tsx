@@ -3,7 +3,6 @@ import { useEscapekey } from "../../hooks/useEscapeKey";
 import {
   type DifficultyLevel,
   type RankingEntry,
-  type RankingScore,
   type RankingView,
 } from "../../types";
 import { formatJpDate } from "../../utils/dateFormat";
@@ -20,8 +19,8 @@ type Props = {
   onFetchRanking: (diff?: DifficultyLevel) => void;
 };
 
-// 開発者ランキング（API 経由）。RankingScore は id / user_id を持つ。
-const DevRankingList = ({ entries }: { entries: RankingScore[] }) => {
+// 開発者ランキング
+const DevRankingList = ({ entries }: { entries: RankingEntry[] }) => {
   if (entries.length === 0) {
     return (
       <div className="dev-score-pop-container">
@@ -33,7 +32,7 @@ const DevRankingList = ({ entries }: { entries: RankingScore[] }) => {
   return (
     <>
       {entries.map((item) => (
-        <div key={item.id} className="dev-score-pop-container">
+        <div className="dev-score-pop-container">
           <div className="dev-score-card" style={{ color: "inherit" }}>
             <div className="dev-label">CREATOR'S RECORD</div>
             <div
