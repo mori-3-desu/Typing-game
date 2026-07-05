@@ -141,7 +141,7 @@ https://github.com/user-attachments/assets/aeb8b6c2-9415-4c85-a0cc-e5637062761f
 今回の構成はコストを最優先で抑えつつ、セキュアと管理コスト、パフォーマンスのバランスを意識し、約$20の範囲に抑えることが出来ました。
 
 #### 実行時構成
-![実行時構成](./infra/diagrams/aws_run.webp)
+![実行時構成](./public/images/aws_run_composition.webp)
 
 #### VPCエンドポイントを全廃しつつ、セキュリティ強化とコストを削減
 VPC Lambda から Supabase Auth へ接続してJWTを取得する構成を組んでいましたが問題が発生しました。
