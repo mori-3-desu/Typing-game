@@ -3,12 +3,15 @@ import { ROMA_VARIATIONS } from "../utils/romajiMap";
 
 export type BackspaceStatus = "EMPTY" | "BACK" | "BACK_EXPANDED";
 
-const MISS_STATUS: ReadonlyArray<string> = [
+// 一度 END をミスステータスに入れているが入力オーバー阻止用途で目的が違うので切り分ける
+const MISS_STATUS = [
   "MISS",
   "MISS_NEXT",
   "MISS_ADVANCE",
+  "END"
 ] as const;
-const CORRECT_STATUS: ReadonlyArray<string> = [
+
+const CORRECT_STATUS = [
   "OK",
   "NEXT",
   "EXPANDED",
@@ -24,11 +27,11 @@ export type InputResult = {
 };
 
 export const isMissStatus = (status: InputStatus): status is MissStatus =>
-  MISS_STATUS.includes(status);
+  (MISS_STATUS as readonly InputStatus[]).includes(status);
 
 export const isCorrectStatus = (status: InputStatus): status is CorrectStatus =>
-  CORRECT_STATUS.includes(status);
-
+  (CORRECT_STATUS as readonly InputStatus[]).includes(status);
+  
 /**
  * 現場の作業員（Segment クラス）
  * 1つの日本語ブロック（例："か"、"しゃ"、"ん"）に対する、ユーザーの入力状態を管理する
