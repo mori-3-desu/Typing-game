@@ -3,21 +3,31 @@ import { ROMA_VARIATIONS } from "../utils/romajiMap";
 
 export type BackspaceStatus = "EMPTY" | "BACK" | "BACK_EXPANDED";
 
-export type InputStatus =
-  | "OK"
-  | "NEXT"
-  | "EXPANDED"
-  | "MISS"
-  | "MISS_NEXT"
-  | "MISS_ADVANCE"
-  | "END";
+const MISS_STATUS: ReadonlyArray<string> = [
+  "MISS",
+  "MISS_NEXT",
+  "MISS_ADVANCE",
+] as const;
+const CORRECT_STATUS: ReadonlyArray<string> = [
+  "OK",
+  "NEXT",
+  "EXPANDED",
+] as const;
+
+type MissStatus = (typeof MISS_STATUS)[number];
+type CorrectStatus = (typeof CORRECT_STATUS)[number];
+
+export type InputStatus = MissStatus | CorrectStatus;
 
 export type InputResult = {
   status: InputStatus;
 };
 
-export const isMissStatus = (status: InputStatus): boolean => status === "MISS" || status === "MISS_NEXT" || status === "MISS_ADVANCE";
-export const isCorrectStatus = (status: InputStatus): boolean => status === "OK" || status === "NEXT" ||  status === "EXPANDED";
+export const isMissStatus = (status: InputStatus): status is MissStatus =>
+  MISS_STATUS.includes(status);
+
+export const isCorrectStatus = (status: InputStatus): status is CorrectStatus =>
+  CORRECT_STATUS.includes(status);
 
 /**
  * 現場の作業員（Segment クラス）

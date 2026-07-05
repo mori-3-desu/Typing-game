@@ -20,7 +20,6 @@ infra
 *.tfvars
 terraform.tfvars
 node_modules
-supabase/.temp/
 migration_data/
 .vscode/*
 !.vscode/extensions.json
