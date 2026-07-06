@@ -56,7 +56,7 @@ export class TypingEngine {
    * @param roma 解析対象のローマ字（例: "kaisha"）
    * @returns Segmentの配列（例: "kaisha" → ["ka", "i", "sha"]）
    */
-  segmentize(roma: string): Segment[] {
+  private segmentize(roma: string): Segment[] {
     // 英単語モードなら即座に変換して返す
     if (this.isEnglish) {
       return [...roma].map((c) => new Segment(c, true));
@@ -71,23 +71,10 @@ export class TypingEngine {
    */
   input(key: string): InputResult {
     const segment = this.segments[this.segIndex]; // 今担当しているブロック
-    const prevSegment = this.segments[this.segIndex - 1]; // 1つ前のブロック
 
     // EXTRAはn分岐をさせない
-    if (!this.isEnglish) {
-      // --- 日本語タイピングの鬼門：「ん」の拡張チェック ---
-      // 「ん」を "n" 1文字で済ませた直後に、母音(a,i,u,e,o)ではなく "n" が打たれた場合の処理
-      if (key === "n" && this.segIndex > 0 && prevSegment) {
-        // 1. まず、今のブロック（例："か"）が "n" を受け入れるか確認
-        const isCorrectForCurrent = segment?.canAccept(key) ?? false;
-
-        // 2. 今のブロックは "n" なんて求めていない。
-        // かつ、前のブロックが "n" 1文字で無理やり終わっている（「ん」の入力）場合
-        if (!isCorrectForCurrent && prevSegment.isSingleN()) {
-          prevSegment.expandToDoubleN(); // 前のブロックに「やっぱり "nn" にしといて！」と命令
-          return { status: "EXPANDED" }; // 拡張成功として処理終了
-        }
-      }
+    if (!this.isEnglish && this.tryExpandN(key, segment)) {
+      return { status: "EXPANDED" }; // 拡張成功として処理終了
     }
 
     // もうすべての入力が終わっていたら何もしない
@@ -107,6 +94,24 @@ export class TypingEngine {
     if (result === "OK") return { status: "OK" };
 
     return { status: "MISS" };
+  }
+
+  private tryExpandN(key: string, segment: Segment): boolean {
+    const prevSegment = this.segments[this.segIndex - 1]; // 1つ前のブロック
+
+    // --- 日本語タイピングの鬼門：「ん」の拡張チェック ---
+    // 「ん」を "n" 1文字で済ませた直後に、母音(a,i,u,e,o)ではなく "n" が打たれた場合の処理
+    if (key !== "n" || !prevSegment) return false;
+
+    // 1. まず、今のブロック（例："か"）が "n" を受け入れるか確認
+    const isCorrectForCurrent = segment?.canAccept(key) ?? false;
+
+    // 2. 今のブロックは "n" なんて求めていない。
+    // かつ、前のブロックが "n" 1文字で無理やり終わっている（「ん」の入力）場合
+    if (isCorrectForCurrent || !prevSegment.isSingleN()) return false;
+
+    prevSegment.expandToDoubleN(); // 前のブロックに「やっぱり "nn" にしといて！」と命令
+    return true;
   }
 
   /**

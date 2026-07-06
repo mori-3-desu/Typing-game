@@ -125,7 +125,7 @@ export class Segment {
   }
 
   // このブロックの入力が完了しているか
-  isDone() {
+  private isDone() {
     return this.patterns.includes(this.inputBuffer);
   }
 
