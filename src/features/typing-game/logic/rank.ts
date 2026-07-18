@@ -1,22 +1,40 @@
 import type { DifficultyLevel } from "../../../types";
 
-const RANK_THRESHOLDS = {
-  EASY: { S: 500000, A: 250000, B: 125000, C: 50000 },
-  NORMAL: { S: 900000, A: 500000, B: 300000, C: 150000 },
-  HARD: { S: 1300000, A: 800000, B: 500000, C: 250000 },
-  EXTRA: { S: 1500000, A: 1000000, B: 750000, C: 400000},
-} as const;
-
 type Rank = "S" | "A" | "B" | "C" | "D";
+
+type scoreRanks = { rank: Rank; score: number };
+
+const RANK_THRESHOLDS = {
+  EASY: [
+    { rank: "S", score: 500000 },
+    { rank: "A", score: 250000 },
+    { rank: "B", score: 125000 },
+    { rank: "C", score: 50000 },
+  ],
+  NORMAL: [
+    { rank: "S", score: 900000 },
+    { rank: "A", score: 500000 },
+    { rank: "B", score: 300000 },
+    { rank: "C", score: 150000 },
+  ],
+  HARD: [
+    { rank: "S", score: 1300000 },
+    { rank: "A", score: 800000 },
+    { rank: "B", score: 500000 },
+    { rank: "C", score: 250000 },
+  ],
+  EXTRA: [
+    { rank: "S", score: 1500000 },
+    { rank: "A", score: 1000000 },
+    { rank: "B", score: 750000 },
+    { rank: "C", score: 400000 },
+  ],
+} as const satisfies Record<DifficultyLevel, readonly scoreRanks[]>;
 
 export const calculateRank = (
   difficulty: DifficultyLevel,
   currentScore: number,
 ): Rank => {
-  const th = RANK_THRESHOLDS[difficulty] || RANK_THRESHOLDS.NORMAL;
-  if (currentScore >= th.S) return "S";
-  if (currentScore >= th.A) return "A";
-  if (currentScore >= th.B) return "B";
-  if (currentScore >= th.C) return "C";
-  return "D";
+  const rankTable = RANK_THRESHOLDS[difficulty];
+  return rankTable.find(({ score }) => currentScore >= score)?.rank ?? "D";
 };

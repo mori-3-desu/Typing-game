@@ -31,23 +31,24 @@ export class TypingEngine {
   }
 
   private segmentizeRoma(roma: string): Segment[] {
-    const out: Segment[] = [];
+    const outputKey: Segment[] = [];
 
-    for (let i = 0; i < roma.length; ) {
+    for (let i = 0, len = roma.length; i < len; ) {
       // 現在地(i)から始まる文字が、辞書のキー（"sha"など）と一致するか長い順に探す
       // 辞書にない記号などは、そのまま1文字のSegmentにするフォールバック処理
       const hitKey = SORTED_ROMA_KEYS.find((key) => roma.startsWith(key, i));
+
       if (!hitKey) {
-        out.push(new Segment(roma[i]));
+        outputKey.push(new Segment(roma[i]));
         i++;
         continue;
       }
 
-      out.push(new Segment(hitKey));
+      outputKey.push(new Segment(hitKey));
       i += hitKey.length;
     }
 
-    return out;
+    return outputKey;
   }
 
   /**
@@ -83,6 +84,10 @@ export class TypingEngine {
     // 今のブロックにキーを渡して、判定（正解？ミス？）してもらう
     const result = segment.handleKey(key);
 
+    return this.advanceSegmentIndex(result);
+  }
+
+  private advanceSegmentIndex(result: string): InputResult {
     // そのブロックが完成した（NEXT）なら、監督の現在地（segIndex）を次に進める
     if (result === "NEXT" || result === "MISS_NEXT") {
       this.segIndex++;

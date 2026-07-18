@@ -4,6 +4,7 @@ import { ROMA_VARIATIONS } from "../utils/romajiMap";
 export type BackspaceStatus = "EMPTY" | "BACK" | "BACK_EXPANDED";
 
 // 一度 END をミスステータスに入れているが入力オーバー阻止用途で目的が違うので切り分ける
+// NEXTは状態遷移であるため、分けるべき
 const MISS_STATUS = [
   "MISS",
   "MISS_NEXT",

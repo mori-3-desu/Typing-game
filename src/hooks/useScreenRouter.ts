@@ -34,6 +34,11 @@ type UseScreenRouterProps = {
   resetResultState: () => void;
 };
 
+const IMAGES = {
+  title: "/images/title.webp",
+  difficulty: "/images/level.webp",
+};
+
 export const useScreenRouter = ({
   gameState,
   difficulty,
@@ -77,15 +82,12 @@ export const useScreenRouter = ({
 
   // 背景画像の取得
   const currentBgSrc = useMemo(() => {
-    if (gameState === "loading" || gameState === "title")
-      return "/images/title.webp";
-    if (gameState === "difficulty") {
-      if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg;
-      return hoverDifficulty
-        ? DIFFICULTY_SETTINGS[hoverDifficulty].bg
-        : "/images/level.webp";
-    }
-    return DIFFICULTY_SETTINGS[difficulty].bg;
+    if (gameState === "loading" || gameState === "title") return IMAGES.title;
+    if (gameState !== "difficulty") return DIFFICULTY_SETTINGS[difficulty].bg;
+    if (isTransitioning) return DIFFICULTY_SETTINGS[difficulty].bg;
+    return hoverDifficulty
+      ? DIFFICULTY_SETTINGS[hoverDifficulty].bg
+      : IMAGES.difficulty;
   }, [gameState, difficulty, hoverDifficulty, isTransitioning]);
 
   // ゲーム制御: Readyに戻る
