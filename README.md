@@ -94,7 +94,7 @@ https://github.com/user-attachments/assets/aeb8b6c2-9415-4c85-a0cc-e5637062761f
 
 ---
 
-## 🛠️ 使用技術 (Tech Stack)
+## 使用技術 (Tech Stack)
 
 **Languages (言語)**
 
