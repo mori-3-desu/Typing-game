@@ -102,6 +102,11 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
             </SoundBtn>
           )}
         </div>
+
+        <div
+          className={`title-note ${showTitle ? "visible" : ""} ${titlePhase !== "normal" || isTitleExiting ? "fade-out" : ""}`}>
+          0:00～8:00の間はサーバーへのデータ保存が出来ません。上記の時間帯はローカルのみ保存可能です。
+        </div>
       </div>
 
       {/* 名前入力モーダル */}

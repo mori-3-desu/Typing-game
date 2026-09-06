@@ -417,13 +417,10 @@ body {
 
 .title-screen {
   position: absolute;
-  top: 0;
-  left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: grid;
+  place-items: center;
   z-index: var(--z-title);
 }
 
@@ -628,6 +625,44 @@ body {
       var(--btn-inner-shine),
       0 2px 5px rgba(0, 0, 0, 0.3),
       0 0 10px rgba(255, 200, 255, 0.4);
+  }
+}
+
+/* サーバーを停止するので注釈をタイトルで表示する */
+.title-note {
+  --font-base: 20px;
+  --base-animation: 0.5s;
+  --visible-animation: 1s;
+
+  position: absolute;
+  bottom: 20px;
+  font-size: var(--font-base);
+  font-weight: bold;
+  color: var(--color-redpink);
+  opacity: 0;
+
+  transition: transform var(--base-animation);
+
+  &.visible {
+    opacity: 1;
+    animation: title-note-blinking var(--visible-animation) ease-in-out infinite
+      alternate;
+  }
+
+  &.fade-out {
+    opacity: 0;
+    transition:
+      opacity var(--base-animation) ease-out,
+      transform var(--base-animation);
+  }
+}
+
+@keyframes title-note-blinking {
+  from {
+    opacity: 0.2;
+  }
+  to {
+    opacity: 1;
   }
 }
 
