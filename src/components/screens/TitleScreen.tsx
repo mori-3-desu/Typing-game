@@ -27,6 +27,17 @@ type TitleScreenProps = {
   handleFinalConfirm: () => void;
 };
 
+/**
+ * 0:00（深夜0時）から8:00までサーバーが停止する為、
+ * アクセシビリティとクラスを付け替える為に実装している
+ * default引数にしているのはテスト容易性の為で中に記述すると
+ * 現在の時刻に依存してしまい、テストでモックが必要になる。
+ */
+const isMidnightToEightAM = (date = new Date()) => {
+  const hours = date.getHours();
+  return hours >= 0 && hours < 8;
+}
+
 export const TitleScreen: React.FC<TitleScreenProps> = ({
   showTitle,
   enableBounce,
@@ -46,6 +57,9 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   handleBackToInput,
   handleFinalConfirm,
 }) => {
+
+  const shouldShowStopDescription = isMidnightToEightAM();
+
   return (
     <div className={"title-screen"}>
       <div
@@ -104,8 +118,17 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
         </div>
 
         <div
-          className={`title-note ${showTitle ? "visible" : ""} ${titlePhase !== "normal" || isTitleExiting ? "fade-out" : ""}`}>
-          0:00～8:00の間はサーバーへのデータ保存が出来ません。上記の時間帯はローカルのみ保存可能です。
+          className={`title-note 
+            ${showTitle ? "visible" : ""} 
+            ${titlePhase !== "normal" || isTitleExiting ? "fade-out" : ""}
+            ${shouldShowStopDescription ? "warm-maker" : ""}
+            `}
+          role={shouldShowStopDescription ? "alert" : ""}
+          aria-label="サーバー保存に関する重要なお知らせ"
+        >
+          <p>
+            0:00～8:00の間はサーバーへのデータ保存が出来ません。上記の時間帯はローカルのみ保存可能です。
+          </p>
         </div>
       </div>
 
