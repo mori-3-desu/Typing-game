@@ -42,10 +42,9 @@ const isMidnightToEightAM = (date = new Date()) => {
     .find((part) => part.type === "hour"); // {type: "hours", value: "??"}
 
   const hours = Number(hourPart?.value);
-  const isAfterMidnight = hours >= 0;
-  const isBeforeEightAM = hours < 8;
+  const isBetweenMidnightAndEight = hours >= 0 && hours < 8;
 
-  return isAfterMidnight && isBeforeEightAM;
+  return isBetweenMidnightAndEight;
 };
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({
