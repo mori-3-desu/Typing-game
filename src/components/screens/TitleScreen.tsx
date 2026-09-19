@@ -34,9 +34,19 @@ type TitleScreenProps = {
  * 現在の時刻に依存してしまい、テストでモックが必要になる。
  */
 const isMidnightToEightAM = (date = new Date()) => {
-  const hours = date.getHours();
-  return hours >= 0 && hours < 8;
-}
+  const hourPart = new Intl.DateTimeFormat("ja-JP", {
+    timeZone: "Asia/Tokyo",
+    hour: "numeric",
+  })
+    .formatToParts(date) // [{type: "hours", value: "??"}]
+    .find((part) => part.type === "hour"); // {type: "hours", value: "??"}
+
+  const hours = Number(hourPart?.value);
+  const isAfterMidnight = hours >= 0;
+  const isBeforeEightAM = hours < 8;
+
+  return isAfterMidnight && isBeforeEightAM;
+};
 
 export const TitleScreen: React.FC<TitleScreenProps> = ({
   showTitle,
@@ -57,7 +67,6 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
   handleBackToInput,
   handleFinalConfirm,
 }) => {
-
   const shouldShowStopDescription = isMidnightToEightAM();
 
   return (
