@@ -37,6 +37,7 @@ const isMidnightToEightAM = (date = new Date()) => {
   const hourPart = new Intl.DateTimeFormat("ja-JP", {
     timeZone: "Asia/Tokyo",
     hour: "numeric",
+    hour12: false
   })
     .formatToParts(date) // [{type: "hours", value: "??"}]
     .find((part) => part.type === "hour"); // {type: "hours", value: "??"}
@@ -129,10 +130,10 @@ export const TitleScreen: React.FC<TitleScreenProps> = ({
           className={`title-note 
             ${showTitle ? "visible" : ""} 
             ${titlePhase !== "normal" || isTitleExiting ? "fade-out" : ""}
-            ${shouldShowStopDescription ? "warm-maker" : ""}
+            ${shouldShowStopDescription ? "warm-marker" : ""}
             `}
-          role={shouldShowStopDescription ? "alert" : ""}
-          aria-label="サーバー保存に関する重要なお知らせ"
+          role={shouldShowStopDescription ? "alert" : undefined}
+          aria-label={shouldShowStopDescription ? "サーバー保存に関する重要なお知らせ" : undefined}
         >
           <p>
             0:00～8:00の間はサーバーへのデータ保存が出来ません。上記の時間帯はローカルのみ保存可能です。

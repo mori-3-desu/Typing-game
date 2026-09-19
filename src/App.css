@@ -633,15 +633,20 @@ body {
   --font-base: 20px;
   --base-animation: 0.5s;
   --visible-animation: 1s;
+  --color-base: #fff;
 
   position: absolute;
   bottom: 20px;
   font-size: var(--font-base);
   font-weight: bold;
-  color: var(--color-redpink);
+  color: var(--color-base);
   opacity: 0;
 
   transition: transform var(--base-animation);
+
+  &.warm-marker {
+    --color-base: var(--color-redpink);
+  }
 
   &.visible {
     opacity: 1;
